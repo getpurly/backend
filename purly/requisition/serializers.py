@@ -16,7 +16,6 @@ from .models import (
     PaymentTermChoices,
     Requisition,
     RequisitionLine,
-    StatusChoices,
     UOMChoices,
 )
 
@@ -229,7 +228,6 @@ class RequisitionDetailSerializer(CustomToRepresentation, serializers.ModelSeria
 
 
 class RequisitionCreateSerializer(serializers.ModelSerializer):
-    status = serializers.CharField()
     currency = serializers.CharField()
     lines = RequisitionLineCreateSerializer(many=True)
 
@@ -238,7 +236,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "external_reference",
-            "status",
             "project",
             "supplier",
             "justification",
@@ -253,12 +250,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
                 }
             },
         }
-
-    def validate_status(self, value):
-        if value not in StatusChoices.values:
-            raise serializers.ValidationError(f"This is not a valid status: {value}")
-
-        return value
 
     def validate_currency(self, value):
         if value not in CurrencyChoices.values:
