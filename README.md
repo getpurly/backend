@@ -1,4 +1,4 @@
-# purly-backend
+# backend
 
 Source code for purly backend.
 
