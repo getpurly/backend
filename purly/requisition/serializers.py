@@ -239,7 +239,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             "name",
             "external_reference",
             "status",
-            "owner",
             "project",
             "supplier",
             "justification",
@@ -248,11 +247,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             "lines",
         ]
         extra_kwargs = {
-            "user": {
-                "error_messages": {
-                    "does_not_exist": "This user does not exist: {pk_value}",
-                }
-            },
             "project": {
                 "error_messages": {
                     "does_not_exist": "This project does not exist: {pk_value}",
@@ -302,7 +296,9 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         lines = validated_data.pop("lines")
-        requisition = Requisition.objects.create(created_by=user, updated_by=user, **validated_data)
+        requisition = Requisition.objects.create(
+            owner=user, created_by=user, updated_by=user, **validated_data
+        )
 
         for line in lines:
             RequisitionLine.objects.create(

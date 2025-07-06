@@ -43,7 +43,9 @@ class AddressViewSet(viewsets.ModelViewSet):
 
         serializer.is_valid(raise_exception=True)
 
-        obj = serializer.save(created_by=self.request.user, updated_by=self.request.user)
+        obj = serializer.save(
+            owner=self.request.user, created_by=self.request.user, updated_by=self.request.user
+        )
         address_detail = AddressDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(address_detail, status=status.HTTP_201_CREATED)

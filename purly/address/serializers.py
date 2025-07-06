@@ -77,15 +77,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
             "state",
             "zip_code",
             "country",
-            "owner",
         ]
-        extra_kwargs = {
-            "owner": {
-                "error_messages": {
-                    "does_not_exist": "This user does not exist: {pk_value}",
-                }
-            },
-        }
 
 
 class AddressUpdateSerializer(serializers.ModelSerializer):
@@ -103,5 +95,4 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
             "state",
             "zip_code",
             "country",
-            "owner",
         ]
