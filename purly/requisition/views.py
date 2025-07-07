@@ -12,6 +12,7 @@ from .serializers import (
     RequisitionDetailSerializer,
     RequisitionLineListSerializer,
     RequisitionListSerializer,
+    RequisitionUpdateSerializer,
 )
 
 REQUISITION_ORDERING = ["total_amount", "created_at", "updated_at", "submitted_at", "approved_at"]
@@ -63,6 +64,19 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         serializer = RequisitionDetailSerializer(requisition)
 
         return Response(serializer.data)
+
+    def update(self, request, pk=None, *args, **kwargs):
+        requisition = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = RequisitionUpdateSerializer(requisition, data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+
+        obj = serializer.save(updated_by=self.request.user)
+        requisition_detail = RequisitionDetailSerializer(
+            obj, context=self.get_serializer_context()
+        ).data
+
+        return Response(requisition_detail, status=status.HTTP_200_OK)
 
 
 class RequisitionMineListView(generics.ListAPIView):
