@@ -16,6 +16,7 @@ from .models import (
     PaymentTermChoices,
     Requisition,
     RequisitionLine,
+    StatusChoices,
     UOMChoices,
 )
 
@@ -146,12 +147,12 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
         if line_type == "service":
             if any([quantity, unit_price, uom]):
                 raise serializers.ValidationError(
-                    f"Line {line_number} marked as service; quantity, unit price, and unit of measure fields must be unset or excluded."  # noqa: E501
+                    f"Line {line_number} marked as service: quantity, unit price, and unit of measure fields must be excluded."  # noqa: E501
                 )
         else:
             if not all([quantity, unit_price, uom]):
                 raise serializers.ValidationError(
-                    f"Line {line_number} marked as goods; quantity, unit price, and unit of measure fields must be included and set."  # noqa: E501
+                    f"Line {line_number} marked as goods: quantity, unit price, and unit of measure fields must be included and set."  # noqa: E501
                 )
 
             calculated_line_total = quantity * unit_price
@@ -239,7 +240,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             "project",
             "supplier",
             "justification",
-            "total_amount",
             "currency",
             "lines",
         ]
@@ -258,7 +258,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        total_amount = attrs.get("total_amount", Decimal("0.00"))
         lines = attrs.get("lines", [])
 
         if len(lines) == 0:
@@ -274,21 +273,21 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         if len(line_numbers) > len(set(line_numbers)):
             raise serializers.ValidationError({"lines": "Line numbers must contain unique values."})
 
-        line_totals = [line["line_total"] for line in lines]
-
-        if total_amount != sum(line_totals, Decimal("0.00")):
-            raise serializers.ValidationError(
-                {"total_amount": "This value does not align with line total(s)."}
-            )
-
         return attrs
 
     @transaction.atomic
     def create(self, validated_data):
         user = self.context["request"].user
         lines = validated_data.pop("lines")
+        line_totals = [line["line_total"] for line in lines]
+        total_amount = sum(line_totals, Decimal("0.00"))
+
         requisition = Requisition.objects.create(
-            owner=user, created_by=user, updated_by=user, **validated_data
+            total_amount=total_amount,
+            owner=user,
+            created_by=user,
+            updated_by=user,
+            **validated_data,
         )
 
         for line in lines:
@@ -297,3 +296,37 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             )
 
         return requisition
+
+
+class RequisitionUpdateSerializer(serializers.ModelSerializer):
+    currency = serializers.CharField()
+
+    class Meta:
+        model = Requisition
+        fields = [
+            "name",
+            "external_reference",
+            "project",
+            "supplier",
+            "justification",
+            "currency",
+        ]
+        extra_kwargs = {
+            "project": {
+                "error_messages": {
+                    "does_not_exist": "This project does not exist: {pk_value}",
+                }
+            },
+        }
+
+    def validate_currency(self, value):
+        if value not in CurrencyChoices.values:
+            raise serializers.ValidationError(f"This is not a valid currency: {value}")
+
+        return value
+
+    def validate(self, attrs):
+        if self.instance.status != StatusChoices.DRAFT:
+            raise serializers.ValidationError("Requisition must be in draft status to update.")
+
+        return attrs

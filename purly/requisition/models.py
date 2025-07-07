@@ -91,7 +91,7 @@ class RequisitionLine(models.Model):
     category = models.CharField(max_length=255)
     manufacturer = models.CharField(max_length=255, blank=True)
     manufacturer_part_number = models.CharField(max_length=255, blank=True)
-    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)], blank=True, null=True)
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(0)], blank=True, null=True)
     uom = models.CharField(choices=UOMChoices.choices, blank=True)
     unit_price = models.DecimalField(
         max_digits=9,
