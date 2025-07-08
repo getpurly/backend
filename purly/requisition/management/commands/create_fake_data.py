@@ -17,6 +17,7 @@ NUMBER_OF_PROJECTS = 30
 NUMBER_OF_SERVICE_REQUISITIONS = 500
 NUMBER_OF_GOODS_REQUISITIONS = 500
 
+CURRENCY = ["usd"]
 CATEGORIES = ["Advertising", "IT", "Food", "Furniture", "Vehicle Rental"]
 PAYMENT_TERMS = ["net_30", "net_45", "net_90"]
 UOM = ["each", "box"]
@@ -109,6 +110,7 @@ class Command(BaseCommand):
         for _ in range(NUMBER_OF_SERVICE_REQUISITIONS):
             user = random.choice(self.created_users)
             project = random.choice(self.created_projects)
+            currency = random.choice(CURRENCY)
 
             requisition = Requisition(
                 name=fake.word(),
@@ -119,7 +121,7 @@ class Command(BaseCommand):
                 supplier=fake.company(),
                 justification=fake.sentence(),
                 total_amount=Decimal(100),
-                currency="usd",
+                currency=currency,
                 created_at=fake.date(),
                 created_by=user,
                 updated_at=fake.date(),
@@ -161,7 +163,7 @@ class Command(BaseCommand):
                 description=fake.sentence(),
                 category=category,
                 line_total=Decimal(50),
-                payment_term="net_30",
+                payment_term=payment_term,
                 need_by=fake.future_date(),
                 created_at=fake.date(),
                 created_by=requisition.owner,
@@ -182,6 +184,7 @@ class Command(BaseCommand):
         for _ in range(NUMBER_OF_GOODS_REQUISITIONS):
             user = random.choice(self.created_users)
             project = random.choice(self.created_projects)
+            currency = random.choice(CURRENCY)
 
             requisition = Requisition(
                 name=fake.word(),
@@ -192,7 +195,7 @@ class Command(BaseCommand):
                 supplier=fake.company(),
                 justification=fake.sentence(),
                 total_amount=Decimal(100),
-                currency="usd",
+                currency=currency,
                 created_at=fake.date(),
                 created_by=user,
                 updated_at=fake.date(),
