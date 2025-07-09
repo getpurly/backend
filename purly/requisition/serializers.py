@@ -326,7 +326,7 @@ class RequisitionUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if self.instance.status != StatusChoices.DRAFT:
+        if self.instance.status != StatusChoices.DRAFT: # type: ignore
             raise serializers.ValidationError("Requisition must be in draft status to update.")
 
         return attrs

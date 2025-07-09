@@ -14,7 +14,7 @@ class Address(models.Model):
     street2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=64)
-    zip_code = models.CharField(max_length=20)
+    zip_code = models.CharField(max_length=64)
     country = models.CharField(max_length=64)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="addresses_owned"
