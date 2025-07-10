@@ -13,6 +13,9 @@ class User(AbstractUser):
         verbose_name_plural = "users"
         ordering = ["-date_joined"]
 
+    def __str__(self):
+        return self.username
+
 
 class UserActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
