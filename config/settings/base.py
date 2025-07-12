@@ -2,11 +2,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-x+8-x*%28!9@x_@hcp)6y=dz+5_kcru4^m693_&%1fn2b9b@5-"  # noqa: S105
+ADMIN_SITE_HEADER = "Purly Admin"
+ADMIN_SITE_INDEX_TITLE = "Site administration"
+ADMIN_SITE_TITLE = "admin"
 
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ADMINS = [("admin", "admin@example.com")]
+MANAGERS = ADMINS
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -20,7 +21,6 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "rest_framework",
-    "silk",
     "purly.address",
     "purly.project",
     "purly.requisition",
@@ -36,7 +36,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    "silk.middleware.SilkyMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -57,19 +56,6 @@ TEMPLATES = [
         },
     },
 ]
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dev",
-        "USER": "dev",
-        "PASSWORD": "dev",
-        "HOST": "192.168.1.130",
-        "PORT": "5436",
-    }
-}
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 AUTH_USER_MODEL = "user.User"
 
@@ -133,21 +119,3 @@ SPECTACULAR_SETTINGS = {
 }
 
 ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-    },
-    "root": {"level": "INFO", "handlers": ["console"]},
-}

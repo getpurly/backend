@@ -1,7 +1,12 @@
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
+
+admin.site.site_header = settings.ADMIN_SITE_HEADER
+admin.site.index_title = settings.ADMIN_SITE_INDEX_TITLE
+admin.site.site_title = settings.ADMIN_SITE_TITLE
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,4 +20,5 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
 ]
 
-urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
+if settings.DEBUG:
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

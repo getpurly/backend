@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.http import HttpRequest
+from django.http.response import HttpResponse
 
 from .models import User, UserActivity
 
@@ -20,6 +22,15 @@ class UserActivityAdmin(admin.ModelAdmin):
     list_display = ["user", "ip_address", "user_agent", "session_key", "created_at"]
     list_filter = ["created_at"]
     readonly_fields = ["user", "ip_address", "user_agent", "session_key", "created_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(User, UserAdmin)
