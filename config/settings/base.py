@@ -16,12 +16,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "allauth_ui",
     "allauth",
     "allauth.account",
     "django_filters",
     "drf_spectacular",
     "rest_framework",
     "corsheaders",
+    "widget_tweaks",
+    "slippers",
     "purly.address",
     "purly.project",
     "purly.requisition",
@@ -81,8 +84,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "account_login"
 LOGIN_URL = "account_login"
 
 LANGUAGE_CODE = "en-us"
@@ -119,5 +121,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "Version 1",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+ALLAUTH_UI_THEME = "forest"
 
 ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]

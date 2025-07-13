@@ -6,13 +6,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+FRONTEND = "http://localhost:5173"
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    FRONTEND,
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
+    FRONTEND,
 ]
+
+LOGIN_REDIRECT_URL = FRONTEND + "?login=true"
 
 INSTALLED_APPS += [
     "silk",

@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.http import HttpRequest
-from django.http.response import HttpResponse
 
 from .models import User, UserActivity
 
@@ -16,6 +14,9 @@ class UserAdmin(admin.ModelAdmin):
         "last_login",
     ]
     list_filter = ["is_active", "date_joined", "last_login"]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class UserActivityAdmin(admin.ModelAdmin):

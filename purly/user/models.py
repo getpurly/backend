@@ -18,7 +18,7 @@ class User(AbstractUser):
 
 
 class UserActivity(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     ip_address = models.GenericIPAddressField(max_length=255, blank=True, null=True)
     user_agent = models.CharField(max_length=255, blank=True)
     session_key = models.CharField(max_length=255, blank=True)
