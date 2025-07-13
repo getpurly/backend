@@ -9,6 +9,8 @@ ADMIN_SITE_TITLE = "admin"
 ADMINS = [("admin", "admin@example.com")]
 MANAGERS = ADMINS
 
+CORS_ALLOW_CREDENTIALS = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
