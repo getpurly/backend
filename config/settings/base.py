@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from .blacklist import BLACKLIST
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 ADMIN_SITE_HEADER = "Purly Admin"
@@ -126,4 +128,13 @@ SPECTACULAR_SETTINGS = {
 
 ALLAUTH_UI_THEME = "forest"
 
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Purly] "
+ACCOUNT_EMAIL_NOTIFICATIONS = True
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "account_email"
+
 ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
+
+ACCOUNT_PRESERVE_USERNAME_CASING = False
+
+ACCOUNT_USERNAME_BLACKLIST = BLACKLIST
+ACCOUNT_USERNAME_MIN_LENGTH = 3
