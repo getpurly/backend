@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load static %}
 {% load allauth_ui %}
+{% load custom_tags %}
 <!DOCTYPE html>
 <html data-theme="{% allauth_ui_theme %}">
     <head>
@@ -29,6 +30,7 @@
             {% endblock content %}
             <div class="mx-auto [&_a]:link text-sm flex flex-col md:flex-row items-center justify-center gap-3 mt-3">
                 {% if user.is_authenticated %}
+                    <a href="{% dashboard_url %}">Back to Dashboard</a>
                     {% url 'account_email' as email_url %}
                     {% if email_url %}
                         <a href="{{ email_url }}">{% trans "Change Email" %}</a>
