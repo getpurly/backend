@@ -1,6 +1,6 @@
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -31,6 +31,12 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     filterset_fields = REQUISITION_FILTER_FIELDS
     ordering_fields = REQUISITION_ORDERING
 
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Http404 as exc:
+            raise exceptions.NotFound(detail="No requisition matches the given query.") from exc
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -59,14 +65,14 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(requisition_detail, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        requisition = get_object_or_404(self.get_queryset(), pk=pk)
+    def retrieve(self, request, *args, **kwargs):
+        requisition = self.get_object()
         serializer = RequisitionDetailSerializer(requisition)
 
         return Response(serializer.data)
 
-    def update(self, request, pk=None, *args, **kwargs):
-        requisition = get_object_or_404(self.get_queryset(), pk=pk)
+    def update(self, request, *args, **kwargs):
+        requisition = self.get_object()
         serializer = RequisitionUpdateSerializer(requisition, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)

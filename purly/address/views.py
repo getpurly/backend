@@ -1,6 +1,6 @@
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -24,6 +24,13 @@ class AddressViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ADDRESS_FILTER_FIELDS
     ordering_fields = ["created_at", "updated_at"]
+
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Http404 as exc:
+            raise exceptions.NotFound(detail="No address matches the given query.") from exc
+
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -50,14 +57,14 @@ class AddressViewSet(viewsets.ModelViewSet):
 
         return Response(address_detail, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        address = get_object_or_404(self.get_queryset(), pk=pk)
+    def retrieve(self, request, *args, **kwargs):
+        address = self.get_object()
         serializer = AddressDetailSerializer(address)
 
         return Response(serializer.data)
 
-    def update(self, request, pk=None, *args, **kwargs):
-        address = get_object_or_404(self.get_queryset(), pk=pk)
+    def update(self, request, *args, **kwargs):
+        address = self.get_object()
         serializer = AddressUpdateSerializer(address, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)

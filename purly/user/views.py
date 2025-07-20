@@ -1,6 +1,6 @@
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, viewsets
+from rest_framework import exceptions, filters, generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -20,6 +20,12 @@ class UserViewSet(viewsets.ModelViewSet):
     filterset_fields = USER_FILTER_FIELDS
     ordering_fields = ["date_joined"]
 
+    def get_object(self):
+        try:
+            return super().get_object()
+        except Http404 as exc:
+            raise exceptions.NotFound(detail="No user matches the given query.") from exc
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -33,8 +39,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        user = get_object_or_404(self.get_queryset(), pk=pk)
+    def retrieve(self, request, *args, **kwargs):
+        user = self.get_object()
         serializer = UserDetailSerializer(user)
 
         return Response(serializer.data)
