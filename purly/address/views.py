@@ -31,7 +31,6 @@ class AddressViewSet(viewsets.ModelViewSet):
         except Http404 as exc:
             raise exceptions.NotFound(detail="No address matches the given query.") from exc
 
-
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)

@@ -1,21 +1,16 @@
 from django.http import Http404
-from rest_framework.exceptions import (
-    MethodNotAllowed,
-    NotAcceptable,
-    NotFound,
-    UnsupportedMediaType,
-)
+from rest_framework import exceptions
 from rest_framework.views import exception_handler
 
 
 def client_error(exc, context, response):
-    if isinstance(exc, MethodNotAllowed):
+    if isinstance(exc, exceptions.MethodNotAllowed):
         method = context.get("request").method
-        detail = f"Method '{method}' not allowed."
-    elif isinstance(exc, UnsupportedMediaType):
+        detail = f"This method is not allowed: {method}"
+    elif isinstance(exc, exceptions.UnsupportedMediaType):
         media_type = context.get("request").content_type
-        detail = f"Unsupported media type '{media_type}' in request."
-    elif isinstance(exc, NotAcceptable):
+        detail = f"This is an unsupported media type: {media_type}"
+    elif isinstance(exc, exceptions.NotAcceptable):
         detail = "Could not satisfy the request accept header."
     else:
         detail = exc.detail
@@ -71,13 +66,15 @@ def validation_error(exc, context, response):  # noqa: C901
 
 
 def custom_exception_handler(exc, context):
-    response = exception_handler(exc, context)
+    request = context.get("request")
 
-    if response is None:
+    if not hasattr(request, "accepted_renderer"):
         return None
 
     if isinstance(exc, Http404):
-        exc = NotFound(detail=str(exc) or None)
+        exc = exceptions.NotFound(detail=str(exc) or None)
+
+    response = exception_handler(exc, context)
 
     handlers = {
         "ParseError": client_error,
@@ -98,8 +95,14 @@ def custom_exception_handler(exc, context):
         return handlers[exception_class](exc, context, response)
 
     response.data = {  # type: ignore
-        "type": None,
-        "errors": [{"attr": None, "code": None, "detail": exc.detail}],
+        "type": "server_error",
+        "errors": [
+            {
+                "attr": None,
+                "code": "internal_error",
+                "detail": "An internal server error occurred.",
+            }
+        ],
     }
 
     return response
