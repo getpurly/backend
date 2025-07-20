@@ -28,7 +28,7 @@ def client_error(exc, context, response):
     return response
 
 
-def validation_error(exc, context, response):
+def validation_error(exc, context, response):  # noqa: C901
     errors = []
 
     full_details = exc.get_full_details()
