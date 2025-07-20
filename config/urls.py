@@ -4,6 +4,8 @@ from django.shortcuts import redirect
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 
+from .exceptions import page_not_found, server_error
+
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.index_title = settings.ADMIN_SITE_INDEX_TITLE
 admin.site.site_title = settings.ADMIN_SITE_TITLE
@@ -15,6 +17,9 @@ def home(request):
 
     return redirect("account_login")
 
+
+handler404 = page_not_found
+handler500 = server_error
 
 urlpatterns = [
     path("admin/", admin.site.urls),

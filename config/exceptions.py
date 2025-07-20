@@ -1,6 +1,6 @@
-from django.http import Http404
-from rest_framework import exceptions
-from rest_framework.views import exception_handler
+from django.http import Http404, JsonResponse
+from django.template.response import TemplateResponse
+from rest_framework import exceptions, status, views
 
 
 def client_error(exc, context, response):
@@ -66,15 +66,10 @@ def validation_error(exc, context, response):  # noqa: C901
 
 
 def custom_exception_handler(exc, context):
-    request = context.get("request")
-
-    if not hasattr(request, "accepted_renderer"):
-        return None
-
     if isinstance(exc, Http404):
         exc = exceptions.NotFound(detail=str(exc) or None)
 
-    response = exception_handler(exc, context)
+    response = views.exception_handler(exc, context)
 
     handlers = {
         "ParseError": client_error,
@@ -94,15 +89,40 @@ def custom_exception_handler(exc, context):
     if exception_class in handlers:
         return handlers[exception_class](exc, context, response)
 
-    response.data = {  # type: ignore
-        "type": "server_error",
-        "errors": [
-            {
-                "attr": None,
-                "code": "internal_error",
-                "detail": "An internal server error occurred.",
-            }
-        ],
-    }
-
     return response
+
+
+def page_not_found(request, *args, **kwargs):
+    if request.path.startswith("/api/"):
+        response = {
+            "type": "client_error",
+            "errors": [
+                {
+                    "attr": None,
+                    "code": "not_found",
+                    "detail": "This API endpoint does not exist.",
+                }
+            ],
+        }
+
+        return JsonResponse(response, status=status.HTTP_404_NOT_FOUND)
+
+    return TemplateResponse(request, "404.html", status=404)
+
+
+def server_error(request, *args, **kwargs):
+    if request.path.startswith("/api/"):
+        response = {
+            "type": "server_error",
+            "errors": [
+                {
+                    "attr": None,
+                    "code": "internal_error",
+                    "detail": "An internal server error occurred.",
+                }
+            ],
+        }
+
+        return JsonResponse(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return TemplateResponse(request, "500.html", status=500)
