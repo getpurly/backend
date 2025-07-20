@@ -16,7 +16,7 @@ from .serializers import (
 
 
 class AddressViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "put", "head"]
+    http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
     queryset = Address.objects.select_related("owner", "created_by", "updated_by").all()
     serializer_class = AddressListSerializer
@@ -76,6 +76,7 @@ class AddressViewSet(viewsets.ModelViewSet):
 
 
 class AddressMineListView(generics.ListAPIView):
+    http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
     serializer_class = AddressListSerializer
     pagination_class = AddressPagination

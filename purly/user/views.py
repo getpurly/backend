@@ -47,6 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserMeRetrieveAPIView(generics.RetrieveAPIView):
+    http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
     serializer_class = UserDetailSerializer
 

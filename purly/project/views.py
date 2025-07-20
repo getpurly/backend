@@ -16,7 +16,7 @@ from .serializers import (
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "put", "head"]
+    http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
     queryset = Project.objects.select_related("created_by", "updated_by").all()
     serializer_class = ProjectListSerializer

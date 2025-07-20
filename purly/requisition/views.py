@@ -20,7 +20,7 @@ REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"
 
 
 class RequisitionViewSet(viewsets.ModelViewSet):
-    http_method_names = ["get", "post", "put", "head"]
+    http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
     queryset = Requisition.objects.select_related(
         "project", "owner", "created_by", "updated_by"
@@ -86,6 +86,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
 
 class RequisitionMineListView(generics.ListAPIView):
+    http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
     serializer_class = RequisitionListSerializer
     pagination_class = RequisitionPagination
@@ -100,6 +101,7 @@ class RequisitionMineListView(generics.ListAPIView):
 
 
 class RequisitionLineListView(generics.ListAPIView):
+    http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
     queryset = RequisitionLine.objects.select_related(
         "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
@@ -112,6 +114,7 @@ class RequisitionLineListView(generics.ListAPIView):
 
 
 class RequisitionLineMineListView(generics.ListAPIView):
+    http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
     serializer_class = RequisitionLineListSerializer
     pagination_class = RequisitionLinePagination
