@@ -17,6 +17,7 @@ def client_error(exc, context, response):
 
     response.data = {
         "type": "client_error",
+        "request_id": context.get("request").META.get("X_REQUEST_UUID", ""),
         "errors": [{"attr": None, "code": exc.get_codes(), "detail": detail}],
     }
 
@@ -58,6 +59,7 @@ def validation_error(exc, context, response):  # noqa: C901
                         )
 
     response.data = {
+        "request_id": context.get("request").META.get("X_REQUEST_UUID", ""),
         "type": "validation_error",
         "errors": errors,
     }
@@ -93,9 +95,12 @@ def custom_exception_handler(exc, context):
 
 
 def page_not_found(request, *args, **kwargs):
+    data = {"request_id": request.META.get("X_REQUEST_UUID", "")}
+
     if request.path.startswith("/api/"):
         response = {
             "type": "client_error",
+            "request_id": data["request_id"],
             "errors": [
                 {
                     "attr": None,
@@ -107,13 +112,16 @@ def page_not_found(request, *args, **kwargs):
 
         return JsonResponse(response, status=status.HTTP_404_NOT_FOUND)
 
-    return TemplateResponse(request, "404.html", status=404)
+    return TemplateResponse(request, "404.html", context=data, status=404)
 
 
 def server_error(request, *args, **kwargs):
+    data = {"request_id": request.META.get("X_REQUEST_UUID", "")}
+
     if request.path.startswith("/api/"):
         response = {
             "type": "server_error",
+            "request_id": request.META.get("X_REQUEST_UUID", ""),
             "errors": [
                 {
                     "attr": None,
@@ -125,4 +133,4 @@ def server_error(request, *args, **kwargs):
 
         return JsonResponse(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    return TemplateResponse(request, "500.html", status=500)
+    return TemplateResponse(request, "500.html", context=data, status=500)
