@@ -105,7 +105,7 @@ def page_not_found(request, *args, **kwargs):
                 {
                     "attr": None,
                     "code": "not_found",
-                    "detail": "This API endpoint does not exist.",
+                    "detail": "The API endpoint you requested does not exist.",
                 }
             ],
         }
