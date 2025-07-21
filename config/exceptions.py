@@ -121,7 +121,7 @@ def server_error(request, *args, **kwargs):
     if request.path.startswith("/api/"):
         response = {
             "type": "server_error",
-            "request_id": request.META.get("X_REQUEST_UUID", ""),
+            "request_id": data["request_id"],
             "errors": [
                 {
                     "attr": None,
