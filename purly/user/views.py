@@ -51,5 +51,5 @@ class UserMeRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserDetailSerializer
 
-    def get_object(self):  # type: ignore
+    def get_object(self): # type: ignore
         return self.request.user

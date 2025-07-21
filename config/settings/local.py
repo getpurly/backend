@@ -1,4 +1,4 @@
-from .base import *
+from .base import *  # noqa: F403
 
 SECRET_KEY = "django-insecure-x+8-x*%28!9@x_@hcp)6y=dz+5_kcru4^m693_&%1fn2b9b@5-"  # noqa: S105
 
@@ -17,11 +17,11 @@ CSRF_TRUSTED_ORIGINS = [
 
 LOGIN_REDIRECT_URL = FRONTEND
 
-INSTALLED_APPS += [
+INSTALLED_APPS += [  # noqa: F405
     "silk",
 ]
 
-MIDDLEWARE += [
+MIDDLEWARE += [  # noqa: F405
     "silk.middleware.SilkyMiddleware",
 ]
 

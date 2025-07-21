@@ -94,7 +94,7 @@ class RequisitionMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_FILTER_FIELDS
     ordering_fields = REQUISITION_ORDERING
 
-    def get_queryset(self):  # type: ignore
+    def get_queryset(self): # type: ignore
         return Requisition.objects.select_related(
             "project", "owner", "created_by", "updated_by"
         ).filter(owner=self.request.user)
@@ -122,7 +122,7 @@ class RequisitionLineMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_LINE_FILTER_FIELDS
     ordering_fields = REQUISITION_LINE_ORDERING
 
-    def get_queryset(self):  # type: ignore
+    def get_queryset(self): # type: ignore
         return RequisitionLine.objects.select_related(
             "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
         ).filter(requisition__owner=self.request.user)

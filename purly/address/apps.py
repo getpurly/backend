@@ -6,4 +6,4 @@ class AddressConfig(AppConfig):
     name = "purly.address"
 
     # def ready(self):
-    #     import address.signals  # noqa: F401
+    #     import address.signals

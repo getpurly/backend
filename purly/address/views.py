@@ -83,7 +83,7 @@ class AddressMineListView(generics.ListAPIView):
     filterset_fields = ADDRESS_FILTER_FIELDS
     ordering_fields = ["created_at", "updated_at"]
 
-    def get_queryset(self):  # type: ignore
+    def get_queryset(self): # type: ignore
         return Address.objects.select_related("owner", "created_by", "updated_by").filter(
             owner=self.request.user
         )
