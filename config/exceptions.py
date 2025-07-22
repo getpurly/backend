@@ -17,7 +17,7 @@ def client_error(exc, context, response):
 
     response.data = {
         "type": "client_error",
-        "request_id": context.get("request").META.get("X_REQUEST_UUID", ""),
+        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "errors": [{"attr": None, "code": exc.get_codes(), "detail": detail}],
     }
 
@@ -59,7 +59,7 @@ def validation_error(exc, context, response):  # noqa: C901
                         )
 
     response.data = {
-        "request_id": context.get("request").META.get("X_REQUEST_UUID", ""),
+        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "type": "validation_error",
         "errors": errors,
     }
@@ -95,7 +95,7 @@ def custom_exception_handler(exc, context):
 
 
 def page_not_found(request, *args, **kwargs):
-    data = {"request_id": request.META.get("X_REQUEST_UUID", "")}
+    data = {"request_id": request.META.get("X_REQUEST_ID", "")}
 
     if request.path.startswith("/api/"):
         response = {
@@ -105,7 +105,7 @@ def page_not_found(request, *args, **kwargs):
                 {
                     "attr": None,
                     "code": "not_found",
-                    "detail": "The API endpoint you requested does not exist.",
+                    "detail": "The endpoint you requested does not exist.",
                 }
             ],
         }
@@ -116,7 +116,7 @@ def page_not_found(request, *args, **kwargs):
 
 
 def server_error(request, *args, **kwargs):
-    data = {"request_id": request.META.get("X_REQUEST_UUID", "")}
+    data = {"request_id": request.META.get("X_REQUEST_ID", "")}
 
     if request.path.startswith("/api/"):
         response = {
