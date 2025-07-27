@@ -48,5 +48,6 @@ ignore = [
     "PGH003",  # Use specific rule codes when ignoring type issues
     "PERF401", # Use `list.extend` to create a transformed list
     "ERA001",  # Found commented-out code
+    "SIM103",  # Return the negated condition directly
 ]
 exclude = ["migrations"]

@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "slippers",
     "purly.address",
+    "purly.approval",
     "purly.project",
     "purly.requisition",
     "purly.user",

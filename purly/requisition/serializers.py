@@ -6,6 +6,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from purly.address.serializers import AddressDetailSerializer
+from purly.approval.utils import generate_approvals
 from purly.project.serializers import ProjectListSerializer
 from purly.user.serializers import UserDetailSerializer
 from purly.utils import CustomToRepresentation
@@ -290,10 +291,18 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
+        requisition_lines = []
+
         for line in lines:
-            RequisitionLine.objects.create(
+            requisition_line = RequisitionLine(
                 requisition=requisition, created_by=user, updated_by=user, **line
             )
+
+            requisition_lines.append(requisition_line)
+
+        RequisitionLine.objects.bulk_create(requisition_lines)
+
+        generate_approvals(requisition)
 
         return requisition
 
@@ -326,7 +335,7 @@ class RequisitionUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if self.instance.status != StatusChoices.DRAFT: # type: ignore
+        if self.instance.status != StatusChoices.DRAFT:  # type: ignore
             raise serializers.ValidationError("Requisition must be in draft status to update.")
 
         return attrs

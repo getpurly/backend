@@ -15,6 +15,7 @@ class CurrencyChoices(models.TextChoices):
 
 
 class StatusChoices(models.TextChoices):
+    DRAFT = ("draft", "Draft")
     PENDING_APPROVAL = ("pending_approval", "Pending Approval")
     APPROVED = ("approved", "Approved")
     REJECTED = ("rejected", "Rejected")
