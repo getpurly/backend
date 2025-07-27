@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fd --type f --extension py "000[0-9]_initial.py" -x rm {}
+fd --type f --extension py "000[0-9]_initial.py" -I -x rm {}
 
 source ./purly/backend/.venv/bin/activate
 

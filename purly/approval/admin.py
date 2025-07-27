@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Approval, ApprovalRule
+from .models import Approval, ApprovalChain
 
 
 class ApprovalAdmin(admin.ModelAdmin):
@@ -9,13 +9,14 @@ class ApprovalAdmin(admin.ModelAdmin):
         "approver__username",
         "sequence_number",
         "status",
+        "notified_at",
         "approved_at",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["status", "approved_at", "created_at", "updated_at"]
+    list_filter = ["status", "notified_at", "approved_at", "created_at", "updated_at"]
     search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
@@ -32,7 +33,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-class ApprovalRuleAdmin(admin.ModelAdmin):
+class ApprovalChainAdmin(admin.ModelAdmin):
     list_display = [
         "name",
         "approver__username",
@@ -41,8 +42,8 @@ class ApprovalRuleAdmin(admin.ModelAdmin):
         "owner",
         "project",
         "supplier",
-        "min_total_amount",
-        "max_total_amount",
+        "min_amount",
+        "max_amount",
         "currency",
         "created_at",
         "created_by",
@@ -68,4 +69,4 @@ class ApprovalRuleAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Approval, ApprovalAdmin)
-admin.site.register(ApprovalRule, ApprovalRuleAdmin)
+admin.site.register(ApprovalChain, ApprovalChainAdmin)

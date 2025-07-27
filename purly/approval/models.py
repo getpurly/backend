@@ -7,7 +7,7 @@ from django.db import models
 
 from purly.requisition.models import Requisition
 
-from .managers import ApprovalManager, ApprovalRuleManager
+from .managers import ApprovalChainManager, ApprovalManager
 
 
 class StatusChoices(models.TextChoices):
@@ -25,6 +25,7 @@ class Approval(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
     status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -54,7 +55,7 @@ class Approval(models.Model):
         return self.requisition.name
 
 
-class ApprovalRule(models.Model):
+class ApprovalChain(models.Model):
     name = models.CharField(max_length=255)
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_rules_approver"
@@ -66,10 +67,15 @@ class ApprovalRule(models.Model):
     owner = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     project = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     supplier = ArrayField(models.CharField(max_length=255), blank=True, default=list)
-    min_total_amount = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+    min_amount = models.DecimalField(
+        max_digits=9,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="Minimum amount",
     )
-    max_total_amount = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    max_amount = models.DecimalField(
+        max_digits=9, decimal_places=2, null=True, blank=True, verbose_name="Maximum amount"
+    )
     currency = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -84,12 +90,12 @@ class ApprovalRule(models.Model):
     active = models.BooleanField(default=True)
     deleted = models.BooleanField(default=False)
 
-    objects = ApprovalRuleManager()
+    objects = ApprovalChainManager()
 
     class Meta:
-        db_table = "approval_rule"
-        verbose_name = "approval rule"
-        verbose_name_plural = "approval rules"
+        db_table = "approval_chain"
+        verbose_name = "approval chain"
+        verbose_name_plural = "approval chains"
         ordering = ["-created_at"]
 
     def __str__(self):

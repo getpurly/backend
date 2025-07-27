@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.db.models import Q
 
-from .models import Approval, ApprovalRule, StatusChoices
+from .models import Approval, ApprovalChain, StatusChoices
 
 
 def rule_matching(requisition, rule):
@@ -32,10 +32,8 @@ def generate_approvals(requisition):
     approvals = []
 
     rules = (
-        ApprovalRule.objects.filter(min_total_amount__lte=requisition.total_amount)
-        .filter(
-            Q(max_total_amount__gte=requisition.total_amount) | Q(max_total_amount__isnull=True)
-        )
+        ApprovalChain.objects.filter(min_amount__lte=requisition.total_amount)
+        .filter(Q(max_amount__gte=requisition.total_amount) | Q(max_amount__isnull=True))
         .filter(active=True)
         .order_by("sequence_number")
     )
