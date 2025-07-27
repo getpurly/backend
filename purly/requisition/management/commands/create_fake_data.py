@@ -6,7 +6,7 @@ from faker import Faker
 
 from purly.address.models import Address
 from purly.project.models import Project
-from purly.requisition.models import Requisition, RequisitionLine
+from purly.requisition.models import Requisition, RequisitionLine, StatusChoices
 from purly.user.models import User
 
 fake = Faker("en_US")
@@ -115,7 +115,7 @@ class Command(BaseCommand):
             requisition = Requisition(
                 name=fake.word(),
                 external_reference=fake.uuid4(),
-                status="draft",
+                status=StatusChoices.PENDING_APPROVAL,
                 owner=user,
                 project=project,
                 supplier=fake.company(),
@@ -189,7 +189,7 @@ class Command(BaseCommand):
             requisition = Requisition(
                 name=fake.word(),
                 external_reference=fake.uuid4(),
-                status="draft",
+                status=StatusChoices.PENDING_APPROVAL,
                 owner=user,
                 project=project,
                 supplier=fake.company(),
