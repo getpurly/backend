@@ -1,7 +1,7 @@
 from allauth.account.models import EmailAddress
 from django.contrib import admin
 
-from .models import EmailAddressProxy, User, UserActivity, UserProfile
+from .models import User, UserActivity, UserProfile
 
 admin.site.unregister(EmailAddress)
 
@@ -58,4 +58,4 @@ class EmailAddressAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
-admin.site.register(EmailAddressProxy, EmailAddressAdmin)
+admin.site.register(EmailAddress, EmailAddressAdmin)

@@ -1,4 +1,3 @@
-from allauth.account.models import EmailAddress
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.signals import user_logged_in
@@ -56,14 +55,15 @@ class UserActivity(models.Model):
 
     class Meta:
         db_table = "user_activity"
-        verbose_name = "user activity"
-        verbose_name_plural = "user activity"
+        verbose_name = "activity"
+        verbose_name_plural = "activity"
         ordering = ["-created_at"]
 
     def __str__(self):
         return self.user.username
 
 
+@receiver(user_logged_in)
 def record_user_activity(sender, request, user, **kwargs):
     ip_address = get_ip_address(request)
     user_agent = get_user_agent(request)
@@ -75,17 +75,3 @@ def record_user_activity(sender, request, user, **kwargs):
         session_key=request.session.session_key,
     )
     new_activity.save()
-
-
-user_logged_in.connect(record_user_activity)
-
-
-class EmailAddressProxy(EmailAddress):
-    class Meta:  # type: ignore
-        proxy = True
-        app_label = "user"
-        verbose_name = "email"
-        verbose_name_plural = "emails"
-
-    def __str__(self):
-        return self.email

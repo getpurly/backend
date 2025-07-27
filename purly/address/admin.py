@@ -41,6 +41,9 @@ class AddressAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def save_model(self, request, obj, form, change):
         if change:
             obj.updated_by = request.user
