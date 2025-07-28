@@ -16,10 +16,36 @@ class StatusChoices(models.TextChoices):
     REJECTED = ("rejected", "Rejected")
 
 
+class OperatorChoices(models.TextChoices):
+    EXACT = ("exact", "exact")
+    IEXACT = ("iexact", "iexact")
+    CONTAINS = ("contains", "contains")
+    ICONTAINS = ("icontains", "icontains")
+    STARTS_WITH = ("startswith", "startswith")
+    ISTARTS_WITH = ("istartswith", "istartswith")
+    ENDS_WITH = ("endswith", "endswith")
+    IENDS_WITH = ("iendswith", "iendswith")
+    IS_NULL = ("is_null", "isnull")
+    REGEX = ("regex", "regex")
+
+
+class FieldChoices(models.TextChoices):
+    EXTERNAL_REFERENCE = ("external_reference", "External Reference")
+    OWNER = ("owner", "Owner Username")
+    OWNER_FIRST_NAME = ("owner_first_name", "Owner First Name")
+    OWNER_LAST_NAME = ("owner_last_name", "Owner Last Name")
+    OWNER_EMAIL = ("owner_email", "Owner Email")
+    PROJECT = ("project", "Project Name")
+    PROJECT_CODE = ("project_code", "Project Code")
+    PROJECT_DESCRIPTION = ("project_description", "Project Description")
+    SUPPLIER = ("supplier", "Supplier")
+    CURRENCY = ("currency", "Currency")
+
+
 class Approval(models.Model):
     requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
     approver = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_approver"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approvals_as_approver"
     )
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
@@ -58,15 +84,13 @@ class Approval(models.Model):
 class ApprovalChain(models.Model):
     name = models.CharField(max_length=255)
     approver = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_rules_approver"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_chains_as_approver",
     )
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
-    external_reference = ArrayField(models.CharField(max_length=255), blank=True, default=list)
-    owner = ArrayField(models.CharField(max_length=255), blank=True, default=list)
-    project = ArrayField(models.CharField(max_length=255), blank=True, default=list)
-    supplier = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     min_amount = models.DecimalField(
         max_digits=9,
         decimal_places=2,
@@ -76,16 +100,15 @@ class ApprovalChain(models.Model):
     max_amount = models.DecimalField(
         max_digits=9, decimal_places=2, null=True, blank=True, verbose_name="Maximum amount"
     )
-    currency = ArrayField(models.CharField(max_length=255), blank=True, default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="approval_rules_created",
+        related_name="approval_chains_created",
     )
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_rules_updated"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_chains_updated"
     )
     active = models.BooleanField(default=True)
     deleted = models.BooleanField(default=False)
@@ -100,3 +123,35 @@ class ApprovalChain(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ApprovalChainRule(models.Model):
+    approval_chain = models.ForeignKey(
+        ApprovalChain, on_delete=models.PROTECT, related_name="rules"
+    )
+    field = models.CharField(choices=FieldChoices)
+    operator = models.CharField(choices=OperatorChoices)
+    value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_chain_rules_created",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_chain_rules_updated",
+    )
+
+    class Meta:
+        db_table = "approval_chain_rule"
+        verbose_name = "approval chain rule"
+        verbose_name_plural = "approval chain rules"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        value = self.value[0] if len(self.value) == 1 else ", ".join(self.value)
+
+        return f"{self.field} {self.operator} {value}"

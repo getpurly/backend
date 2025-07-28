@@ -203,5 +203,6 @@ __marimo__/
 # Misc
 test_data.json
 test_data.http
+test.py
 /purly/*/migrations/*.py
 !/purly/*/migrations/__init__.py
