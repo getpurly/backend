@@ -32,11 +32,11 @@ def apply_string_operator(requisition_value, rule_operator, rule_value):
         case "iendswith":
             if not any(requisition_value.lower().endswith(val.lower()) for val in rule_value):
                 return False
-        case "is_null":
-            if requisition_value not in (None, ""):
-                return False
         case "regex":
             if not any(re.search(val, requisition_value) for val in rule_value):
+                return False
+        case "is_null":
+            if requisition_value not in (None, ""):
                 return False
         case _:
             return False
@@ -62,6 +62,7 @@ def generate_approvals(requisition):
         .filter(active=True)
         .filter(deleted=False)
         .order_by("sequence_number")
+        .prefetch_related("approval_chain_header_rules", "approval_chain_line_rules")
     )
 
     for approval_chain in approval_chains:
