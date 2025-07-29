@@ -25,41 +25,41 @@ class OperatorChoices(models.TextChoices):
     ISTARTS_WITH = ("istartswith", "istartswith")
     ENDS_WITH = ("endswith", "endswith")
     IENDS_WITH = ("iendswith", "iendswith")
-    IS_NULL = ("is_null", "isnull")
     REGEX = ("regex", "regex")
+    IS_NULL = ("is_null", "isnull")
 
 
 class HeaderFieldChoices(models.TextChoices):
+    CURRENCY = ("currency", "Currency")
     EXTERNAL_REFERENCE = ("external_reference", "External Reference")
     OWNER = ("owner", "Owner Username")
+    OWNER_EMAIL = ("owner_email", "Owner Email")
     OWNER_FIRST_NAME = ("owner_first_name", "Owner First Name")
     OWNER_LAST_NAME = ("owner_last_name", "Owner Last Name")
-    OWNER_EMAIL = ("owner_email", "Owner Email")
     PROJECT = ("project", "Project Name")
     PROJECT_CODE = ("project_code", "Project Code")
     PROJECT_DESCRIPTION = ("project_description", "Project Description")
     SUPPLIER = ("supplier", "Supplier")
-    CURRENCY = ("currency", "Currency")
 
 
 class LineFieldChoices(models.TextChoices):
-    LINE_TYPE = ("line_type", "Line Type")
-    DESCRIPTION = ("description", "Description")
     CATEGORY = ("category", "Category")
+    DESCRIPTION = ("description", "Description")
+    LINE_TYPE = ("line_type", "Line Type")
     MANUFACTURER = ("manufacturer", "Manufacturer")
     MANUFACTURER_PART_NUMBER = ("manufacturer_part_number", "Manufacturer Part Number")
-    UOM = ("uom", "United of Measure")
     PAYMENT_TERM = ("payment_term", "Payment Term")
-    SHIP_TO = ("ship_to_name", "Ship To Name")
-    SHIP_TO_CODE = ("ship_to_code", "Ship To Code")
     SHIP_TO_ATTENTION = ("ship_to_attention", "Ship To Attention")
+    SHIP_TO_CITY = ("ship_to_city", "Ship To City")
+    SHIP_TO_CODE = ("ship_to_code", "Ship To Code")
+    SHIP_TO_COUNTRY = ("ship_to_country", "Ship To Country")
+    SHIP_TO_NAME = ("ship_to_name", "Ship To Name")
     SHIP_TO_PHONE = ("ship_to_phone", "Ship To Phone")
+    SHIP_TO_STATE = ("ship_to_state", "Ship To State")
     SHIP_TO_STREET1 = ("ship_to_street1", "Ship To Street 1")
     SHIP_TO_STREET2 = ("ship_to_street2", "Ship To Street 2")
-    SHIP_TO_CITY = ("ship_to_city", "Ship To City")
-    SHIP_TO_STATE = ("ship_to_state", "Ship To State")
     SHIP_TO_ZIP = ("ship_to_zip", "Ship To Zip Code")
-    SHIP_TO_COUNTRY = ("ship_to_country", "Ship To Country")
+    UOM = ("uom", "United of Measure")
 
 
 class LineMatchModeChoices(models.TextChoices):
