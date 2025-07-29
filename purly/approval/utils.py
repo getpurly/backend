@@ -52,6 +52,8 @@ def rule_matching(obj, rule):
 
 @transaction.atomic
 def generate_approvals(requisition):
+    lines = requisition.lines.all()
+
     approvals = []
 
     approval_chains = (
@@ -68,8 +70,6 @@ def generate_approvals(requisition):
 
         if not all(rule_matching(requisition, rule) for rule in header_rules):
             continue
-
-        lines = requisition.lines.all()
 
         for rule in line_rules:
             match rule.match_mode:
