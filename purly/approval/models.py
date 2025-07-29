@@ -29,7 +29,7 @@ class OperatorChoices(models.TextChoices):
     REGEX = ("regex", "regex")
 
 
-class FieldChoices(models.TextChoices):
+class HeaderFieldChoices(models.TextChoices):
     EXTERNAL_REFERENCE = ("external_reference", "External Reference")
     OWNER = ("owner", "Owner Username")
     OWNER_FIRST_NAME = ("owner_first_name", "Owner First Name")
@@ -40,6 +40,31 @@ class FieldChoices(models.TextChoices):
     PROJECT_DESCRIPTION = ("project_description", "Project Description")
     SUPPLIER = ("supplier", "Supplier")
     CURRENCY = ("currency", "Currency")
+
+
+class LineFieldChoices(models.TextChoices):
+    LINE_TYPE = ("line_type", "Line Type")
+    DESCRIPTION = ("description", "Description")
+    CATEGORY = ("category", "Category")
+    MANUFACTURER = ("manufacturer", "Manufacturer")
+    MANUFACTURER_PART_NUMBER = ("manufacturer_part_number", "Manufacturer Part Number")
+    UOM = ("uom", "United of Measure")
+    PAYMENT_TERM = ("payment_term", "Payment Term")
+    SHIP_TO = ("ship_to_name", "Ship To Name")
+    SHIP_TO_CODE = ("ship_to_code", "Ship To Code")
+    SHIP_TO_ATTENTION = ("ship_to_attention", "Ship To Attention")
+    SHIP_TO_PHONE = ("ship_to_phone", "Ship To Phone")
+    SHIP_TO_STREET1 = ("ship_to_street1", "Ship To Street 1")
+    SHIP_TO_STREET2 = ("ship_to_street2", "Ship To Street 2")
+    SHIP_TO_CITY = ("ship_to_city", "Ship To City")
+    SHIP_TO_STATE = ("ship_to_state", "Ship To State")
+    SHIP_TO_ZIP = ("ship_to_zip", "Ship To Zip Code")
+    SHIP_TO_COUNTRY = ("ship_to_country", "Ship To Country")
+
+
+class LineMatchModeChoices(models.TextChoices):
+    ALL = ("all", "all")
+    ANY = ("any", "any")
 
 
 class Approval(models.Model):
@@ -82,7 +107,7 @@ class Approval(models.Model):
 
 
 class ApprovalChain(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -125,30 +150,63 @@ class ApprovalChain(models.Model):
         return self.name
 
 
-class ApprovalChainRule(models.Model):
+class ApprovalChainHeaderRule(models.Model):
     approval_chain = models.ForeignKey(
-        ApprovalChain, on_delete=models.PROTECT, related_name="rules"
+        ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_header_rules"
     )
-    field = models.CharField(choices=FieldChoices)
+    field = models.CharField(choices=HeaderFieldChoices)
     operator = models.CharField(choices=OperatorChoices)
     value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="approval_chain_rules_created",
+        related_name="approval_chain_header_rules_created",
     )
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="approval_chain_rules_updated",
+        related_name="approval_chain_header_rules_updated",
     )
 
     class Meta:
-        db_table = "approval_chain_rule"
-        verbose_name = "approval chain rule"
-        verbose_name_plural = "approval chain rules"
+        db_table = "approval_chain_header_rule"
+        verbose_name = "approval chain header rule"
+        verbose_name_plural = "approval chain header rules"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        value = self.value[0] if len(self.value) == 1 else ", ".join(self.value)
+
+        return f"{self.field} {self.operator} {value}"
+
+
+class ApprovalChainLineRule(models.Model):
+    approval_chain = models.ForeignKey(
+        ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_line_rules"
+    )
+    field = models.CharField(choices=LineFieldChoices)
+    operator = models.CharField(choices=OperatorChoices)
+    match_mode = models.CharField(choices=LineMatchModeChoices)
+    value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_chain_line_rules_created",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_chain_line_rules_updated",
+    )
+
+    class Meta:
+        db_table = "approval_chain_line_rule"
+        verbose_name = "approval chain line rule"
+        verbose_name_plural = "approval chain line rules"
         ordering = ["-created_at"]
 
     def __str__(self):

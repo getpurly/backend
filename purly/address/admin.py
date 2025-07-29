@@ -5,6 +5,7 @@ from .models import Address
 
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "name",
         "address_code",
         "description",

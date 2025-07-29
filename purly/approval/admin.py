@@ -1,20 +1,30 @@
 from django.contrib import admin
 
-from .forms import ApprovalChainRuleForm
-from .models import Approval, ApprovalChain, ApprovalChainRule
+from .forms import ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
+from .models import Approval, ApprovalChain, ApprovalChainHeaderRule, ApprovalChainLineRule
 
 
-class ApprovalChainRuleInline(admin.StackedInline):
-    form = ApprovalChainRuleForm
-    model = ApprovalChainRule
-    extra = 1
-    verbose_name = "approval chain rule"
-    verbose_name_plural = "approval chain rules"
+class ApprovalChainHeaderRuleInline(admin.StackedInline):
+    form = ApprovalChainHeaderRuleForm
+    model = ApprovalChainHeaderRule
+    extra = 0
+    verbose_name = "header rule"
+    verbose_name_plural = "header rules"
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+
+class ApprovalChainLineRuleInline(admin.StackedInline):
+    form = ApprovalChainLineRuleForm
+    model = ApprovalChainLineRule
+    extra = 0
+    verbose_name = "line rule"
+    verbose_name_plural = "line rules"
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
 
 class ApprovalAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "requisition__id",
         "approver__username",
         "sequence_number",
@@ -45,6 +55,7 @@ class ApprovalAdmin(admin.ModelAdmin):
 
 class ApprovalChainAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "name",
         "approver__username",
         "sequence_number",
@@ -59,7 +70,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at", "active"]
     search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
-    inlines = [ApprovalChainRuleInline]
+    inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -91,9 +102,10 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-class ApprovalChainRuleAdmin(admin.ModelAdmin):
-    form = ApprovalChainRuleForm
+class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
+    form = ApprovalChainHeaderRuleForm
     list_display = [
+        "id",
         "approval_chain__name",
         "field",
         "operator",
@@ -117,6 +129,35 @@ class ApprovalChainRuleAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
+    form = ApprovalChainLineRuleForm
+    list_display = [
+        "id",
+        "approval_chain__name",
+        "field",
+        "operator",
+        "match_mode",
+        "value",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+    ]
+    list_filter = ["field", "operator", "created_at", "updated_at"]
+    search_fields = []
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            obj.updated_by = request.user
+        else:
+            obj.created_by = request.user
+            obj.updated_by = request.user
+
+        return super().save_model(request, obj, form, change)
+
+
 admin.site.register(Approval, ApprovalAdmin)
 admin.site.register(ApprovalChain, ApprovalChainAdmin)
-admin.site.register(ApprovalChainRule, ApprovalChainRuleAdmin)
+admin.site.register(ApprovalChainHeaderRule, ApprovalChainHeaderRuleAdmin)
+admin.site.register(ApprovalChainLineRule, ApprovalChainLineRuleAdmin)

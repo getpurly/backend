@@ -3,14 +3,12 @@ import re
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import ApprovalChainRule, OperatorChoices
+from .models import ApprovalChainHeaderRule, ApprovalChainLineRule, OperatorChoices
 
 
 class ApprovalChainRuleForm(forms.ModelForm):
     class Meta:
-        model = ApprovalChainRule
         fields = "__all__"
-        help_texts = {"value": "This field is required unless operator is isnull."}
 
     def clean(self):
         cleaned_data = super().clean()
@@ -33,3 +31,18 @@ class ApprovalChainRuleForm(forms.ModelForm):
                     ) from e
 
         return cleaned_data
+
+
+class ApprovalChainHeaderRuleForm(ApprovalChainRuleForm):
+    class Meta(ApprovalChainRuleForm.Meta):
+        model = ApprovalChainHeaderRule
+        help_texts = {"value": "This field is required unless operator is isnull."}
+
+
+class ApprovalChainLineRuleForm(ApprovalChainRuleForm):
+    class Meta(ApprovalChainRuleForm.Meta):
+        model = ApprovalChainLineRule
+        help_texts = {
+            "value": "This field is required unless operator is isnull.",
+            "match_mode": "Select whether to match all lines or any line.",
+        }

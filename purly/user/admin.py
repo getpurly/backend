@@ -24,7 +24,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ["user", "job_title", "department", "phone", "created_at", "updated_at"]
+    list_display = ["id", "user", "job_title", "department", "phone", "created_at", "updated_at"]
     list_filter = ["created_at", "updated_at"]
     search_fields = ["user__username", "job_title", "department", "phone", "bio"]
     readonly_fields = ["created_at", "updated_at"]
@@ -34,7 +34,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class UserActivityAdmin(admin.ModelAdmin):
-    list_display = ["user", "ip_address", "user_agent", "session_key", "created_at"]
+    list_display = ["id", "user", "ip_address", "user_agent", "session_key", "created_at"]
     list_filter = ["created_at"]
     search_fields = ["user__username", "ip_address", "user_agent", "session_key"]
     readonly_fields = ["user", "ip_address", "user_agent", "session_key", "created_at"]

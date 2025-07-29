@@ -13,6 +13,7 @@ class RequisitionLineInline(admin.StackedInline):
 
 class RequisitionAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "name",
         "external_reference",
         "status",
@@ -83,6 +84,7 @@ class RequisitionAdmin(admin.ModelAdmin):
 
 class RequisitionLineAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "line_number",
         "line_type",
         "description",
