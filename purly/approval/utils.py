@@ -3,39 +3,46 @@ import re
 from django.db import transaction
 from django.db.models import Q
 
-from .models import Approval, ApprovalChain, StatusChoices
+from .models import (
+    Approval,
+    ApprovalChain,
+    ApprovalChainModeChoices,
+    LineMatchModeChoices,
+    OperatorChoices,
+    StatusChoices,
+)
 
 
-def apply_string_operator(requisition_value, rule_operator, rule_value):
+def check_string_operator(requisition_value, rule_operator, rule_value):
     match rule_operator:
-        case "exact":
+        case OperatorChoices.EXACT:
             if requisition_value not in rule_value:
                 return False
-        case "iexact":
+        case OperatorChoices.IEXACT:
             if requisition_value.lower() not in [val.lower() for val in rule_value]:
                 return False
-        case "contains":
+        case OperatorChoices.CONTAINS:
             if not any(val in requisition_value for val in rule_value):
                 return False
-        case "icontains":
+        case OperatorChoices.ICONTAINS:
             if not any(val.lower() in requisition_value.lower() for val in rule_value):
                 return False
-        case "startswith":
+        case OperatorChoices.STARTS_WITH:
             if not any(requisition_value.startswith(val) for val in rule_value):
                 return False
-        case "istartswith":
+        case OperatorChoices.ISTARTS_WITH:
             if not any(requisition_value.lower().startswith(val.lower()) for val in rule_value):
                 return False
-        case "endswith":
+        case OperatorChoices.ENDS_WITH:
             if not any(requisition_value.endswith(val) for val in rule_value):
                 return False
-        case "iendswith":
+        case OperatorChoices.IENDS_WITH:
             if not any(requisition_value.lower().endswith(val.lower()) for val in rule_value):
                 return False
-        case "regex":
+        case OperatorChoices.REGEX:
             if not any(re.search(val, requisition_value) for val in rule_value):
                 return False
-        case "is_null":
+        case OperatorChoices.IS_NULL:
             if requisition_value not in (None, ""):
                 return False
         case _:
@@ -45,9 +52,9 @@ def apply_string_operator(requisition_value, rule_operator, rule_value):
 
 
 def rule_matching(obj, rule):
-    value = getattr(obj, rule.field, None)
+    value = getattr(obj, rule.field)
 
-    return apply_string_operator(value, rule.operator, rule.value)
+    return check_string_operator(value, rule.operator, rule.value)
 
 
 @transaction.atomic
@@ -62,7 +69,9 @@ def generate_approvals(requisition):
         .filter(active=True)
         .filter(deleted=False)
         .order_by("sequence_number")
-        .prefetch_related("approval_chain_header_rules", "approval_chain_line_rules")
+        .prefetch_related(
+            "approval_chain_header_rules", "approval_chain_line_rules", "approver_group__approver"
+        )
     )
 
     for approval_chain in approval_chains:
@@ -74,7 +83,7 @@ def generate_approvals(requisition):
 
         for rule in line_rules:
             match rule.match_mode:
-                case "all":
+                case LineMatchModeChoices.ALL:
                     if not all(rule_matching(line, rule) for line in lines):
                         break
                 case _:
@@ -82,13 +91,26 @@ def generate_approvals(requisition):
                         break
 
         else:
-            approval = Approval(
-                requisition=requisition,
-                approver=approval_chain.approver,
-                sequence_number=approval_chain.sequence_number,
-                status=StatusChoices.PENDING,
-            )
+            if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
+                approval = Approval(
+                    requisition=requisition,
+                    approver=approval_chain.approver,
+                    sequence_number=approval_chain.sequence_number,
+                    status=StatusChoices.PENDING,
+                )
 
-            approvals.append(approval)
+                approvals.append(approval)
+            else:
+                approvers = approval_chain.approver_group.approver.all()  # type: ignore
+
+                for approver in approvers:
+                    approval = Approval(
+                        requisition=requisition,
+                        approver=approver,
+                        sequence_number=approval_chain.sequence_number,
+                        status=StatusChoices.PENDING,
+                    )
+
+                    approvals.append(approval)
 
     Approval.objects.bulk_create(approvals)

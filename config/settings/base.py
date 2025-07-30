@@ -2,7 +2,7 @@ from pathlib import Path
 
 from .blacklist import BLACKLIST
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 ADMIN_SITE_HEADER = "Purly Admin"
 ADMIN_SITE_INDEX_TITLE = "Site administration"
@@ -100,6 +100,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [Path(BASE_DIR) / "static"]
+STATIC_ROOT = Path(BASE_DIR) / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

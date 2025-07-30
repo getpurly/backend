@@ -1,7 +1,13 @@
 from django.contrib import admin
 
-from .forms import ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
-from .models import Approval, ApprovalChain, ApprovalChainHeaderRule, ApprovalChainLineRule
+from .forms import ApprovalChainForm, ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
+from .models import (
+    Approval,
+    ApprovalChain,
+    ApprovalChainHeaderRule,
+    ApprovalChainLineRule,
+    ApprovalGroup,
+)
 
 
 class ApprovalChainHeaderRuleInline(admin.StackedInline):
@@ -54,10 +60,13 @@ class ApprovalAdmin(admin.ModelAdmin):
 
 
 class ApprovalChainAdmin(admin.ModelAdmin):
+    form = ApprovalChainForm
     list_display = [
         "id",
         "name",
+        "approver_mode",
         "approver__username",
+        "approver_group__name",
         "sequence_number",
         "min_amount",
         "max_amount",
@@ -67,7 +76,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         "updated_by",
         "active",
     ]
-    list_filter = ["created_at", "updated_at", "active"]
+    list_filter = ["approver_mode", "created_at", "updated_at", "active"]
     search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
@@ -91,6 +100,32 @@ class ApprovalChainAdmin(admin.ModelAdmin):
             instance.delete()
 
         formset.save_m2m()
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            obj.updated_by = request.user
+        else:
+            obj.created_by = request.user
+            obj.updated_by = request.user
+
+        return super().save_model(request, obj, form, change)
+
+
+class ApprovalGroupAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "name",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+    ]
+    list_filter = ["created_at", "updated_at"]
+    search_fields = []
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -159,5 +194,6 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
 
 admin.site.register(Approval, ApprovalAdmin)
 admin.site.register(ApprovalChain, ApprovalChainAdmin)
+admin.site.register(ApprovalGroup, ApprovalGroupAdmin)
 admin.site.register(ApprovalChainHeaderRule, ApprovalChainHeaderRuleAdmin)
 admin.site.register(ApprovalChainLineRule, ApprovalChainLineRuleAdmin)

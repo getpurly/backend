@@ -7,7 +7,7 @@ from django.db import models
 
 from purly.requisition.models import Requisition
 
-from .managers import ApprovalChainManager, ApprovalManager
+from .managers import ApprovalChainManager, ApprovalGroupManager, ApprovalManager
 
 
 class StatusChoices(models.TextChoices):
@@ -32,6 +32,8 @@ class OperatorChoices(models.TextChoices):
 class HeaderFieldChoices(models.TextChoices):
     CURRENCY = ("currency", "Currency")
     EXTERNAL_REFERENCE = ("external_reference", "External Reference")
+    JUSTIFICATION = ("justification", "Justification")
+    NAME = ("name", "Name")
     OWNER = ("owner", "Owner Username")
     OWNER_EMAIL = ("owner_email", "Owner Email")
     OWNER_FIRST_NAME = ("owner_first_name", "Owner First Name")
@@ -65,6 +67,11 @@ class LineFieldChoices(models.TextChoices):
 class LineMatchModeChoices(models.TextChoices):
     ALL = ("all", "all")
     ANY = ("any", "any")
+
+
+class ApprovalChainModeChoices(models.TextChoices):
+    INDIVIDUAL = ("individual", "Individual")
+    GROUP = ("group", "Group")
 
 
 class Approval(models.Model):
@@ -106,12 +113,55 @@ class Approval(models.Model):
         return self.requisition.name
 
 
+class ApprovalGroup(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+    approver = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="approval_groups",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_groups_created",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="approval_groups_updated",
+    )
+    deleted = models.BooleanField(default=False)
+
+    objects = ApprovalGroupManager()
+
+    class Meta:
+        db_table = "approval_group"
+        verbose_name = "approval group"
+        verbose_name_plural = "approval groups"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name
+
+
 class ApprovalChain(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    approver_mode = models.CharField(choices=ApprovalChainModeChoices, default="individual")
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="approval_chains_as_approver",
+        blank=True,
+        null=True,
+    )
+    approver_group = models.ForeignKey(
+        ApprovalGroup,
+        on_delete=models.PROTECT,
+        related_name="approval_chains_as_approver_group",
+        blank=True,
+        null=True,
     )
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
@@ -172,8 +222,8 @@ class ApprovalChainHeaderRule(models.Model):
 
     class Meta:
         db_table = "approval_chain_header_rule"
-        verbose_name = "approval chain header rule"
-        verbose_name_plural = "approval chain header rules"
+        verbose_name = "header rule"
+        verbose_name_plural = "header rules"
         ordering = ["-created_at"]
 
     def __str__(self):
@@ -205,8 +255,8 @@ class ApprovalChainLineRule(models.Model):
 
     class Meta:
         db_table = "approval_chain_line_rule"
-        verbose_name = "approval chain line rule"
-        verbose_name_plural = "approval chain line rules"
+        verbose_name = "line rule"
+        verbose_name_plural = "line rules"
         ordering = ["-created_at"]
 
     def __str__(self):
