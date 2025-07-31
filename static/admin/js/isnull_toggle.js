@@ -1,26 +1,40 @@
 (function () {
     document.addEventListener("DOMContentLoaded", function () {
-        const operatorSelect = document.querySelector("#id_operator");
-        const valueField = document.querySelector(".form-row.field-value");
+        function setupToggle(container) {
+            const operatorSelect = container.querySelector(".operator-select");
+            const valueField = container.querySelector(".form-row.field-value");
 
-        function toggleField() {
-            const operator = operatorSelect.value;
+            if (!operatorSelect || !valueField) return;
 
-            if (operator === "is_null") {
-                valueField.style.display = "none"
+            function toggleField() {
+                const operator = operatorSelect.value;
 
-                valueField.querySelector("label").classList.remove("required");
-            } else {
-                valueField.style.display = ""
-
-                valueField.querySelector("label").classList.add("required");
+                if (operator === "is_null") {
+                    valueField.style.display = "none";
+                    valueField.querySelector("label").classList.remove("required");
+                } else {
+                    valueField.style.display = "";
+                    valueField.querySelector("label").classList.add("required");
+                }
             }
+
+            toggleField();
+
+            operatorSelect.addEventListener("change", toggleField);
         }
 
-        if (operatorSelect && valueField) {
-            toggleField()
+        const mainForm = document.querySelector("fieldset.module");
 
-            operatorSelect.addEventListener("change", toggleField)
+        if (mainForm) {
+            setupToggle(mainForm);
         }
+
+        const inlineForms = document.querySelectorAll(".inline-group .inline-related");
+
+        inlineForms.forEach(setupToggle);
+
+        document.addEventListener("formset:added", function (event) {
+            setupToggle(event.target);
+        });
     });
 })();

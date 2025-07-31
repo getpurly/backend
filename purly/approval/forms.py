@@ -1,6 +1,7 @@
 import re
 
 from django import forms
+from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 
 from .models import (
@@ -45,12 +46,31 @@ class ApprovalChainForm(forms.ModelForm):
         return instance
 
 
+class CommaSeparatedArrayWidget(forms.TextInput):
+    def format_value(self, value):
+        if value is not None:
+            value = value.split(",")
+
+            return ", ".join(value)
+
+        return value
+
+
 class ApprovalChainRuleForm(forms.ModelForm):
+    value = SimpleArrayField(
+        base_field=forms.CharField(), required=False, widget=CommaSeparatedArrayWidget
+    )
+
     class Meta:
         fields = "__all__"
 
     class Media:
         js = ["admin/js/isnull_toggle.js"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["operator"].widget.attrs.update({"class": "operator-select"})
 
     def clean(self):
         cleaned_data = super().clean()
@@ -59,9 +79,6 @@ class ApprovalChainRuleForm(forms.ModelForm):
 
         if operator != OperatorChoices.IS_NULL and not value:
             raise ValidationError({"value": "This field is required."})
-
-        if operator == OperatorChoices.IS_NULL and value:
-            value = None
 
         if operator == OperatorChoices.REGEX and value:
             for pattern in value:
@@ -73,6 +90,14 @@ class ApprovalChainRuleForm(forms.ModelForm):
                     ) from e
 
         return cleaned_data
+
+    def save(self, commit):  # type: ignore
+        instance = super().save(commit)
+
+        if instance.operator == OperatorChoices.IS_NULL:
+            instance.value = []
+
+        return instance
 
 
 class ApprovalChainHeaderRuleForm(ApprovalChainRuleForm):
