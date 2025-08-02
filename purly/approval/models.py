@@ -30,6 +30,8 @@ class LookupStringChoices(models.TextChoices):
 
 
 class LookupNumberChoices(models.TextChoices):
+    EQUAL = ("equal", "equal")
+    NOT_EQUAL = ("not_equal", "not equal to")
     GT = ("gt", "greater than")
     GTE = ("gte", "greater than, or equal to")
     LT = ("lt", "less than")

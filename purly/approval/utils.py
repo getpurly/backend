@@ -58,6 +58,12 @@ def perform_lookup(requisition_value, rule_lookup, rule_value):
         case LookupStringChoices.IS_NULL:
             if requisition_value not in (None, ""):
                 return False
+        case LookupNumberChoices.EQUAL:
+            if requisition_value != Decimal(rule_value[0]):
+                return False
+        case LookupNumberChoices.NOT_EQUAL:
+            if requisition_value == Decimal(rule_value[0]):
+                return False
         case LookupNumberChoices.GT:
             if not requisition_value > Decimal(rule_value[0]):
                 return False
