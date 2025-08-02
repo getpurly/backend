@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import Q
@@ -8,45 +9,69 @@ from .models import (
     ApprovalChain,
     ApprovalChainModeChoices,
     LineMatchModeChoices,
-    OperatorChoices,
+    LookupNumberChoices,
+    LookupStringChoices,
     StatusChoices,
 )
 
 
-def check_string_operator(requisition_value, rule_operator, rule_value):
-    match rule_operator:
-        case OperatorChoices.EXACT:
+def perform_lookup(requisition_value, rule_lookup, rule_value):
+    if requisition_value is None:
+        return False
+
+    match rule_lookup:
+        case LookupStringChoices.EXACT:
             if requisition_value not in rule_value:
                 return False
-        case OperatorChoices.IEXACT:
+        case LookupStringChoices.IEXACT:
+            if not isinstance(requisition_value, str):
+                return False
             if requisition_value.lower() not in [val.lower() for val in rule_value]:
                 return False
-        case OperatorChoices.CONTAINS:
+        case LookupStringChoices.CONTAINS:
             if not any(val in requisition_value for val in rule_value):
                 return False
-        case OperatorChoices.ICONTAINS:
+        case LookupStringChoices.ICONTAINS:
+            if not isinstance(requisition_value, str):
+                return False
             if not any(val.lower() in requisition_value.lower() for val in rule_value):
                 return False
-        case OperatorChoices.STARTS_WITH:
+        case LookupStringChoices.STARTS_WITH:
             if not any(requisition_value.startswith(val) for val in rule_value):
                 return False
-        case OperatorChoices.ISTARTS_WITH:
+        case LookupStringChoices.ISTARTS_WITH:
+            if not isinstance(requisition_value, str):
+                return False
             if not any(requisition_value.lower().startswith(val.lower()) for val in rule_value):
                 return False
-        case OperatorChoices.ENDS_WITH:
+        case LookupStringChoices.ENDS_WITH:
             if not any(requisition_value.endswith(val) for val in rule_value):
                 return False
-        case OperatorChoices.IENDS_WITH:
+        case LookupStringChoices.IENDS_WITH:
+            if not isinstance(requisition_value, str):
+                return False
             if not any(requisition_value.lower().endswith(val.lower()) for val in rule_value):
                 return False
-        case OperatorChoices.REGEX:
+        case LookupStringChoices.REGEX:
             if not any(re.search(val, requisition_value) for val in rule_value):
                 return False
-        case OperatorChoices.IS_NULL:
+        case LookupStringChoices.IS_NULL:
             if requisition_value not in (None, ""):
                 return False
+        case LookupNumberChoices.GT:
+            if not requisition_value > Decimal(rule_value[0]):
+                return False
+        case LookupNumberChoices.GTE:
+            if not requisition_value >= Decimal(rule_value[0]):
+                return False
+        case LookupNumberChoices.LT:
+            if not requisition_value < Decimal(rule_value[0]):
+                return False
+        case LookupNumberChoices.LTE:
+            if not requisition_value <= Decimal(rule_value[0]):
+                return False
         case _:
-            return False
+            raise ValueError(f"Unsupported rule_lookup: {rule_lookup}")
 
     return True
 
@@ -54,7 +79,7 @@ def check_string_operator(requisition_value, rule_operator, rule_value):
 def rule_matching(obj, rule):
     value = getattr(obj, rule.field)
 
-    return check_string_operator(value, rule.operator, rule.value)
+    return perform_lookup(value, rule.lookup, rule.value)
 
 
 @transaction.atomic

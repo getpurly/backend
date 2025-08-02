@@ -143,14 +143,14 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
         "id",
         "approval_chain__name",
         "field",
-        "operator",
+        "lookup",
         "value",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["field", "operator", "created_at", "updated_at"]
+    list_filter = ["field", "lookup", "created_at", "updated_at"]
     search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
@@ -170,7 +170,7 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
         "id",
         "approval_chain__name",
         "field",
-        "operator",
+        "lookup",
         "match_mode",
         "value",
         "created_at",
@@ -178,7 +178,7 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["field", "operator", "created_at", "updated_at"]
+    list_filter = ["field", "lookup", "created_at", "updated_at"]
     search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 

@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal, InvalidOperation
 
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
@@ -9,7 +10,10 @@ from .models import (
     ApprovalChainHeaderRule,
     ApprovalChainLineRule,
     ApprovalChainModeChoices,
-    OperatorChoices,
+    LineFieldNumberChoices,
+    LineFieldStringChoices,
+    LookupNumberChoices,
+    LookupStringChoices,
 )
 
 
@@ -70,17 +74,33 @@ class ApprovalChainRuleForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["operator"].widget.attrs.update({"class": "operator-select"})
+        self.fields["lookup"].widget.attrs.update({"class": "lookup-select"})
 
     def clean(self):
         cleaned_data = super().clean()
-        operator = cleaned_data.get("operator")
+        field = cleaned_data.get("field")
+        lookup = cleaned_data.get("lookup")
         value = cleaned_data.get("value")
 
-        if operator != OperatorChoices.IS_NULL and not value:
+        if lookup != LookupStringChoices.IS_NULL and not value:
             raise ValidationError({"value": "This field is required."})
 
-        if operator == OperatorChoices.REGEX and value:
+        if lookup in LookupStringChoices and field not in LineFieldStringChoices:
+            raise ValidationError("Using a string lookup on a number field is not valid.")
+
+        if lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
+            raise ValidationError("Using a number lookup on a string field is not valid.")
+
+        if lookup in LookupNumberChoices:
+            if len(value) > 1:  # type: ignore
+                raise ValidationError({"value": "This field must contain only one number."})
+
+            try:
+                Decimal(value[0])  # type: ignore
+            except InvalidOperation as e:
+                raise ValidationError({"value": "This field must be a number."}) from e
+
+        if lookup == LookupStringChoices.REGEX and value:
             for pattern in value:
                 try:
                     re.compile(pattern)  # type: ignore
@@ -94,7 +114,7 @@ class ApprovalChainRuleForm(forms.ModelForm):
     def save(self, commit):  # type: ignore
         instance = super().save(commit)
 
-        if instance.operator == OperatorChoices.IS_NULL:
+        if instance.lookup == LookupStringChoices.IS_NULL:
             instance.value = []
 
         return instance

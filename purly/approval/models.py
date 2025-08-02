@@ -16,7 +16,7 @@ class StatusChoices(models.TextChoices):
     REJECTED = ("rejected", "Rejected")
 
 
-class OperatorChoices(models.TextChoices):
+class LookupStringChoices(models.TextChoices):
     EXACT = ("exact", "exact")
     IEXACT = ("iexact", "iexact")
     CONTAINS = ("contains", "contains")
@@ -27,6 +27,13 @@ class OperatorChoices(models.TextChoices):
     IENDS_WITH = ("iendswith", "iendswith")
     REGEX = ("regex", "regex")
     IS_NULL = ("is_null", "isnull")
+
+
+class LookupNumberChoices(models.TextChoices):
+    GT = ("gt", "gt")
+    GTE = ("gte", "gte")
+    LT = ("lt", "lt")
+    LTE = ("lte", "lt")
 
 
 class HeaderFieldChoices(models.TextChoices):
@@ -44,12 +51,12 @@ class HeaderFieldChoices(models.TextChoices):
     SUPPLIER = ("supplier", "Supplier")
 
 
-class LineFieldChoices(models.TextChoices):
+class LineFieldStringChoices(models.TextChoices):
     CATEGORY = ("category", "Category")
     DESCRIPTION = ("description", "Description")
-    LINE_TYPE = ("line_type", "Line Type")
     MANUFACTURER = ("manufacturer", "Manufacturer")
     MANUFACTURER_PART_NUMBER = ("manufacturer_part_number", "Manufacturer Part Number")
+    NEED_BY = ("need_by", "Need By")
     PAYMENT_TERM = ("payment_term", "Payment Term")
     SHIP_TO_ATTENTION = ("ship_to_attention", "Ship To Attention")
     SHIP_TO_CITY = ("ship_to_city", "Ship To City")
@@ -62,6 +69,11 @@ class LineFieldChoices(models.TextChoices):
     SHIP_TO_STREET2 = ("ship_to_street2", "Ship To Street 2")
     SHIP_TO_ZIP = ("ship_to_zip", "Ship To Zip Code")
     UOM = ("uom", "United of Measure")
+
+
+class LineFieldNumberChoices(models.TextChoices):
+    LINE_TOTAL = ("line_total", "Line Total")
+    UNIT_PRICE = ("unit_price", "Unit Price")
 
 
 class LineMatchModeChoices(models.TextChoices):
@@ -205,7 +217,9 @@ class ApprovalChainHeaderRule(models.Model):
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_header_rules"
     )
     field = models.CharField(choices=HeaderFieldChoices)
-    operator = models.CharField(choices=OperatorChoices)
+    lookup = models.CharField(
+        choices=list(LookupStringChoices.choices) + list(LookupNumberChoices.choices)
+    )
     value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -225,19 +239,26 @@ class ApprovalChainHeaderRule(models.Model):
         verbose_name = "header rule"
         verbose_name_plural = "header rules"
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["field", "lookup", "value"], name="unique_header_rule")
+        ]
 
     def __str__(self):
         value = self.value[0] if len(self.value) == 1 else ", ".join(self.value)
 
-        return f"{self.field} {self.operator} {value}"
+        return f"{self.field} {self.lookup} {value}"
 
 
 class ApprovalChainLineRule(models.Model):
     approval_chain = models.ForeignKey(
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_line_rules"
     )
-    field = models.CharField(choices=LineFieldChoices)
-    operator = models.CharField(choices=OperatorChoices)
+    field = models.CharField(
+        choices=list(LineFieldStringChoices.choices) + list(LineFieldNumberChoices.choices)
+    )
+    lookup = models.CharField(
+        choices=list(LookupStringChoices.choices) + list(LookupNumberChoices.choices)
+    )
     match_mode = models.CharField(choices=LineMatchModeChoices)
     value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -258,8 +279,13 @@ class ApprovalChainLineRule(models.Model):
         verbose_name = "line rule"
         verbose_name_plural = "line rules"
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["field", "lookup", "match_mode", "value"], name="unique_line_rule"
+            )
+        ]
 
     def __str__(self):
         value = self.value[0] if len(self.value) == 1 else ", ".join(self.value)
 
-        return f"{self.field} {self.operator} {value}"
+        return f"{self.field} {self.lookup} {value}"
