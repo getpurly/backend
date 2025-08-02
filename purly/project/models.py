@@ -1,11 +1,15 @@
 from django.conf import settings
 from django.db import models
 
-from .managers import ProjectManager
+from .managers import ProjectManager, ProjectManagerActive
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        error_messages={"unique": "This project name already exists."},
+    )
     project_code = models.CharField(max_length=64, blank=True)
     description = models.TextField()
     start_date = models.DateField(blank=True, null=True)
@@ -25,6 +29,7 @@ class Project(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = ProjectManager()
+    objects_active = ProjectManagerActive()
 
     class Meta:
         db_table = "project"

@@ -7,7 +7,12 @@ from django.db import models
 from purly.address.models import Address
 from purly.project.models import Project
 
-from .managers import RequisitionLineManager, RequisitionManager
+from .managers import (
+    RequisitionLineManager,
+    RequisitionLineManagerActive,
+    RequisitionManager,
+    RequisitionManagerActive,
+)
 
 
 class CurrencyChoices(models.TextChoices):
@@ -74,6 +79,7 @@ class Requisition(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = RequisitionManager()
+    objects_active = RequisitionManagerActive()
 
     class Meta:
         db_table = "requisition"
@@ -82,7 +88,7 @@ class Requisition(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.id} - {self.name}" # type: ignore
+        return f"{self.id} - {self.name}"  # type: ignore
 
 
 class RequisitionLine(models.Model):
@@ -123,6 +129,7 @@ class RequisitionLine(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = RequisitionLineManager()
+    objects_active = RequisitionLineManagerActive()
 
     class Meta:
         db_table = "requisition_line"

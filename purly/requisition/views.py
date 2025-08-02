@@ -22,7 +22,7 @@ REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"
 class RequisitionViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
-    queryset = Requisition.objects.select_related(
+    queryset = Requisition.objects_active.select_related(
         "project", "owner", "created_by", "updated_by"
     ).all()
     serializer_class = RequisitionListSerializer
@@ -95,7 +95,7 @@ class RequisitionMineListView(generics.ListAPIView):
     ordering_fields = REQUISITION_ORDERING
 
     def get_queryset(self): # type: ignore
-        return Requisition.objects.select_related(
+        return Requisition.objects_active.select_related(
             "project", "owner", "created_by", "updated_by"
         ).filter(owner=self.request.user)
 
@@ -103,7 +103,7 @@ class RequisitionMineListView(generics.ListAPIView):
 class RequisitionLineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
-    queryset = RequisitionLine.objects.select_related(
+    queryset = RequisitionLine.objects_active.select_related(
         "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
     ).all()
     serializer_class = RequisitionLineListSerializer
@@ -123,6 +123,6 @@ class RequisitionLineMineListView(generics.ListAPIView):
     ordering_fields = REQUISITION_LINE_ORDERING
 
     def get_queryset(self): # type: ignore
-        return RequisitionLine.objects.select_related(
+        return RequisitionLine.objects_active.select_related(
             "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
         ).filter(requisition__owner=self.request.user)

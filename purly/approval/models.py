@@ -128,7 +128,11 @@ class Approval(models.Model):
 
 
 class ApprovalGroup(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        error_messages={"unique": "This approval group name already exists."},
+    )
     description = models.TextField(blank=True)
     approver = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -161,7 +165,11 @@ class ApprovalGroup(models.Model):
 
 
 class ApprovalChain(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        error_messages={"unique": "This approval chain name already exists."},
+    )
     approver_mode = models.CharField(choices=ApprovalChainModeChoices, default="individual")
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL,
