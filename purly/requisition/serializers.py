@@ -38,7 +38,7 @@ class RequisitionLineListSerializer(CustomToRepresentation, serializers.ModelSer
             "manufacturer",
             "manufacturer_part_number",
             "quantity",
-            "uom",
+            "unit_of_measure",
             "unit_price",
             "line_total",
             "payment_term",
@@ -68,7 +68,7 @@ class RequisitionLineDetailSerializer(CustomToRepresentation, serializers.ModelS
             "manufacturer",
             "manufacturer_part_number",
             "quantity",
-            "uom",
+            "unit_of_measure",
             "unit_price",
             "line_total",
             "payment_term",
@@ -83,7 +83,7 @@ class RequisitionLineDetailSerializer(CustomToRepresentation, serializers.ModelS
 
 class RequisitionLineCreateSerializer(serializers.ModelSerializer):
     line_type = serializers.CharField()
-    uom = serializers.CharField(allow_blank=True, required=False)
+    unit_of_measure = serializers.CharField(allow_blank=True, required=False)
     payment_term = serializers.CharField()
 
     class Meta:
@@ -96,7 +96,7 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
             "manufacturer",
             "manufacturer_part_number",
             "quantity",
-            "uom",
+            "unit_of_measure",
             "unit_price",
             "line_total",
             "payment_term",
@@ -117,7 +117,7 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_uom(self, value):
+    def validate_unit_of_measure(self, value):
         if value != "" and value not in UOMChoices.values:
             raise serializers.ValidationError(f"This is not a valid unit of measure: {value}")
 
@@ -142,16 +142,16 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
         line_type = attrs.get("line_type", "")
         quantity = attrs.get("quantity", 0)
         unit_price = attrs.get("unit_price", Decimal("0.00"))
-        uom = attrs.get("uom", "")
+        unit_of_measure = attrs.get("unit_of_measure", "")
         line_total = attrs.get("line_total", Decimal("0.00"))
 
         if line_type == "service":
-            if any([quantity, unit_price, uom]):
+            if any([quantity, unit_price, unit_of_measure]):
                 raise serializers.ValidationError(
                     f"Line {line_number} marked as service: quantity, unit price, and unit of measure fields must be excluded."  # noqa: E501
                 )
         else:
-            if not all([quantity, unit_price, uom]):
+            if not all([quantity, unit_price, unit_of_measure]):
                 raise serializers.ValidationError(
                     f"Line {line_number} marked as goods: quantity, unit price, and unit of measure fields must be included and set."  # noqa: E501
                 )

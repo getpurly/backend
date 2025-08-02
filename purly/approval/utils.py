@@ -16,7 +16,7 @@ from .models import (
 
 
 def perform_lookup(requisition_value, rule_lookup, rule_value):
-    if requisition_value is None:
+    if rule_lookup != LookupStringChoices.IS_NULL and requisition_value is None:
         return False
 
     match rule_lookup:
@@ -77,7 +77,7 @@ def perform_lookup(requisition_value, rule_lookup, rule_value):
 
 
 def rule_matching(obj, rule):
-    value = getattr(obj, rule.field)
+    value = getattr(obj, rule.field, None)
 
     return perform_lookup(value, rule.lookup, rule.value)
 

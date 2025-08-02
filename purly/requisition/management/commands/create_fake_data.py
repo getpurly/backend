@@ -212,7 +212,7 @@ class Command(BaseCommand):
             category = random.choice(CATEGORIES)
             address = random.choice(self.created_addresses)
             payment_term = random.choice(PAYMENT_TERMS)
-            uom = random.choice(UOM)
+            unit_of_measure = random.choice(UOM)
 
             line = RequisitionLine(
                 line_number=1,
@@ -222,7 +222,7 @@ class Command(BaseCommand):
                 manufacturer=fake.company(),
                 manufacturer_part_number=fake.ean(length=8),
                 quantity=2,
-                uom=uom,
+                unit_of_measure=unit_of_measure,
                 unit_price=Decimal(25),
                 line_total=Decimal(50),
                 payment_term=payment_term,
@@ -245,7 +245,7 @@ class Command(BaseCommand):
                 manufacturer=fake.company(),
                 manufacturer_part_number=fake.ean(length=8),
                 quantity=4,
-                uom=uom,
+                unit_of_measure=unit_of_measure,
                 unit_price=Decimal("12.50"),
                 line_total=Decimal(50),
                 payment_term=payment_term,

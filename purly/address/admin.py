@@ -4,6 +4,7 @@ from .models import Address
 
 
 class AddressAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["owner"]
     list_display = [
         "id",
         "name",
@@ -25,6 +26,7 @@ class AddressAdmin(admin.ModelAdmin):
     ]
     list_filter = ["created_at", "updated_at"]
     search_fields = [
+        "id",
         "name",
         "address_code",
         "description",

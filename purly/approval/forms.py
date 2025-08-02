@@ -86,12 +86,15 @@ class ApprovalChainRuleForm(forms.ModelForm):
         if lookup != LookupStringChoices.IS_NULL and not value:
             raise ValidationError({"value": "This field is required."})
 
-        if lookup in LookupStringChoices and (
-            field not in HeaderFieldStringChoices and field not in LineFieldStringChoices
+        if (
+            value
+            and lookup in LookupStringChoices
+            and value
+            and (field not in HeaderFieldStringChoices and field not in LineFieldStringChoices)
         ):
             raise ValidationError("Using a string lookup on a number field is not valid.")
 
-        if lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
+        if value and lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
             raise ValidationError("Using a number lookup on a string field is not valid.")
 
         if lookup in LookupNumberChoices:

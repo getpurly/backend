@@ -25,6 +25,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["user"]
     list_display = ["id", "user", "job_title", "department", "phone", "created_at", "updated_at"]
     list_filter = ["created_at", "updated_at"]
     search_fields = ["user__username", "job_title", "department", "phone", "bio"]

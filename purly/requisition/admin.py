@@ -4,6 +4,7 @@ from .models import Requisition, RequisitionLine
 
 
 class RequisitionLineInline(admin.StackedInline):
+    autocomplete_fields = ["ship_to"]
     model = RequisitionLine
     extra = 1
     verbose_name = "requisition line"
@@ -12,6 +13,7 @@ class RequisitionLineInline(admin.StackedInline):
 
 
 class RequisitionAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["owner", "project"]
     list_display = [
         "id",
         "name",
@@ -37,6 +39,7 @@ class RequisitionAdmin(admin.ModelAdmin):
         "approved_at",
     ]
     search_fields = [
+        "id",
         "name",
         "external_reference",
         "status",
@@ -83,6 +86,7 @@ class RequisitionAdmin(admin.ModelAdmin):
 
 
 class RequisitionLineAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["requisition", "ship_to"]
     list_display = [
         "id",
         "line_number",
@@ -92,7 +96,7 @@ class RequisitionLineAdmin(admin.ModelAdmin):
         "manufacturer",
         "manufacturer_part_number",
         "quantity",
-        "uom",
+        "unit_of_measure",
         "unit_price",
         "line_total",
         "payment_term",

@@ -68,7 +68,7 @@ class LineFieldStringChoices(models.TextChoices):
     SHIP_TO_STREET1 = ("ship_to_street1", "ship to street 1")
     SHIP_TO_STREET2 = ("ship_to_street2", "ship to street 2")
     SHIP_TO_ZIP = ("ship_to_zip", "ship to zip code")
-    UOM = ("uom", "united of measure")
+    UNIT_OF_MEASURE = ("unit_of_measure", "united of measure")
 
 
 class LineFieldNumberChoices(models.TextChoices):

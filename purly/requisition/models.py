@@ -82,7 +82,7 @@ class Requisition(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name
+        return f"{self.id} - {self.name}" # type: ignore
 
 
 class RequisitionLine(models.Model):
@@ -93,7 +93,7 @@ class RequisitionLine(models.Model):
     manufacturer = models.CharField(max_length=255, blank=True)
     manufacturer_part_number = models.CharField(max_length=255, blank=True)
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(0)], blank=True, null=True)
-    uom = models.CharField(choices=UOMChoices.choices, blank=True)
+    unit_of_measure = models.CharField(choices=UOMChoices.choices, blank=True)
     unit_price = models.DecimalField(
         max_digits=9,
         decimal_places=2,

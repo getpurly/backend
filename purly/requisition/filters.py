@@ -42,7 +42,7 @@ REQUISITION_LINE_FILTER_FIELDS = {
         "isnull",
     ],
     "quantity": ["exact", "gt", "gte", "lt", "lte", "range", "isnull"],
-    "uom": ["exact", "contains", "startswith", "endswith", "in", "regex", "isnull"],
+    "unit_of_measure": ["exact", "contains", "startswith", "endswith", "in", "regex", "isnull"],
     "unit_price": ["exact", "gt", "gte", "lt", "lte", "range", "isnull"],
     "line_total": ["exact", "gt", "gte", "lt", "lte", "range"],
     "payment_term": ["exact", "contains", "startswith", "endswith", "in", "regex"],

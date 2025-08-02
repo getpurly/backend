@@ -29,6 +29,7 @@ class ApprovalChainLineRuleInline(admin.StackedInline):
 
 
 class ApprovalAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["approver", "requisition"]
     list_display = [
         "id",
         "requisition__id",
@@ -60,6 +61,7 @@ class ApprovalAdmin(admin.ModelAdmin):
 
 
 class ApprovalChainAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
     list_display = [
         "id",
@@ -77,7 +79,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         "active",
     ]
     list_filter = ["approver_mode", "created_at", "updated_at", "active"]
-    search_fields = []
+    search_fields = ["name"]
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
@@ -121,7 +123,8 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
         "updated_by",
     ]
     list_filter = ["created_at", "updated_at"]
-    search_fields = []
+    filter_horizontal = ["approver"]
+    search_fields = ["name"]
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
     def has_delete_permission(self, request, obj=None):
@@ -138,6 +141,7 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
 
 
 class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["approval_chain"]
     form = ApprovalChainHeaderRuleForm
     list_display = [
         "id",
@@ -165,6 +169,7 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
 
 
 class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["approval_chain"]
     form = ApprovalChainLineRuleForm
     list_display = [
         "id",
