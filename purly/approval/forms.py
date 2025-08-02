@@ -92,10 +92,20 @@ class ApprovalChainRuleForm(forms.ModelForm):
             and value
             and (field not in HeaderFieldStringChoices and field not in LineFieldStringChoices)
         ):
-            raise ValidationError("Using a string lookup on a number field is not valid.")
+            raise ValidationError(
+                {
+                    "field": "Using a string lookup on a number field is not valid.",
+                    "lookup": "Using a string lookup on a number field is not valid.",
+                }
+            )
 
         if value and lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
-            raise ValidationError("Using a number lookup on a string field is not valid.")
+            raise ValidationError(
+                {
+                    "field": "Using a number lookup on a string field is not valid.",
+                    "lookup": "Using a number lookup on a string field is not valid.",
+                }
+            )
 
         if lookup in LookupNumberChoices:
             if len(value) > 1:  # type: ignore
