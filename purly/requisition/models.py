@@ -11,30 +11,30 @@ from .managers import RequisitionLineManager, RequisitionManager
 
 
 class CurrencyChoices(models.TextChoices):
-    USD = ("usd", "USD")
+    USD = ("usd", "usd")
 
 
 class StatusChoices(models.TextChoices):
-    DRAFT = ("draft", "Draft")
-    PENDING_APPROVAL = ("pending_approval", "Pending Approval")
-    APPROVED = ("approved", "Approved")
-    REJECTED = ("rejected", "Rejected")
+    DRAFT = ("draft", "draft")
+    PENDING_APPROVAL = ("pending_approval", "pending approval")
+    APPROVED = ("approved", "approved")
+    REJECTED = ("rejected", "rejected")
 
 
 class LineTypeChoices(models.TextChoices):
-    GOODS = ("goods", "Goods")
-    SERVICE = ("service", "Service")
+    GOODS = ("goods", "goods")
+    SERVICE = ("service", "service")
 
 
 class UOMChoices(models.TextChoices):
-    EACH = ("each", "Each")
-    BOX = ("box", "Box")
+    EACH = ("each", "each")
+    BOX = ("box", "box")
 
 
 class PaymentTermChoices(models.TextChoices):
-    NET30 = ("net_30", "Net 30")
-    NET45 = ("net_45", "Net 45")
-    NET90 = ("net_90", "Net 90")
+    NET30 = ("net_30", "net 30")
+    NET45 = ("net_45", "net 45")
+    NET90 = ("net_90", "net 90")
 
 
 class Requisition(models.Model):

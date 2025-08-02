@@ -169,9 +169,9 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "approval_chain__name",
+        "match_mode",
         "field",
         "lookup",
-        "match_mode",
         "value",
         "created_at",
         "created_by",

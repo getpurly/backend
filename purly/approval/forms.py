@@ -10,6 +10,7 @@ from .models import (
     ApprovalChainHeaderRule,
     ApprovalChainLineRule,
     ApprovalChainModeChoices,
+    HeaderFieldStringChoices,
     LineFieldNumberChoices,
     LineFieldStringChoices,
     LookupNumberChoices,
@@ -85,7 +86,9 @@ class ApprovalChainRuleForm(forms.ModelForm):
         if lookup != LookupStringChoices.IS_NULL and not value:
             raise ValidationError({"value": "This field is required."})
 
-        if lookup in LookupStringChoices and field not in LineFieldStringChoices:
+        if lookup in LookupStringChoices and (
+            field not in HeaderFieldStringChoices and field not in LineFieldStringChoices
+        ):
             raise ValidationError("Using a string lookup on a number field is not valid.")
 
         if lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
@@ -98,7 +101,7 @@ class ApprovalChainRuleForm(forms.ModelForm):
             try:
                 Decimal(value[0])  # type: ignore
             except InvalidOperation as e:
-                raise ValidationError({"value": "This field must be a number."}) from e
+                raise ValidationError({"value": "This field must contain a number."}) from e
 
         if lookup == LookupStringChoices.REGEX and value:
             for pattern in value:
