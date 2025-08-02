@@ -9,10 +9,13 @@ factory = APIRequestFactory()
 class AddressTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="test", password="test")  # noqa: S106
+
+        self.client.defaults["HTTP_USER_AGENT"] = "test"
         self.client.force_login(user=self.user)
 
-    def test_create_address(self):
-        url = "/api/v1/addresses/"
+        self.url = "/api/v1/addresses/"
+
+    def test_create_address_full_payload(self):
         data = {
             "name": "test",
             "address_code": "test",
@@ -27,12 +30,11 @@ class AddressTests(APITestCase):
             "country": "test",
         }
 
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(self.url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_partial_address(self):
-        url = "/api/v1/addresses/"
+    def test_create_address_partial_payload(self):
         data = {
             "name": "test",
             "attention": "test",
@@ -43,16 +45,62 @@ class AddressTests(APITestCase):
             "country": "test",
         }
 
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(self.url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_missing_field_address(self):
-        url = "/api/v1/addresses/"
+    def test_create_address_missing_required_fields(self):
         data = {
             "name": "test",
         }
 
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(self.url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_address_name_max_length(self):
+        data = {
+            "name": "test" * 256,
+            "attention": "test",
+            "street1": "test",
+            "city": "test",
+            "state": "test",
+            "zip_code": "test",
+            "country": "test",
+        }
+
+        response = self.client.post(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_blank_name_is_invalid(self):
+        data = {
+            "name": "",
+            "attention": "test",
+            "street1": "test",
+            "city": "test",
+            "state": "test",
+            "zip_code": "test",
+            "country": "test",
+        }
+
+        response = self.client.post(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_unauthenticated_user_cannot_create_project(self):
+        self.client.logout()
+
+        data = {
+            "name": "",
+            "attention": "test",
+            "street1": "test",
+            "city": "test",
+            "state": "test",
+            "zip_code": "test",
+            "country": "test",
+        }
+
+        response = self.client.post(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

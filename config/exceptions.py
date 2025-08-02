@@ -59,8 +59,8 @@ def validation_error(exc, context, response):  # noqa: C901
                         )
 
     response.data = {
-        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "type": "validation_error",
+        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "errors": errors,
     }
 
