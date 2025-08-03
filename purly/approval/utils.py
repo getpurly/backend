@@ -88,6 +88,55 @@ def rule_matching(obj, rule):
     return perform_lookup(value, rule.lookup, rule.value)
 
 
+def create_snapshot_data(approval_chain, header_rules, line_rules):
+    snapshot_header_rules = []
+    snapshot_line_rules = []
+
+    for rule in header_rules:
+        header_rule = {"field": rule.field, "lookup": rule.lookup, "value": rule.value}
+
+        snapshot_header_rules.append(header_rule)
+
+    for rule in line_rules:
+        line_rule = {
+            "match_mode": rule.match_mode,
+            "field": rule.field,
+            "lookup": rule.lookup,
+            "value": rule.value,
+        }
+
+        snapshot_line_rules.append(line_rule)
+
+    approver_data = None
+
+    if approval_chain.approver:
+        approver_data = {
+            "id": approval_chain.approver.id,
+            "username": str(approval_chain.approver.username),
+        }
+
+    approver_group_data = None
+
+    if approval_chain.approver_group:
+        approver_group_data = {
+            "id": approval_chain.approver_group.id,
+            "name": str(approval_chain.approver_group.name),
+        }
+
+    return {
+        "approval_chain_id": approval_chain.id,
+        "approval_chain": approval_chain.name,
+        "approver_mode": approval_chain.approver_mode,
+        "approver": approver_data,
+        "approver_group": approver_group_data,
+        "sequence_number": approval_chain.sequence_number,
+        "min_amount": float(approval_chain.min_amount),
+        "max_amount": float(approval_chain.max_amount) if approval_chain.max_amount else None,
+        "header_rules": snapshot_header_rules,
+        "line_rules": snapshot_line_rules,
+    }
+
+
 @transaction.atomic
 def generate_approvals(requisition):
     lines = requisition.lines.all()
@@ -122,11 +171,14 @@ def generate_approvals(requisition):
                         break
 
         else:
+            snapshot_data = create_snapshot_data(approval_chain, header_rules, line_rules)
+
             if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
                 approval = Approval(
                     requisition=requisition,
                     approver=approval_chain.approver,
                     sequence_number=approval_chain.sequence_number,
+                    snapshot_data=snapshot_data,
                     status=StatusChoices.PENDING,
                 )
 
@@ -139,6 +191,7 @@ def generate_approvals(requisition):
                         requisition=requisition,
                         approver=approver,
                         sequence_number=approval_chain.sequence_number,
+                        snapshot_data=snapshot_data,
                         status=StatusChoices.PENDING,
                     )
 
