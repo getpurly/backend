@@ -61,6 +61,15 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             "end_date",
         ]
 
+    def validate(self, attrs):
+        start_date = attrs.get("start_date", "")
+        end_date = attrs.get("end_date", "")
+
+        if start_date > end_date:
+            raise serializers.ValidationError("The end date must be after start date.")
+
+        return attrs
+
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,9 +1,11 @@
 from django.contrib import admin
 
+from .forms import ProjectForm
 from .models import Project
 
 
 class ProjectAdmin(admin.ModelAdmin):
+    form = ProjectForm
     list_display = [
         "id",
         "name",
