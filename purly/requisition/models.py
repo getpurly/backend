@@ -76,6 +76,7 @@ class Requisition(models.Model):
     )
     submitted_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
+    rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
     deleted = models.BooleanField(default=False)
 
     objects = RequisitionManager()

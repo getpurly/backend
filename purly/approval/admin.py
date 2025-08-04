@@ -39,6 +39,8 @@ class ApprovalAdmin(admin.ModelAdmin):
         "system_generated",
         "notified_at",
         "approved_at",
+        "rejected_at",
+        "skipped_at",
         "created_at",
         "created_by",
         "updated_at",
@@ -49,6 +51,8 @@ class ApprovalAdmin(admin.ModelAdmin):
         "system_generated",
         "notified_at",
         "approved_at",
+        "rejected_at",
+        "skipped_at",
         "created_at",
         "updated_at",
     ]

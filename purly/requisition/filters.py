@@ -22,6 +22,7 @@ REQUISITION_FILTER_FIELDS = {
     ],
     "submitted_at": ["exact", "gt", "gte", "lt", "lte", "range", "isnull"],
     "approved_at": ["exact", "gt", "gte", "lt", "lte", "range", "isnull"],
+    "rejected_at": ["exact", "gt", "gte", "lt", "lte", "range", "isnull"],
 }
 
 

@@ -191,6 +191,7 @@ class RequisitionListSerializer(CustomToRepresentation, serializers.ModelSeriali
             "updated_by",
             "submitted_at",
             "approved_at",
+            "rejected_at",
         ]
 
 
@@ -220,6 +221,7 @@ class RequisitionDetailSerializer(CustomToRepresentation, serializers.ModelSeria
             "updated_by",
             "submitted_at",
             "approved_at",
+            "rejected_at",
             "lines",
         ]
 

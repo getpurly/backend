@@ -31,12 +31,14 @@ class RequisitionAdmin(admin.ModelAdmin):
         "updated_by",
         "submitted_at",
         "approved_at",
+        "rejected_at",
     ]
     list_filter = [
         "created_at",
         "updated_at",
         "submitted_at",
         "approved_at",
+        "rejected_at",
     ]
     search_fields = [
         "id",

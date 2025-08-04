@@ -14,6 +14,7 @@ class StatusChoices(models.TextChoices):
     PENDING = ("pending", "pending")
     APPROVED = ("approved", "approved")
     REJECTED = ("rejected", "rejected")
+    SKIPPED = ("skipped", "skipped")
 
 
 class LookupStringChoices(models.TextChoices):
@@ -101,6 +102,8 @@ class Approval(models.Model):
     system_generated = models.BooleanField()
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
+    rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
+    skipped_at = models.DateTimeField(blank=True, null=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

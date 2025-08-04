@@ -15,7 +15,14 @@ from .serializers import (
     RequisitionUpdateSerializer,
 )
 
-REQUISITION_ORDERING = ["total_amount", "created_at", "updated_at", "submitted_at", "approved_at"]
+REQUISITION_ORDERING = [
+    "total_amount",
+    "created_at",
+    "updated_at",
+    "submitted_at",
+    "approved_at",
+    "rejected_at",
+]
 REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"]
 
 
@@ -94,7 +101,7 @@ class RequisitionMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_FILTER_FIELDS
     ordering_fields = REQUISITION_ORDERING
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         return Requisition.objects_active.select_related(
             "project", "owner", "created_by", "updated_by"
         ).filter(owner=self.request.user)
@@ -122,7 +129,7 @@ class RequisitionLineMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_LINE_FILTER_FIELDS
     ordering_fields = REQUISITION_LINE_ORDERING
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         return RequisitionLine.objects_active.select_related(
             "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
         ).filter(requisition__owner=self.request.user)
