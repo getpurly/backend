@@ -288,6 +288,7 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         requisition = Requisition.objects.create(
             total_amount=total_amount,
             owner=user,
+            status=StatusChoices.PENDING_APPROVAL,
             created_by=user,
             updated_by=user,
             **validated_data,
@@ -297,7 +298,10 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
 
         for line in lines:
             requisition_line = RequisitionLine(
-                requisition=requisition, created_by=user, updated_by=user, **line
+                requisition=requisition,
+                created_by=user,
+                updated_by=user,
+                **line,
             )
 
             requisition_lines.append(requisition_line)

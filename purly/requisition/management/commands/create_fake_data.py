@@ -31,11 +31,13 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         users = []
 
-        usernames = [fake.unique.user_name() for _ in range(NUMBER_OF_USERS)]
+        usernames = [
+            f"{fake.user_name()}{fake.random_number(digits=6)}" for _ in range(NUMBER_OF_USERS)
+        ]
 
         for i in range(NUMBER_OF_USERS):
             user = User(
-                username=f"{usernames[i]}{fake.random_number(digits=6)}",
+                username=usernames[i],
                 first_name=fake.first_name(),
                 last_name=fake.last_name(),
                 email=fake.email(),
@@ -88,7 +90,7 @@ class Command(BaseCommand):
             user = random.choice(self.created_users)
 
             project = Project(
-                name=fake.word(),
+                name=f"{fake.word()}{fake.random_number(digits=6)}",
                 project_code=fake.uuid4(),
                 description=fake.sentence(),
                 start_date=fake.date(pattern="%Y-%m-%d"),
@@ -115,7 +117,7 @@ class Command(BaseCommand):
             requisition = Requisition(
                 name=fake.word(),
                 external_reference=fake.uuid4(),
-                status=StatusChoices.PENDING_APPROVAL,
+                status=StatusChoices.DRAFT,
                 owner=user,
                 project=project,
                 supplier=fake.company(),
@@ -189,7 +191,7 @@ class Command(BaseCommand):
             requisition = Requisition(
                 name=fake.word(),
                 external_reference=fake.uuid4(),
-                status=StatusChoices.PENDING_APPROVAL,
+                status=StatusChoices.DRAFT,
                 owner=user,
                 project=project,
                 supplier=fake.company(),

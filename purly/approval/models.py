@@ -98,7 +98,7 @@ class Approval(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
     status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING)
-    snapshot_data = models.JSONField(blank=True, null=True)
+    trigger_metadata = models.JSONField(blank=True, null=True)
     system_generated = models.BooleanField()
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)

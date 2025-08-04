@@ -58,8 +58,12 @@ class ApprovalAdmin(admin.ModelAdmin):
     ]
     search_fields = []
     readonly_fields = [
-        "snapshot_data",
+        "trigger_metadata",
         "system_generated",
+        "notified_at",
+        "approved_at",
+        "rejected_at",
+        "skipped_at",
         "created_at",
         "created_by",
         "updated_at",

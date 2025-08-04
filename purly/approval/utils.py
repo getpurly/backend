@@ -88,7 +88,7 @@ def rule_matching(obj, rule):
     return perform_lookup(value, rule.lookup, rule.value)
 
 
-def create_snapshot_data(approval_chain, header_rules, line_rules):
+def create_trigger_metadata(approval_chain, header_rules, line_rules):
     snapshot_header_rules = []
     snapshot_line_rules = []
 
@@ -171,14 +171,14 @@ def generate_approvals(requisition):
                         break
 
         else:
-            snapshot_data = create_snapshot_data(approval_chain, header_rules, line_rules)
+            trigger_metadata = create_trigger_metadata(approval_chain, header_rules, line_rules)
 
             if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
                 approval = Approval(
                     requisition=requisition,
                     approver=approval_chain.approver,
                     sequence_number=approval_chain.sequence_number,
-                    snapshot_data=snapshot_data,
+                    trigger_metadata=trigger_metadata,
                     status=StatusChoices.PENDING,
                     system_generated=True,
                 )
@@ -192,7 +192,7 @@ def generate_approvals(requisition):
                         requisition=requisition,
                         approver=approver,
                         sequence_number=approval_chain.sequence_number,
-                        snapshot_data=snapshot_data,
+                        trigger_metadata=trigger_metadata,
                         status=StatusChoices.PENDING,
                         system_generated=True,
                     )

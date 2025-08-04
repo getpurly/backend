@@ -45,7 +45,7 @@ class PaymentTermChoices(models.TextChoices):
 class Requisition(models.Model):
     name = models.CharField(max_length=255)
     external_reference = models.CharField(max_length=255, blank=True)
-    status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING_APPROVAL)
+    status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.DRAFT)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="requisitions_owned"
     )
