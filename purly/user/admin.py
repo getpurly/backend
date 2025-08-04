@@ -1,9 +1,11 @@
 from allauth.account.models import EmailAddress
 from django.contrib import admin
+from django.contrib.auth.models import Group
 
 from .models import User, UserActivity, UserProfile
 
 admin.site.unregister(EmailAddress)
+admin.site.unregister(Group)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -60,4 +62,4 @@ class EmailAddressAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
-admin.site.register(EmailAddress, EmailAddressAdmin)
+# admin.site.register(EmailAddress, EmailAddressAdmin)

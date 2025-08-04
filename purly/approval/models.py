@@ -96,8 +96,9 @@ class Approval(models.Model):
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
-    snapshot_data = models.JSONField()
     status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    snapshot_data = models.JSONField(blank=True, null=True)
+    system_generated = models.BooleanField()
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -36,6 +36,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         "approver__username",
         "sequence_number",
         "status",
+        "system_generated",
         "notified_at",
         "approved_at",
         "created_at",
@@ -43,14 +44,30 @@ class ApprovalAdmin(admin.ModelAdmin):
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["status", "notified_at", "approved_at", "created_at", "updated_at"]
+    list_filter = [
+        "status",
+        "system_generated",
+        "notified_at",
+        "approved_at",
+        "created_at",
+        "updated_at",
+    ]
     search_fields = []
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+    readonly_fields = [
+        "snapshot_data",
+        "system_generated",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+    ]
 
     def has_delete_permission(self, request, obj=None):
         return False
 
     def save_model(self, request, obj, form, change):
+        obj.system_generated = False
+
         if change:
             obj.updated_by = request.user
         else:

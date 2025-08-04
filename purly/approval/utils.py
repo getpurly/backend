@@ -124,8 +124,8 @@ def create_snapshot_data(approval_chain, header_rules, line_rules):
         }
 
     return {
-        "approval_chain_id": approval_chain.id,
-        "approval_chain": approval_chain.name,
+        "id": approval_chain.id,
+        "name": approval_chain.name,
         "approver_mode": approval_chain.approver_mode,
         "approver": approver_data,
         "approver_group": approver_group_data,
@@ -180,6 +180,7 @@ def generate_approvals(requisition):
                     sequence_number=approval_chain.sequence_number,
                     snapshot_data=snapshot_data,
                     status=StatusChoices.PENDING,
+                    system_generated=True,
                 )
 
                 approvals.append(approval)
@@ -193,6 +194,7 @@ def generate_approvals(requisition):
                         sequence_number=approval_chain.sequence_number,
                         snapshot_data=snapshot_data,
                         status=StatusChoices.PENDING,
+                        system_generated=True,
                     )
 
                     approvals.append(approval)
