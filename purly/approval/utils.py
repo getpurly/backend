@@ -203,7 +203,7 @@ def generate_approvals(requisition):
 def cancel_approvals(requisition):
     approvals = []
 
-    active_approvals = requisition.approvals.filter.all()
+    active_approvals = requisition.approvals.all()
 
     for approval in active_approvals:
         approval.status = StatusChoices.CANCELLED
