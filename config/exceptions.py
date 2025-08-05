@@ -23,7 +23,7 @@ def handle_error(exc, context, response):
 
     _type = "client_error"
 
-    if isinstance(exc, exceptions.APIException) and not isinstance(exc, BadRequest):
+    if isinstance(exc, exceptions.APIException):
         _type = "server_error"
 
     response.data = {
