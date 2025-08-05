@@ -6,7 +6,6 @@ from django.db import transaction
 from rest_framework import serializers
 
 from purly.address.serializers import AddressDetailSerializer
-from purly.approval.utils import generate_approvals
 from purly.project.serializers import ProjectListSerializer
 from purly.user.serializers import UserDetailSerializer
 from purly.utils import CustomToRepresentation
@@ -288,7 +287,7 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         requisition = Requisition.objects.create(
             total_amount=total_amount,
             owner=user,
-            status=StatusChoices.PENDING_APPROVAL,
+            status=StatusChoices.DRAFT,
             created_by=user,
             updated_by=user,
             **validated_data,
@@ -307,8 +306,6 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
             requisition_lines.append(requisition_line)
 
         RequisitionLine.objects.bulk_create(requisition_lines)
-
-        generate_approvals(requisition)
 
         return requisition
 

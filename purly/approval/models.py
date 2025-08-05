@@ -15,6 +15,7 @@ class StatusChoices(models.TextChoices):
     APPROVED = ("approved", "approved")
     REJECTED = ("rejected", "rejected")
     SKIPPED = ("skipped", "skipped")
+    CANCELLED = ("cancelled", "cancelled`")
 
 
 class LookupStringChoices(models.TextChoices):
@@ -90,7 +91,7 @@ class ApprovalChainModeChoices(models.TextChoices):
 
 
 class Approval(models.Model):
-    requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT)
+    requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT, related_name="approvals")
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approvals_as_approver"
     )

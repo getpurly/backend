@@ -3,7 +3,13 @@ from django.template.response import TemplateResponse
 from rest_framework import exceptions, status, views
 
 
-def client_error(exc, context, response):
+class BadRequest(exceptions.APIException):
+    status_code = 400
+    default_detail = "The request body could not be read properly."
+    default_code = "bad_request"
+
+
+def handle_error(exc, context, response):
     if isinstance(exc, exceptions.MethodNotAllowed):
         method = context.get("request").method
         detail = f"This method is not allowed: {method}"
@@ -11,12 +17,17 @@ def client_error(exc, context, response):
         media_type = context.get("request").content_type
         detail = f"This is an unsupported media type: {media_type}"
     elif isinstance(exc, exceptions.NotAcceptable):
-        detail = "Could not satisfy the request accept header."
+        detail = "The request accept header is not acceptable."
     else:
         detail = exc.detail
 
+    _type = "client_error"
+
+    if isinstance(exc, exceptions.APIException) and not isinstance(exc, BadRequest):
+        _type = "server_error"
+
     response.data = {
-        "type": "client_error",
+        "type": _type,
         "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "errors": [{"attr": None, "code": exc.get_codes(), "detail": detail}],
     }
@@ -24,7 +35,7 @@ def client_error(exc, context, response):
     return response
 
 
-def validation_error(exc, context, response):  # noqa: C901
+def handle_validation_error(exc, context, response):  # noqa: C901
     errors = []
 
     full_details = exc.get_full_details()
@@ -74,16 +85,18 @@ def custom_exception_handler(exc, context):
     response = views.exception_handler(exc, context)
 
     handlers = {
-        "ParseError": client_error,
-        "AuthenticationFailed": client_error,
-        "NotAuthenticated": client_error,
-        "PermissionDenied": client_error,
-        "NotFound": client_error,
-        "MethodNotAllowed": client_error,
-        "NotAcceptable": client_error,
-        "UnsupportedMediaType": client_error,
-        "Throttled": client_error,
-        "ValidationError": validation_error,
+        "APIException": handle_error,
+        "ParseError": handle_error,
+        "AuthenticationFailed": handle_error,
+        "NotAuthenticated": handle_error,
+        "PermissionDenied": handle_error,
+        "NotFound": handle_error,
+        "MethodNotAllowed": handle_error,
+        "NotAcceptable": handle_error,
+        "UnsupportedMediaType": handle_error,
+        "Throttled": handle_error,
+        "BadRequest": handle_error,
+        "ValidationError": handle_validation_error,
     }
 
     exception_class = exc.__class__.__name__

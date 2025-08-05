@@ -1,11 +1,16 @@
+from django.db import transaction
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from config.exceptions import BadRequest
+from purly.approval.utils import cancel_approvals, generate_approvals
+
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
-from .models import Requisition, RequisitionLine
+from .models import Requisition, RequisitionLine, StatusChoices
 from .pagination import RequisitionLinePagination, RequisitionPagination
 from .serializers import (
     RequisitionCreateSerializer,
@@ -90,6 +95,54 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         ).data
 
         return Response(requisition_detail, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def submit(self, request, pk=None):
+        requisition = self.get_object()
+
+        if requisition.owner != self.request.user:
+            raise exceptions.PermissionDenied(
+                "You must be the requisition owner to submit for approval."
+            )
+
+        if requisition.status != StatusChoices.DRAFT:
+            raise BadRequest(
+                detail="The requisition must be in draft status to submit for approval."
+            )
+
+        generate_approvals(requisition)
+
+        requisition.status = StatusChoices.PENDING_APPROVAL
+        requisition.save()
+
+        serializer = RequisitionDetailSerializer(requisition)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def withdraw(self, request, pk=None):
+        requisition = self.get_object()
+
+        if requisition.owner != self.request.user:
+            raise exceptions.PermissionDenied(
+                "You must be the requisition owner to withdraw from approvals."
+            )
+
+        if requisition.status != StatusChoices.PENDING_APPROVAL:
+            raise BadRequest(
+                detail="The requisition must be in pending approval status to withdraw."
+            )
+
+        cancel_approvals(requisition)
+
+        requisition.status = StatusChoices.DRAFT
+        requisition.save()
+
+        serializer = RequisitionDetailSerializer(requisition)
+
+        return Response(serializer.data)
 
 
 class RequisitionMineListView(generics.ListAPIView):

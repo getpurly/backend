@@ -1,7 +1,6 @@
 import re
 from decimal import Decimal
 
-from django.db import transaction
 from django.db.models import Q
 
 from .models import (
@@ -88,7 +87,7 @@ def rule_matching(obj, rule):
     return perform_lookup(value, rule.lookup, rule.value)
 
 
-def create_trigger_metadata(approval_chain, header_rules, line_rules):
+def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
     snapshot_header_rules = []
     snapshot_line_rules = []
 
@@ -137,7 +136,6 @@ def create_trigger_metadata(approval_chain, header_rules, line_rules):
     }
 
 
-@transaction.atomic
 def generate_approvals(requisition):
     lines = requisition.lines.all()
 
@@ -171,7 +169,7 @@ def generate_approvals(requisition):
                         break
 
         else:
-            trigger_metadata = create_trigger_metadata(approval_chain, header_rules, line_rules)
+            trigger_metadata = fetch_trigger_metadata(approval_chain, header_rules, line_rules)
 
             if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
                 approval = Approval(
@@ -200,3 +198,15 @@ def generate_approvals(requisition):
                     approvals.append(approval)
 
     Approval.objects.bulk_create(approvals)
+
+
+def cancel_approvals(requisition):
+    approvals = []
+
+    active_approvals = requisition.approvals.filter.all()
+
+    for approval in active_approvals:
+        approval.status = StatusChoices.CANCELLED
+        approvals.append(approval)
+
+    Approval.objects.bulk_update(approvals, ["status"])
