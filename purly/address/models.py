@@ -16,6 +16,7 @@ class Address(models.Model):
     state = models.CharField(max_length=64)
     zip_code = models.CharField(max_length=64)
     country = models.CharField(max_length=64)
+    delivery_instructions = models.TextField(blank=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="addresses_owned"
     )

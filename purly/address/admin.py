@@ -38,6 +38,7 @@ class AddressAdmin(admin.ModelAdmin):
         "state",
         "zip_code",
         "country",
+        "delivery_instructions",
         "owner__username",
         "created_by__username",
         "updated_by__username",

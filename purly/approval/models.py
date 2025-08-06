@@ -66,6 +66,10 @@ class LineFieldStringChoices(models.TextChoices):
     SHIP_TO_CITY = ("ship_to_city", "ship to city")
     SHIP_TO_CODE = ("ship_to_code", "ship to code")
     SHIP_TO_COUNTRY = ("ship_to_country", "ship to country")
+    SHIP_TO_DELIVERY_INSTRUCTIONS = (
+        "ship_to_delivery_instructions",
+        "ship to delivery instructions",
+    )
     SHIP_TO_NAME = ("ship_to_name", "ship to name")
     SHIP_TO_PHONE = ("ship_to_phone", "ship to phone")
     SHIP_TO_STATE = ("ship_to_state", "ship to state")
@@ -99,7 +103,7 @@ class Approval(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
     status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING)
-    comment = models.TextField()
+    comment = models.TextField(blank=True)
     trigger_metadata = models.JSONField(blank=True, null=True)
     system_generated = models.BooleanField()
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)

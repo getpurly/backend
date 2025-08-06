@@ -28,6 +28,7 @@ class AddressTests(APITestCase):
             "state": "test",
             "zip_code": "test",
             "country": "test",
+            "delivery_instructions": "test,",
         }
 
         response = self.client.post(self.url, data, format="json")

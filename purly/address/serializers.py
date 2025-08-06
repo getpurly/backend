@@ -26,6 +26,7 @@ class AddressListSerializer(CustomToRepresentation, serializers.ModelSerializer)
             "state",
             "zip_code",
             "country",
+            "delivery_instructions",
             "owner",
             "created_at",
             "created_by",
@@ -54,6 +55,7 @@ class AddressDetailSerializer(CustomToRepresentation, serializers.ModelSerialize
             "state",
             "zip_code",
             "country",
+            "delivery_instructions",
             "owner",
             "created_at",
             "created_by",
@@ -77,6 +79,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
             "state",
             "zip_code",
             "country",
+            "delivery_instructions",
         ]
 
 
@@ -95,4 +98,5 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
             "state",
             "zip_code",
             "country",
+            "delivery_instructions",
         ]

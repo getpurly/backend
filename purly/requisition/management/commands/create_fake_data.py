@@ -70,6 +70,7 @@ class Command(BaseCommand):
                 state=fake.state(),
                 zip_code=fake.postcode(),
                 country=fake.current_country_code(),
+                delivery_instructions=fake.sentence(),
                 owner=user,
                 created_at=fake.date(),
                 created_by=user,

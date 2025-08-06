@@ -8,12 +8,5 @@ PROJECT_FILTER_FIELDS = {
     "created_at": ["exact", "gt", "gte", "lt", "lte", "range"],
     "created_by__username": ["exact", "contains", "startswith", "endswith", "in", "regex"],
     "updated_at": ["exact", "gt", "gte", "lt", "lte", "range"],
-    "updated_by__username": [
-        "exact",
-        "contains",
-        "startswith",
-        "endswith",
-        "in",
-        "regex",
-    ],
+    "updated_by__username": ["exact", "contains", "startswith", "endswith", "in", "regex"],
 }
