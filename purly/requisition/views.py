@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from config.exceptions import BadRequest
-from purly.approval.utils import cancel_approvals, generate_approvals
+from purly.approval.services import cancel_approvals, generate_approvals
 
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
 from .models import Requisition, RequisitionLine, StatusChoices
