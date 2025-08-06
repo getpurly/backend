@@ -49,7 +49,7 @@ class HeaderFieldStringChoices(models.TextChoices):
     OWNER_EMAIL = ("owner_email", "owner email")
     OWNER_FIRST_NAME = ("owner_first_name", "owner first name")
     OWNER_LAST_NAME = ("owner_last_name", "owner last name")
-    PROJECT = ("project", "project name")
+    PROJECT_NAME = ("project_name", "project name")
     PROJECT_CODE = ("project_code", "project code")
     PROJECT_DESCRIPTION = ("project_description", "project description")
     SUPPLIER = ("supplier", "supplier")
@@ -60,7 +60,6 @@ class LineFieldStringChoices(models.TextChoices):
     DESCRIPTION = ("description", "description")
     MANUFACTURER = ("manufacturer", "manufacturer")
     MANUFACTURER_PART_NUMBER = ("manufacturer_part_number", "manufacturer part number")
-    NEED_BY = ("need_by", "need by")
     PAYMENT_TERM = ("payment_term", "payment term")
     SHIP_TO_ATTENTION = ("ship_to_attention", "ship to attention")
     SHIP_TO_CITY = ("ship_to_city", "ship to city")
@@ -70,12 +69,13 @@ class LineFieldStringChoices(models.TextChoices):
         "ship_to_delivery_instructions",
         "ship to delivery instructions",
     )
+    SHIP_TO_DESCRIPTION = ("ship_to_description", "ship to description")
     SHIP_TO_NAME = ("ship_to_name", "ship to name")
     SHIP_TO_PHONE = ("ship_to_phone", "ship to phone")
     SHIP_TO_STATE = ("ship_to_state", "ship to state")
     SHIP_TO_STREET1 = ("ship_to_street1", "ship to street 1")
     SHIP_TO_STREET2 = ("ship_to_street2", "ship to street 2")
-    SHIP_TO_ZIP = ("ship_to_zip", "ship to zip code")
+    SHIP_TO_ZIP_CODE = ("ship_to_zip_code", "ship to zip code")
     UNIT_OF_MEASURE = ("unit_of_measure", "united of measure")
 
 
@@ -293,7 +293,7 @@ class ApprovalChainLineRule(models.Model):
     )
     match_mode = models.CharField(choices=LineMatchModeChoices)
     field = models.CharField(
-        choices=list(LineFieldStringChoices.choices) + list(LineFieldNumberChoices.choices)
+        choices=sorted(list(LineFieldStringChoices.choices) + list(LineFieldNumberChoices.choices))
     )
     lookup = models.CharField(
         choices=list(LookupStringChoices.choices) + list(LookupNumberChoices.choices)

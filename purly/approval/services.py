@@ -7,6 +7,9 @@ from .models import (
     Approval,
     ApprovalChain,
     ApprovalChainModeChoices,
+    HeaderFieldStringChoices,
+    LineFieldNumberChoices,
+    LineFieldStringChoices,
     LineMatchModeChoices,
     LookupNumberChoices,
     LookupStringChoices,
@@ -14,66 +17,66 @@ from .models import (
 )
 
 
-def perform_lookup(requisition_value, rule_lookup, rule_value):
-    if rule_lookup != LookupStringChoices.IS_NULL and requisition_value is None:
+def perform_lookup(value, rule_lookup, rule_value):
+    if rule_lookup != LookupStringChoices.IS_NULL and value is None:
         return False
 
     match rule_lookup:
         case LookupStringChoices.EXACT:
-            if requisition_value not in rule_value:
+            if value not in rule_value:
                 return False
         case LookupStringChoices.IEXACT:
-            if not isinstance(requisition_value, str):
+            if not isinstance(value, str):
                 return False
-            if requisition_value.lower() not in [val.lower() for val in rule_value]:
+            if value.lower() not in [val.lower() for val in rule_value]:
                 return False
         case LookupStringChoices.CONTAINS:
-            if not any(val in requisition_value for val in rule_value):
+            if not any(val in value for val in rule_value):
                 return False
         case LookupStringChoices.ICONTAINS:
-            if not isinstance(requisition_value, str):
+            if not isinstance(value, str):
                 return False
-            if not any(val.lower() in requisition_value.lower() for val in rule_value):
+            if not any(val.lower() in value.lower() for val in rule_value):
                 return False
         case LookupStringChoices.STARTS_WITH:
-            if not any(requisition_value.startswith(val) for val in rule_value):
+            if not any(value.startswith(val) for val in rule_value):
                 return False
         case LookupStringChoices.ISTARTS_WITH:
-            if not isinstance(requisition_value, str):
+            if not isinstance(value, str):
                 return False
-            if not any(requisition_value.lower().startswith(val.lower()) for val in rule_value):
+            if not any(value.lower().startswith(val.lower()) for val in rule_value):
                 return False
         case LookupStringChoices.ENDS_WITH:
-            if not any(requisition_value.endswith(val) for val in rule_value):
+            if not any(value.endswith(val) for val in rule_value):
                 return False
         case LookupStringChoices.IENDS_WITH:
-            if not isinstance(requisition_value, str):
+            if not isinstance(value, str):
                 return False
-            if not any(requisition_value.lower().endswith(val.lower()) for val in rule_value):
+            if not any(value.lower().endswith(val.lower()) for val in rule_value):
                 return False
         case LookupStringChoices.REGEX:
-            if not any(re.search(val, requisition_value) for val in rule_value):
+            if not any(re.search(val, value) for val in rule_value):
                 return False
         case LookupStringChoices.IS_NULL:
-            if requisition_value not in (None, ""):
+            if value not in (None, ""):
                 return False
         case LookupNumberChoices.EQUAL:
-            if requisition_value != Decimal(rule_value[0]):
+            if value != Decimal(rule_value[0]):
                 return False
         case LookupNumberChoices.NOT_EQUAL:
-            if requisition_value == Decimal(rule_value[0]):
+            if value == Decimal(rule_value[0]):
                 return False
         case LookupNumberChoices.GT:
-            if not requisition_value > Decimal(rule_value[0]):
+            if not value > Decimal(rule_value[0]):
                 return False
         case LookupNumberChoices.GTE:
-            if not requisition_value >= Decimal(rule_value[0]):
+            if not value >= Decimal(rule_value[0]):
                 return False
         case LookupNumberChoices.LT:
-            if not requisition_value < Decimal(rule_value[0]):
+            if not value < Decimal(rule_value[0]):
                 return False
         case LookupNumberChoices.LTE:
-            if not requisition_value <= Decimal(rule_value[0]):
+            if not value <= Decimal(rule_value[0]):
                 return False
         case _:
             raise ValueError(f"Unsupported rule_lookup: {rule_lookup}")
@@ -81,10 +84,60 @@ def perform_lookup(requisition_value, rule_lookup, rule_value):
     return True
 
 
-def rule_matching(obj, rule):
-    value = getattr(obj, rule.field, None)
+def header_rule_matching(requisition, rule):
+    field_map = {
+        HeaderFieldStringChoices.CURRENCY: requisition.currency,
+        HeaderFieldStringChoices.EXTERNAL_REFERENCE: requisition.external_reference,
+        HeaderFieldStringChoices.JUSTIFICATION: requisition.justification,
+        HeaderFieldStringChoices.NAME: requisition.name,
+        HeaderFieldStringChoices.OWNER: requisition.owner.username,
+        HeaderFieldStringChoices.OWNER_EMAIL: requisition.owner.email,
+        HeaderFieldStringChoices.OWNER_FIRST_NAME: requisition.owner.first_name,
+        HeaderFieldStringChoices.OWNER_LAST_NAME: requisition.owner.last_name,
+        HeaderFieldStringChoices.PROJECT_NAME: requisition.project.name,
+        HeaderFieldStringChoices.PROJECT_CODE: requisition.project.project_code,
+        HeaderFieldStringChoices.PROJECT_DESCRIPTION: requisition.project.description,
+        HeaderFieldStringChoices.SUPPLIER: requisition.supplier,
+    }
 
-    return perform_lookup(value, rule.lookup, rule.value)
+    header_value = field_map.get(rule.field)
+
+    if header_value is None:
+        return False
+
+    return perform_lookup(header_value, rule.lookup, rule.value)
+
+
+def line_rule_matching(line, rule):
+    field_map = {
+        LineFieldStringChoices.CATEGORY: line.category,
+        LineFieldStringChoices.DESCRIPTION: line.description,
+        LineFieldNumberChoices.LINE_TOTAL: line.line_total,
+        LineFieldStringChoices.MANUFACTURER: line.manufacturer,
+        LineFieldStringChoices.MANUFACTURER_PART_NUMBER: line.manufacturer_part_number,
+        LineFieldStringChoices.PAYMENT_TERM: line.payment_term,
+        LineFieldStringChoices.SHIP_TO_ATTENTION: line.ship_to.attention,
+        LineFieldStringChoices.SHIP_TO_CITY: line.ship_to.city,
+        LineFieldStringChoices.SHIP_TO_CODE: line.ship_to.address_code,
+        LineFieldStringChoices.SHIP_TO_COUNTRY: line.ship_to.country,
+        LineFieldStringChoices.SHIP_TO_DELIVERY_INSTRUCTIONS: line.ship_to.delivery_instructions,
+        LineFieldStringChoices.SHIP_TO_DESCRIPTION: line.ship_to.description,
+        LineFieldStringChoices.SHIP_TO_NAME: line.ship_to.name,
+        LineFieldStringChoices.SHIP_TO_PHONE: line.ship_to.phone,
+        LineFieldStringChoices.SHIP_TO_STATE: line.ship_to.state,
+        LineFieldStringChoices.SHIP_TO_STREET1: line.ship_to.street1,
+        LineFieldStringChoices.SHIP_TO_STREET2: line.ship_to.street2,
+        LineFieldStringChoices.SHIP_TO_ZIP_CODE: line.ship_to.zip_code,
+        LineFieldStringChoices.UNIT_OF_MEASURE: line.unit_of_measure,
+        LineFieldNumberChoices.UNIT_PRICE: line.unit_price,
+    }
+
+    line_value = field_map.get(rule.field)
+
+    if line_value is None:
+        return False
+
+    return perform_lookup(line_value, rule.lookup, rule.value)
 
 
 def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
@@ -156,16 +209,16 @@ def generate_approvals(requisition):
         header_rules = approval_chain.approval_chain_header_rules.all()  # type: ignore
         line_rules = approval_chain.approval_chain_line_rules.all()  # type: ignore
 
-        if not all(rule_matching(requisition, rule) for rule in header_rules):
+        if not all(header_rule_matching(requisition, rule) for rule in header_rules):
             continue
 
         for rule in line_rules:
             match rule.match_mode:
                 case LineMatchModeChoices.ALL:
-                    if not all(rule_matching(line, rule) for line in lines):
+                    if not all(line_rule_matching(line, rule) for line in lines):
                         break
                 case _:
-                    if not any(rule_matching(line, rule) for line in lines):
+                    if not any(line_rule_matching(line, rule) for line in lines):
                         break
 
         else:
