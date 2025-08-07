@@ -141,13 +141,13 @@ def line_rule_matching(line, rule):
 
 
 def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
-    snapshot_header_rules = []
-    snapshot_line_rules = []
+    header_rules_metadata = []
+    line_rules_metadata = []
 
     for rule in header_rules:
         header_rule = {"field": rule.field, "lookup": rule.lookup, "value": rule.value}
 
-        snapshot_header_rules.append(header_rule)
+        header_rules_metadata.append(header_rule)
 
     for rule in line_rules:
         line_rule = {
@@ -157,7 +157,7 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
             "value": rule.value,
         }
 
-        snapshot_line_rules.append(line_rule)
+        line_rules_metadata.append(line_rule)
 
     approver_data = None
 
@@ -184,8 +184,8 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
         "sequence_number": approval_chain.sequence_number,
         "min_amount": float(approval_chain.min_amount),
         "max_amount": float(approval_chain.max_amount) if approval_chain.max_amount else None,
-        "header_rules": snapshot_header_rules,
-        "line_rules": snapshot_line_rules,
+        "header_rules": header_rules_metadata,
+        "line_rules": line_rules_metadata,
     }
 
 
