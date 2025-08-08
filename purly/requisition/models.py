@@ -19,7 +19,7 @@ class CurrencyChoices(models.TextChoices):
     USD = ("usd", "usd")
 
 
-class StatusChoices(models.TextChoices):
+class RequisitionStatusChoices(models.TextChoices):
     DRAFT = ("draft", "draft")
     PENDING_APPROVAL = ("pending_approval", "pending approval")
     APPROVED = ("approved", "approved")
@@ -45,7 +45,9 @@ class PaymentTermChoices(models.TextChoices):
 class Requisition(models.Model):
     name = models.CharField(max_length=255)
     external_reference = models.CharField(max_length=255, blank=True)
-    status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.DRAFT)
+    status = models.CharField(
+        choices=RequisitionStatusChoices.choices, default=RequisitionStatusChoices.DRAFT
+    )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="requisitions_owned"
     )

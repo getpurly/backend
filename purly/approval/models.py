@@ -15,7 +15,7 @@ from .managers import (
 )
 
 
-class StatusChoices(models.TextChoices):
+class ApprovalStatusChoices(models.TextChoices):
     PENDING = ("pending", "pending")
     APPROVED = ("approved", "approved")
     REJECTED = ("rejected", "rejected")
@@ -106,7 +106,9 @@ class Approval(models.Model):
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(1000)]
     )
-    status = models.CharField(choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(
+        choices=ApprovalStatusChoices.choices, default=ApprovalStatusChoices.PENDING
+    )
     comment = models.TextField(blank=True)
     trigger_metadata = models.JSONField(blank=True, null=True)
     system_generated = models.BooleanField()

@@ -16,7 +16,7 @@ from .models import (
     PaymentTermChoices,
     Requisition,
     RequisitionLine,
-    StatusChoices,
+    RequisitionStatusChoices,
     UOMChoices,
 )
 
@@ -287,7 +287,7 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         requisition = Requisition.objects.create(
             total_amount=total_amount,
             owner=user,
-            status=StatusChoices.DRAFT,
+            status=RequisitionStatusChoices.DRAFT,
             created_by=user,
             updated_by=user,
             **validated_data,
@@ -338,7 +338,7 @@ class RequisitionUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if self.instance.status != StatusChoices.DRAFT:  # type: ignore
+        if self.instance.status != RequisitionStatusChoices.DRAFT:  # type: ignore
             raise serializers.ValidationError("Requisition must be in draft status to update.")
 
         return attrs

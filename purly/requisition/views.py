@@ -10,7 +10,7 @@ from config.exceptions import BadRequest
 from purly.approval.services import cancel_approvals, generate_approvals
 
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
-from .models import Requisition, RequisitionLine, StatusChoices
+from .models import Requisition, RequisitionLine, RequisitionStatusChoices
 from .pagination import RequisitionLinePagination, RequisitionPagination
 from .serializers import (
     RequisitionCreateSerializer,
@@ -106,14 +106,14 @@ class RequisitionViewSet(viewsets.ModelViewSet):
                 "You must be the requisition owner to submit for approval."
             )
 
-        if requisition.status != StatusChoices.DRAFT:
+        if requisition.status != RequisitionStatusChoices.DRAFT:
             raise BadRequest(
                 detail="The requisition must be in draft status to submit for approval."
             )
 
         generate_approvals(requisition)
 
-        requisition.status = StatusChoices.PENDING_APPROVAL
+        requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
         requisition.save()
 
         serializer = RequisitionDetailSerializer(requisition)
@@ -130,14 +130,14 @@ class RequisitionViewSet(viewsets.ModelViewSet):
                 "You must be the requisition owner to withdraw from approvals."
             )
 
-        if requisition.status != StatusChoices.PENDING_APPROVAL:
+        if requisition.status != RequisitionStatusChoices.PENDING_APPROVAL:
             raise BadRequest(
                 detail="The requisition must be in pending approval status to withdraw."
             )
 
         cancel_approvals(requisition)
 
-        requisition.status = StatusChoices.DRAFT
+        requisition.status = RequisitionStatusChoices.DRAFT
         requisition.save()
 
         serializer = RequisitionDetailSerializer(requisition)

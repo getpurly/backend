@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from config.exceptions import BadRequest
 
-from .models import Approval, StatusChoices
+from .models import Approval, ApprovalStatusChoices
 from .pagination import ApprovalPagination
 from .serializers import (
     ApprovalDetailSerializer,
@@ -55,7 +55,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if approval.approver != self.request.user:
             raise exceptions.PermissionDenied("You cannot approve on someone else's behalf.")
 
-        if approval.status != StatusChoices.PENDING:
+        if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to approve.")
 
         serializer = ApprovalSubmitSerializer(approval, data=request.data, partial=True)
@@ -74,7 +74,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if approval.approver != self.request.user:
             raise exceptions.PermissionDenied("You cannot approve on someone else's behalf.")
 
-        if approval.status != StatusChoices.PENDING:
+        if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to reject.")
 
         serializer = ApprovalRejectSerializer(approval, data=request.data, partial=True)
@@ -95,5 +95,5 @@ class ApprovalMineListView(generics.ListAPIView):
 
     def get_queryset(self):  # type: ignore
         return Approval.objects_active.filter(approver=self.request.user).exclude(
-            status=StatusChoices.CANCELLED
+            status=ApprovalStatusChoices.CANCELLED
         )

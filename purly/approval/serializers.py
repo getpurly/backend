@@ -4,7 +4,7 @@ from rest_framework import serializers
 from purly.user.serializers import UserDetailSerializer
 from purly.utils import CustomToRepresentation
 
-from .models import Approval, StatusChoices
+from .models import Approval, ApprovalStatusChoices
 
 
 class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
@@ -66,7 +66,7 @@ class ApprovalSubmitSerializer(serializers.ModelSerializer):
         fields = ["comment"]
 
     def update(self, instance, validated_data):
-        instance.status = StatusChoices.APPROVED
+        instance.status = ApprovalStatusChoices.APPROVED
 
         if "comment" in validated_data:
             instance.comment = validated_data["comment"]
@@ -87,7 +87,7 @@ class ApprovalRejectSerializer(serializers.ModelSerializer):
         fields = ["comment"]
 
     def update(self, instance, validated_data):
-        instance.status = StatusChoices.REJECTED
+        instance.status = ApprovalStatusChoices.REJECTED
 
         if "comment" in validated_data:
             instance.comment = validated_data["comment"]

@@ -7,13 +7,13 @@ from .models import (
     Approval,
     ApprovalChain,
     ApprovalChainModeChoices,
+    ApprovalStatusChoices,
     HeaderFieldStringChoices,
     LineFieldNumberChoices,
     LineFieldStringChoices,
     LineMatchModeChoices,
     LookupNumberChoices,
     LookupStringChoices,
-    StatusChoices,
 )
 
 
@@ -232,7 +232,7 @@ def generate_approvals(requisition):
                     approver=approval_chain.approver,
                     sequence_number=approval_chain.sequence_number,
                     trigger_metadata=trigger_metadata,
-                    status=StatusChoices.PENDING,
+                    status=ApprovalStatusChoices.PENDING,
                     system_generated=True,
                 )
 
@@ -246,7 +246,7 @@ def generate_approvals(requisition):
                         approver=approver,
                         sequence_number=approval_chain.sequence_number,
                         trigger_metadata=trigger_metadata,
-                        status=StatusChoices.PENDING,
+                        status=ApprovalStatusChoices.PENDING,
                         system_generated=True,
                     )
 
@@ -261,7 +261,7 @@ def cancel_approvals(requisition):
     active_approvals = requisition.approvals.all()
 
     for approval in active_approvals:
-        approval.status = StatusChoices.CANCELLED
+        approval.status = ApprovalStatusChoices.CANCELLED
         approvals.append(approval)
 
     Approval.objects.bulk_update(approvals, ["status"])
