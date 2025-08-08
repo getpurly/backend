@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from purly.user.serializers import UserDetailSerializer
@@ -70,6 +71,9 @@ class ApprovalSubmitSerializer(serializers.ModelSerializer):
         if "comment" in validated_data:
             instance.comment = validated_data["comment"]
 
+        instance.approved_at = timezone.now()
+        instance.updated_by = validated_data["updated_by"]
+
         instance.save()
 
         return instance
@@ -87,6 +91,9 @@ class ApprovalRejectSerializer(serializers.ModelSerializer):
 
         if "comment" in validated_data:
             instance.comment = validated_data["comment"]
+
+        instance.rejected_at = timezone.now()
+        instance.updated_by = validated_data["updated_by"]
 
         instance.save()
 

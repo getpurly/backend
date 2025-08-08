@@ -94,16 +94,19 @@ def header_rule_matching(requisition, rule):
         HeaderFieldStringChoices.OWNER_EMAIL: requisition.owner.email,
         HeaderFieldStringChoices.OWNER_FIRST_NAME: requisition.owner.first_name,
         HeaderFieldStringChoices.OWNER_LAST_NAME: requisition.owner.last_name,
-        HeaderFieldStringChoices.PROJECT_NAME: requisition.project.name,
-        HeaderFieldStringChoices.PROJECT_CODE: requisition.project.project_code,
-        HeaderFieldStringChoices.PROJECT_DESCRIPTION: requisition.project.description,
+        HeaderFieldStringChoices.PROJECT_NAME: requisition.project.name
+        if requisition.project
+        else None,
+        HeaderFieldStringChoices.PROJECT_CODE: requisition.project.project_code
+        if requisition.project
+        else None,
+        HeaderFieldStringChoices.PROJECT_DESCRIPTION: requisition.project.description
+        if requisition.project
+        else None,
         HeaderFieldStringChoices.SUPPLIER: requisition.supplier,
     }
 
     header_value = field_map.get(rule.field)
-
-    if header_value is None:
-        return False
 
     return perform_lookup(header_value, rule.lookup, rule.value)
 
@@ -134,9 +137,6 @@ def line_rule_matching(line, rule):
 
     line_value = field_map.get(rule.field)
 
-    if line_value is None:
-        return False
-
     return perform_lookup(line_value, rule.lookup, rule.value)
 
 
@@ -164,7 +164,7 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
     if approval_chain.approver:
         approver_data = {
             "id": approval_chain.approver.id,
-            "username": str(approval_chain.approver.username),
+            "username": approval_chain.approver.username,
         }
 
     approver_group_data = None
@@ -172,7 +172,7 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
     if approval_chain.approver_group:
         approver_group_data = {
             "id": approval_chain.approver_group.id,
-            "name": str(approval_chain.approver_group.name),
+            "name": approval_chain.approver_group.name,
         }
 
     return {
@@ -182,8 +182,10 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
         "approver": approver_data,
         "approver_group": approver_group_data,
         "sequence_number": approval_chain.sequence_number,
-        "min_amount": float(approval_chain.min_amount),
-        "max_amount": float(approval_chain.max_amount) if approval_chain.max_amount else None,
+        "min_amount": str(Decimal(approval_chain.min_amount)),
+        "max_amount": str(Decimal(approval_chain.max_amount))
+        if approval_chain.max_amount
+        else None,
         "header_rules": header_rules_metadata,
         "line_rules": line_rules_metadata,
     }
