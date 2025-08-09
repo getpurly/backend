@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import Http404
 from rest_framework import exceptions, generics, viewsets
 from rest_framework.decorators import action
@@ -49,6 +50,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
+    @transaction.atomic
     def approve(self, request, pk=None):
         approval = self.get_object()
 
@@ -68,6 +70,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         return Response(approval_detail)
 
     @action(detail=True, methods=["post"])
+    @transaction.atomic
     def reject(self, request, pk=None):
         approval = self.get_object()
 

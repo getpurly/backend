@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from purly.requisition.models import Requisition, RequisitionStatusChoices
 from purly.user.serializers import UserDetailSerializer
 from purly.utils import CustomToRepresentation
 
@@ -96,5 +97,9 @@ class ApprovalRejectSerializer(serializers.ModelSerializer):
         instance.updated_by = validated_data["updated_by"]
 
         instance.save()
+
+        Requisition.objects.filter(pk=instance.requisition.id).update(
+            status=RequisitionStatusChoices.DRAFT
+        )
 
         return instance
