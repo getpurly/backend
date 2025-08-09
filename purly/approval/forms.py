@@ -89,7 +89,6 @@ class ApprovalChainRuleForm(forms.ModelForm):
         if (
             value
             and lookup in LookupStringChoices
-            and value
             and (field not in HeaderFieldStringChoices and field not in LineFieldStringChoices)
         ):
             raise ValidationError(

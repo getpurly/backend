@@ -33,7 +33,7 @@ class LookupStringChoices(models.TextChoices):
     ENDS_WITH = ("endswith", "endswith")
     IENDS_WITH = ("iendswith", "iendswith")
     REGEX = ("regex", "regex")
-    IS_NULL = ("is_null", "isnull")
+    IS_NULL = ("isnull", "isnull")
 
 
 class LookupNumberChoices(models.TextChoices):
@@ -355,7 +355,7 @@ class ApprovalChainLineRule(models.Model):
         if self.lookup in LookupNumberChoices.values:
             lookup = LookupNumberChoices(self.lookup).label
 
-        if self.match_mode == "any":
+        if self.match_mode == LineMatchModeChoices.ANY:
             return f"For {self.match_mode} line, {field} field {lookup} {value}"
 
         return f"For {self.match_mode} lines, {field} field {lookup} {value}"

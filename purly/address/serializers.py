@@ -1,15 +1,15 @@
 from rest_framework import serializers
 
-from purly.user.serializers import UserDetailSerializer
+from purly.user.serializers import UserSimpleDetailSerializer
 from purly.utils import CustomToRepresentation
 
 from .models import Address
 
 
 class AddressListSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    owner = UserDetailSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    owner = UserSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = Address
@@ -36,9 +36,9 @@ class AddressListSerializer(CustomToRepresentation, serializers.ModelSerializer)
 
 
 class AddressDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    owner = UserDetailSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    owner = UserSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = Address
@@ -61,6 +61,15 @@ class AddressDetailSerializer(CustomToRepresentation, serializers.ModelSerialize
             "created_by",
             "updated_at",
             "updated_by",
+        ]
+
+
+class AddressSimpleDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = [
+            "id",
+            "name",
         ]
 
 

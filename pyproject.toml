@@ -46,9 +46,6 @@ ignore = [
     "PT009",   # Use a regular `assert` instead of unittest-style `assertEqual
     "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes
     "PGH003",  # Use specific rule codes when ignoring type issues
-    "PERF401", # Use `list.extend` to create a transformed list
-    "ERA001",  # Found commented-out code
-    "SIM103",  # Return the negated condition directly
     "DJ007",   # Do not use `__all__` with `ModelForm`, use `fields` instead
 ]
 exclude = ["migrations"]

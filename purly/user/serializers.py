@@ -12,6 +12,12 @@ class UserDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
         fields = ["id", "username", "first_name", "last_name", "email", "is_active", "date_joined"]
 
 
+class UserSimpleDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username"]
+
+
 class UserListSerializer(CustomToRepresentation, serializers.ModelSerializer):
     class Meta:
         model = User

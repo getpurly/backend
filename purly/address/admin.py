@@ -24,7 +24,7 @@ class AddressAdmin(admin.ModelAdmin):
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at", "deleted"]
     search_fields = [
         "id",
         "name",

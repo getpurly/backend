@@ -74,11 +74,10 @@ class ApprovalAdmin(admin.ModelAdmin):
         return False
 
     def save_model(self, request, obj, form, change):
-        obj.system_generated = False
-
         if change:
             obj.updated_by = request.user
         else:
+            obj.system_generated = False
             obj.created_by = request.user
             obj.updated_by = request.user
 
@@ -103,7 +102,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         "updated_by",
         "active",
     ]
-    list_filter = ["approver_mode", "created_at", "updated_at", "active"]
+    list_filter = ["approver_mode", "created_at", "updated_at", "active", "deleted"]
     search_fields = ["name"]
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
@@ -147,7 +146,7 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
         "updated_at",
         "updated_by",
     ]
-    list_filter = ["created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at", "deleted"]
     filter_horizontal = ["approver"]
     search_fields = ["name"]
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]

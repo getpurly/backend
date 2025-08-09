@@ -5,9 +5,9 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import serializers
 
-from purly.address.serializers import AddressDetailSerializer
-from purly.project.serializers import ProjectListSerializer
-from purly.user.serializers import UserDetailSerializer
+from purly.address.serializers import AddressSimpleDetailSerializer
+from purly.project.serializers import ProjectSimpleDetailSerializer
+from purly.user.serializers import UserSimpleDetailSerializer
 from purly.utils import CustomToRepresentation
 
 from .models import (
@@ -22,9 +22,9 @@ from .models import (
 
 
 class RequisitionLineListSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    ship_to = AddressDetailSerializer()
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    ship_to = AddressSimpleDetailSerializer()
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = RequisitionLine
@@ -52,9 +52,9 @@ class RequisitionLineListSerializer(CustomToRepresentation, serializers.ModelSer
 
 
 class RequisitionLineDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    ship_to = AddressDetailSerializer()
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    ship_to = AddressSimpleDetailSerializer()
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = RequisitionLine
@@ -166,10 +166,10 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
 
 
 class RequisitionListSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    owner = UserDetailSerializer(read_only=True)
-    project = ProjectListSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    owner = UserSimpleDetailSerializer(read_only=True)
+    project = ProjectSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = Requisition
@@ -195,10 +195,10 @@ class RequisitionListSerializer(CustomToRepresentation, serializers.ModelSeriali
 
 
 class RequisitionDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    owner = UserDetailSerializer(read_only=True)
-    project = ProjectListSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    owner = UserSimpleDetailSerializer(read_only=True)
+    project = ProjectSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
     lines = serializers.SerializerMethodField()
 
     class Meta:

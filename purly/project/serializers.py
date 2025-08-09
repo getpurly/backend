@@ -1,14 +1,34 @@
 from rest_framework import serializers
 
-from purly.user.serializers import UserDetailSerializer
+from purly.user.serializers import UserSimpleDetailSerializer
 from purly.utils import CustomToRepresentation
 
 from .models import Project
 
 
+class ProjectListSerializer(CustomToRepresentation, serializers.ModelSerializer):
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "name",
+            "project_code",
+            "description",
+            "start_date",
+            "end_date",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+        ]
+
+
 class ProjectDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
     requisitions = serializers.PrimaryKeyRelatedField(
         many=True, read_only=True, source="project_requisitions"
     )
@@ -30,23 +50,12 @@ class ProjectDetailSerializer(CustomToRepresentation, serializers.ModelSerialize
         ]
 
 
-class ProjectListSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
-
+class ProjectSimpleDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
             "id",
             "name",
-            "project_code",
-            "description",
-            "start_date",
-            "end_date",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
         ]
 
 

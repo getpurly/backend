@@ -18,12 +18,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "updated_at",
         "updated_by",
     ]
-    list_filter = [
-        "start_date",
-        "end_date",
-        "created_at",
-        "updated_at",
-    ]
+    list_filter = ["start_date", "end_date", "created_at", "updated_at", "deleted"]
     search_fields = [
         "name",
         "project_code",

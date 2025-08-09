@@ -2,16 +2,16 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from purly.requisition.models import Requisition, RequisitionStatusChoices
-from purly.user.serializers import UserDetailSerializer
+from purly.user.serializers import UserSimpleDetailSerializer
 from purly.utils import CustomToRepresentation
 
 from .models import Approval, ApprovalStatusChoices
 
 
 class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    approver = UserDetailSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    approver = UserSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = Approval
@@ -36,9 +36,9 @@ class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializ
 
 
 class ApprovalListSerializer(CustomToRepresentation, serializers.ModelSerializer):
-    approver = UserDetailSerializer(read_only=True)
-    created_by = UserDetailSerializer(read_only=True)
-    updated_by = UserDetailSerializer(read_only=True)
+    approver = UserSimpleDetailSerializer(read_only=True)
+    created_by = UserSimpleDetailSerializer(read_only=True)
+    updated_by = UserSimpleDetailSerializer(read_only=True)
 
     class Meta:
         model = Approval
@@ -59,7 +59,7 @@ class ApprovalListSerializer(CustomToRepresentation, serializers.ModelSerializer
         ]
 
 
-class ApprovalSubmitSerializer(serializers.ModelSerializer):
+class ApprovalApproveSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:

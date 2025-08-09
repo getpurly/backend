@@ -37,7 +37,7 @@ class UserProfile(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.user.username
+        return f"User profile: {self.user.username}"
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -62,7 +62,7 @@ class UserActivity(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.user.username
+        return f"User activity: {self.user.username}"
 
 
 @receiver(user_logged_in)

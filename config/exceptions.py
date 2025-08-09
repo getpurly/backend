@@ -50,7 +50,7 @@ def handle_validation_error(exc, context, response):  # noqa: C901
                 else:
                     for nested_field, nested_detail in item.items():
                         for nested_item in nested_detail:
-                            errors.append(
+                            errors.extend(
                                 {
                                     "attr": f"{field}.{nested_field}",
                                     "code": nested_item.get("code"),
@@ -61,7 +61,7 @@ def handle_validation_error(exc, context, response):  # noqa: C901
             for nested_detail in detail.values():
                 for item in nested_detail:
                     if item.get("message") is not None:
-                        errors.append(
+                        errors.extend(
                             {
                                 "attr": field,
                                 "code": item.get("code"),

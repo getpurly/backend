@@ -39,6 +39,7 @@ class RequisitionAdmin(admin.ModelAdmin):
         "submitted_at",
         "approved_at",
         "rejected_at",
+        "deleted",
     ]
     search_fields = [
         "id",
@@ -114,6 +115,7 @@ class RequisitionLineAdmin(admin.ModelAdmin):
         "need_by",
         "created_at",
         "updated_at",
+        "deleted",
     ]
     search_fields = [
         "description",

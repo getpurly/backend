@@ -9,7 +9,7 @@
             function toggleField() {
                 const lookup = lookupSelect.value;
 
-                if (lookup === "is_null") {
+                if (lookup === "isnull") {
                     valueField.style.display = "none";
                     valueField.querySelector("label").classList.remove("required");
                 } else {

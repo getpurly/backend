@@ -10,10 +10,10 @@ from config.exceptions import BadRequest
 from .models import Approval, ApprovalStatusChoices
 from .pagination import ApprovalPagination
 from .serializers import (
+    ApprovalApproveSerializer,
     ApprovalDetailSerializer,
     ApprovalListSerializer,
     ApprovalRejectSerializer,
-    ApprovalSubmitSerializer,
 )
 
 
@@ -49,8 +49,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"])
     @transaction.atomic
+    @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         approval = self.get_object()
 
@@ -60,7 +60,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to approve.")
 
-        serializer = ApprovalSubmitSerializer(approval, data=request.data, partial=True)
+        serializer = ApprovalApproveSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
 
@@ -69,8 +69,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
         return Response(approval_detail)
 
-    @action(detail=True, methods=["post"])
     @transaction.atomic
+    @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
         approval = self.get_object()
 

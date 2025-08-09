@@ -62,4 +62,4 @@ class EmailAddressAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
-# admin.site.register(EmailAddress, EmailAddressAdmin)
+# admin.site.register(EmailAddress, EmailAddressAdmin)  # noqa: ERA001

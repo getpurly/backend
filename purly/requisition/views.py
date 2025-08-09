@@ -96,8 +96,8 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(requisition_detail, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"])
     @transaction.atomic
+    @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
         requisition = self.get_object()
 
@@ -120,8 +120,8 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"])
     @transaction.atomic
+    @action(detail=True, methods=["post"])
     def withdraw(self, request, pk=None):
         requisition = self.get_object()
 
