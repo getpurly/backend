@@ -75,7 +75,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         approval = self.get_object()
 
         if approval.approver != self.request.user:
-            raise exceptions.PermissionDenied("You cannot approve on someone else's behalf.")
+            raise exceptions.PermissionDenied("You cannot reject on someone else's behalf.")
 
         if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to reject.")
