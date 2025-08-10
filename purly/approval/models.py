@@ -20,7 +20,7 @@ class ApprovalStatusChoices(models.TextChoices):
     APPROVED = ("approved", "approved")
     REJECTED = ("rejected", "rejected")
     SKIPPED = ("skipped", "skipped")
-    CANCELLED = ("cancelled", "cancelled`")
+    CANCELLED = ("cancelled", "cancelled")
 
 
 class LookupStringChoices(models.TextChoices):
