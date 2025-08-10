@@ -189,7 +189,9 @@ class ApprovalChain(models.Model):
         unique=True,
         error_messages={"unique": "This approval chain name already exists."},
     )
-    approver_mode = models.CharField(choices=ApprovalChainModeChoices, default="individual")
+    approver_mode = models.CharField(
+        choices=ApprovalChainModeChoices, default=ApprovalChainModeChoices.INDIVIDUAL
+    )
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
