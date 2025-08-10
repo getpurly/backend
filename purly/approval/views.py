@@ -1,21 +1,19 @@
 from django.db import transaction
 from django.http import Http404
+from django.utils import timezone
 from rest_framework import exceptions, generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from config.exceptions import BadRequest
-
 from .models import Approval, ApprovalStatusChoices
 from .pagination import ApprovalPagination
 from .serializers import (
-    ApprovalApproveSerializer,
+    ApprovalDecisionSerializer,
     ApprovalDetailSerializer,
     ApprovalListSerializer,
-    ApprovalRejectSerializer,
 )
-from .services import check_current_approver
+from .services import approval_decision_validation, on_reject_cleanup
 
 
 class ApprovalViewSet(viewsets.ModelViewSet):
@@ -55,20 +53,17 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         approval = self.get_object()
 
-        if approval.approver != self.request.user:
-            raise exceptions.PermissionDenied("You cannot approve on someone else's behalf.")
+        approval_decision_validation("approve", approval, self.request.user)
 
-        if approval.status != ApprovalStatusChoices.PENDING:
-            raise BadRequest(detail="This approval must be in pending status to approve.")
-
-        if check_current_approver(approval) is False:
-            raise BadRequest(detail="An earlier approval is still pending.")
-
-        serializer = ApprovalApproveSerializer(approval, data=request.data, partial=True)
+        serializer = ApprovalDecisionSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
 
-        obj = serializer.save(updated_by=self.request.user)
+        obj = serializer.save(
+            status=ApprovalStatusChoices.APPROVED,
+            approved_at=timezone.now(),
+            updated_by=self.request.user,
+        )
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)
@@ -78,20 +73,20 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     def reject(self, request, pk=None):
         approval = self.get_object()
 
-        if approval.approver != self.request.user:
-            raise exceptions.PermissionDenied("You cannot reject on someone else's behalf.")
+        approval_decision_validation("reject", approval, self.request.user)
 
-        if approval.status != ApprovalStatusChoices.PENDING:
-            raise BadRequest(detail="This approval must be in pending status to reject.")
-
-        if check_current_approver(approval) is False:
-            raise BadRequest(detail="An earlier approval is still pending.")
-
-        serializer = ApprovalRejectSerializer(approval, data=request.data, partial=True)
+        serializer = ApprovalDecisionSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
 
-        obj = serializer.save(updated_by=self.request.user)
+        obj = serializer.save(
+            status=ApprovalStatusChoices.REJECTED,
+            rejected_at=timezone.now(),
+            updated_by=self.request.user,
+        )
+
+        on_reject_cleanup(approval)
+
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)

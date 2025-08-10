@@ -3,6 +3,10 @@ from decimal import Decimal
 
 from django.db.models import Min, Q
 from django.utils import timezone
+from rest_framework import exceptions
+
+from config.exceptions import BadRequest
+from purly.requisition.models import Requisition, RequisitionStatusChoices
 
 from .email import send_approval_email
 from .models import (
@@ -265,13 +269,21 @@ def generate_approvals(requisition):
 def cancel_approvals(requisition):
     approvals = []
 
-    active_approvals = requisition.approvals.all()
-
-    for approval in active_approvals:
+    for approval in requisition.approvals.filter(status=ApprovalStatusChoices.PENDING):
         approval.status = ApprovalStatusChoices.CANCELLED
+        approval.updated_at = timezone.now()
+
         approvals.append(approval)
 
-    Approval.objects.bulk_update(approvals, ["status"])
+    Approval.objects.bulk_update(approvals, ["status", "updated_at"])
+
+
+def on_reject_cleanup(approval):
+    cancel_approvals(approval.requisition)
+
+    Requisition.objects.filter(pk=approval.requisition.id).update(
+        status=RequisitionStatusChoices.DRAFT
+    )
 
 
 def retrieve_sequence_min(requisition):
@@ -283,10 +295,31 @@ def retrieve_sequence_min(requisition):
 
 
 def check_current_approver(approval):
-    requisition = approval.requisition.id
-    sequence_min_value = retrieve_sequence_min(requisition)
+    sequence_min_value = retrieve_sequence_min(approval.requisition)
 
     return approval.sequence_number == sequence_min_value
+
+
+def approval_decision_validation(action, approval, request_user):
+    if approval.approver != request_user:
+        raise exceptions.PermissionDenied(f"You cannot {action} on someone else's behalf.")
+
+    if (
+        check_current_approver(approval) is False
+        and approval.status == ApprovalStatusChoices.PENDING
+    ):
+        raise BadRequest(detail="An earlier approval is still pending.")
+
+    if action == "approve":
+        if approval.status == ApprovalStatusChoices.APPROVED:
+            raise BadRequest(detail="This approval has already been approved.")
+        if approval.status != ApprovalStatusChoices.PENDING:
+            raise BadRequest(detail="This approval must be in pending status to approve.")
+    else:
+        if approval.status == ApprovalStatusChoices.REJECTED:
+            raise BadRequest(detail="This approval has already been rejected.")
+        if approval.status != ApprovalStatusChoices.PENDING:
+            raise BadRequest(detail="This approval must be in pending status to reject.")
 
 
 def notify_current_sequence(requisition):

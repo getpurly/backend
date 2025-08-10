@@ -1,11 +1,9 @@
-from django.utils import timezone
 from rest_framework import serializers
 
-from purly.requisition.models import Requisition, RequisitionStatusChoices
 from purly.user.serializers import UserSimpleDetailSerializer
 from purly.utils import CustomToRepresentation
 
-from .models import Approval, ApprovalStatusChoices
+from .models import Approval
 
 
 class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
@@ -59,47 +57,9 @@ class ApprovalListSerializer(CustomToRepresentation, serializers.ModelSerializer
         ]
 
 
-class ApprovalApproveSerializer(serializers.ModelSerializer):
+class ApprovalDecisionSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
         model = Approval
         fields = ["comment"]
-
-    def update(self, instance, validated_data):
-        instance.status = ApprovalStatusChoices.APPROVED
-
-        if "comment" in validated_data:
-            instance.comment = validated_data["comment"]
-
-        instance.approved_at = timezone.now()
-        instance.updated_by = validated_data["updated_by"]
-
-        instance.save()
-
-        return instance
-
-
-class ApprovalRejectSerializer(serializers.ModelSerializer):
-    comment = serializers.CharField(allow_blank=True, required=False)
-
-    class Meta:
-        model = Approval
-        fields = ["comment"]
-
-    def update(self, instance, validated_data):
-        instance.status = ApprovalStatusChoices.REJECTED
-
-        if "comment" in validated_data:
-            instance.comment = validated_data["comment"]
-
-        instance.rejected_at = timezone.now()
-        instance.updated_by = validated_data["updated_by"]
-
-        instance.save()
-
-        Requisition.objects.filter(pk=instance.requisition.id).update(
-            status=RequisitionStatusChoices.DRAFT
-        )
-
-        return instance
