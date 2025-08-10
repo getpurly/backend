@@ -338,9 +338,6 @@ class ApprovalChainLineRule(models.Model):
 
         field = ""
 
-        if self.field in HeaderFieldStringChoices.values:
-            field = HeaderFieldStringChoices(self.field).label
-
         if self.field in LineFieldStringChoices.values:
             field = LineFieldStringChoices(self.field).label
 

@@ -2,7 +2,9 @@ import re
 from decimal import Decimal
 
 from django.db.models import Min, Q
+from django.utils import timezone
 
+from .email import send_approval_email
 from .models import (
     Approval,
     ApprovalChain,
@@ -267,10 +269,32 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status"])
 
 
-def check_current_approver(approval):
-    requisition = approval.requisition.id
-    sequence_number_min = Approval.objects_active.filter(
+def retrieve_sequence_min(requisition):
+    value = Approval.objects_active.filter(
         requisition=requisition, status=ApprovalStatusChoices.PENDING
     ).aggregate(Min("sequence_number"))
 
-    return approval.sequence_number == sequence_number_min["sequence_number__min"]
+    return value["sequence_number__min"]
+
+
+def check_current_approver(approval):
+    requisition = approval.requisition.id
+    sequence_min_value = retrieve_sequence_min(requisition)
+
+    return approval.sequence_number == sequence_min_value
+
+
+def notify_current_sequence(requisition):
+    sequence_min_value = retrieve_sequence_min(requisition)
+    approvals = requisition.approvals.filter(
+        sequence_number=sequence_min_value,
+        status=ApprovalStatusChoices.PENDING,
+        notified_at=None,
+    ).select_related("approver")
+
+    for approval in approvals:
+        send_approval_email(requisition, approval)
+
+        approval.notified_at = timezone.now()
+
+        approval.save()

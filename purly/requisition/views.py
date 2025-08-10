@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.http import Http404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.decorators import action
@@ -7,7 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from config.exceptions import BadRequest
-from purly.approval.services import cancel_approvals, generate_approvals
+from purly.approval.services import (
+    cancel_approvals,
+    generate_approvals,
+    notify_current_sequence,
+)
 
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
@@ -36,7 +41,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Requisition.objects_active.select_related(
         "project", "owner", "created_by", "updated_by"
-    ).all()
+    )
     serializer_class = RequisitionListSerializer
     pagination_class = RequisitionPagination
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
@@ -58,7 +63,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+        serializer = self.get_serializer(queryset, many=True)
 
         return Response(serializer.data)
 
@@ -114,7 +119,10 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         generate_approvals(requisition)
 
         requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
+        requisition.submitted_at = timezone.now()
         requisition.save()
+
+        transaction.on_commit(lambda: notify_current_sequence(requisition))
 
         serializer = RequisitionDetailSerializer(requisition)
 
@@ -165,7 +173,7 @@ class RequisitionLineListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = RequisitionLine.objects_active.select_related(
         "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
-    ).all()
+    )
     serializer_class = RequisitionLineListSerializer
     pagination_class = RequisitionLinePagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

@@ -43,6 +43,10 @@ CACHES = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_FROM = "noreply@localhost"
+
+SITE_NAME = "localhost"
+SITE_URL = "http://localhost:8000"
 
 LOGGING = {
     "version": 1,

@@ -21,7 +21,7 @@ from .services import check_current_approver
 class ApprovalViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post"]
     permission_classes = [IsAuthenticated]
-    queryset = Approval.objects_active.select_related("approver", "created_by", "updated_by").all()
+    queryset = Approval.objects_active.select_related("approver", "created_by", "updated_by")
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
 
@@ -40,7 +40,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(self.get_queryset(), many=True)
+        serializer = self.get_serializer(queryset, many=True)
 
         return Response(serializer.data)
 

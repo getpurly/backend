@@ -25,15 +25,18 @@ class RequisitionAdmin(admin.ModelAdmin):
         "justification",
         "total_amount",
         "currency",
+        "submitted_at",
+        "approved_at",
+        "rejected_at",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by",
+    ]
+    list_filter = [
         "submitted_at",
         "approved_at",
         "rejected_at",
-    ]
-    list_filter = [
         "created_at",
         "updated_at",
         "submitted_at",
@@ -55,7 +58,15 @@ class RequisitionAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+    readonly_fields = [
+        "submitted_at",
+        "approved_at",
+        "rejected_at",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+    ]
     inlines = [RequisitionLineInline]
 
     def has_delete_permission(self, request, obj=None):
