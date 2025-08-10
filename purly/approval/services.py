@@ -290,6 +290,7 @@ def notify_current_sequence(requisition):
         sequence_number=sequence_min_value,
         status=ApprovalStatusChoices.PENDING,
         notified_at=None,
+        deleted=False,
     ).select_related("approver")
 
     for approval in approvals:
