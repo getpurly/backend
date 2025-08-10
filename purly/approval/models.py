@@ -111,7 +111,7 @@ class Approval(models.Model):
     )
     comment = models.TextField(blank=True)
     trigger_metadata = models.JSONField(blank=True, null=True)
-    system_generated = models.BooleanField()
+    system_generated = models.BooleanField(default=False)
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
