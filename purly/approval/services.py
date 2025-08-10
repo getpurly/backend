@@ -209,6 +209,9 @@ def generate_approvals(requisition):
         )
     )
 
+    if not approval_chains.exists():
+        return False
+
     for approval_chain in approval_chains:
         header_rules = approval_chain.approval_chain_header_rules.all()  # type: ignore
         line_rules = approval_chain.approval_chain_line_rules.all()  # type: ignore
@@ -255,6 +258,8 @@ def generate_approvals(requisition):
                     approvals.append(approval)
 
     Approval.objects.bulk_create(approvals)
+
+    return True
 
 
 def cancel_approvals(requisition):

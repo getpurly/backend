@@ -116,7 +116,10 @@ class RequisitionViewSet(viewsets.ModelViewSet):
                 detail="The requisition must be in draft status to submit for approval."
             )
 
-        generate_approvals(requisition)
+        if generate_approvals(requisition) is False:
+            raise BadRequest(
+                detail="The requisition cannot be submitted because no approval chains are defined."
+            )
 
         requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
         requisition.submitted_at = timezone.now()
