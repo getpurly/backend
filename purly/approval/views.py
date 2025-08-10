@@ -15,6 +15,7 @@ from .serializers import (
     ApprovalListSerializer,
     ApprovalRejectSerializer,
 )
+from .services import check_current_approver
 
 
 class ApprovalViewSet(viewsets.ModelViewSet):
@@ -60,6 +61,9 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to approve.")
 
+        if check_current_approver(approval) is False:
+            raise BadRequest(detail="An earlier approval is still pending.")
+
         serializer = ApprovalApproveSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
@@ -79,6 +83,9 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
         if approval.status != ApprovalStatusChoices.PENDING:
             raise BadRequest(detail="This approval must be in pending status to reject.")
+
+        if check_current_approver(approval) is False:
+            raise BadRequest(detail="An earlier approval is still pending.")
 
         serializer = ApprovalRejectSerializer(approval, data=request.data, partial=True)
 

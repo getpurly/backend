@@ -1,7 +1,7 @@
 import re
 from decimal import Decimal
 
-from django.db.models import Q
+from django.db.models import Min, Q
 
 from .models import (
     Approval,
@@ -265,3 +265,12 @@ def cancel_approvals(requisition):
         approvals.append(approval)
 
     Approval.objects.bulk_update(approvals, ["status"])
+
+
+def check_current_approver(approval):
+    requisition = approval.requisition.id
+    sequence_number_min = Approval.objects_active.filter(
+        requisition=requisition, status=ApprovalStatusChoices.PENDING
+    ).aggregate(Min("sequence_number"))
+
+    return approval.sequence_number == sequence_number_min["sequence_number__min"]
