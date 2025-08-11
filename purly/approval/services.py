@@ -203,10 +203,9 @@ def generate_approvals(requisition):
     approvals = []
 
     approval_chains = (
-        ApprovalChain.objects.filter(min_amount__lte=requisition.total_amount)
+        ApprovalChain.objects_active.filter(min_amount__lte=requisition.total_amount)
         .filter(Q(max_amount__gte=requisition.total_amount) | Q(max_amount__isnull=True))
         .filter(active=True)
-        .filter(deleted=False)
         .order_by("sequence_number")
         .prefetch_related(
             "approval_chain_header_rules", "approval_chain_line_rules", "approver_group__approver"
@@ -269,9 +268,11 @@ def generate_approvals(requisition):
 def cancel_approvals(requisition):
     approvals = []
 
+    timestamp = timezone.now()
+
     for approval in requisition.approvals.filter(status=ApprovalStatusChoices.PENDING):
         approval.status = ApprovalStatusChoices.CANCELLED
-        approval.updated_at = timezone.now()
+        approval.updated_at = timestamp
 
         approvals.append(approval)
 
@@ -323,17 +324,24 @@ def approval_request_validation(request_user, action, approval):
 
 
 def notify_current_sequence(requisition):
+    approvals = []
+
     sequence_min_value = retrieve_sequence_min(requisition)
-    approvals = requisition.approvals.filter(
-        sequence_number=sequence_min_value,
-        status=ApprovalStatusChoices.PENDING,
-        notified_at=None,
-        deleted=False,
-    ).select_related("approver")
 
-    for approval in approvals:
-        send_approval_email(requisition, approval)
+    if sequence_min_value is not None:
+        timestamp = timezone.now()
 
-        approval.notified_at = timezone.now()
+        for approval in requisition.approvals.filter(
+            sequence_number=sequence_min_value,
+            status=ApprovalStatusChoices.PENDING,
+            notified_at=None,
+            deleted=False,
+        ).select_related("approver"):
+            send_approval_email(requisition, approval)
 
-        approval.save()
+            approval.notified_at = timestamp
+            approval.updated_at = timestamp
+
+            approvals.append(approval)
+
+        Approval.objects.bulk_update(approvals, ["notified_at", "updated_at"])

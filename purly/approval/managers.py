@@ -16,6 +16,11 @@ class ApprovalChainManager(models.Manager):
         return super().get_queryset()
 
 
+class ApprovalChainManagerActive(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted=False)
+
+
 class ApprovalGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset()
