@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
-from rest_framework import exceptions, generics, viewsets
+from rest_framework import exceptions, generics, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -16,7 +16,7 @@ from .serializers import (
 from .services import approval_decision_validation, on_reject_cleanup
 
 
-class ApprovalViewSet(viewsets.ModelViewSet):
+class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     http_method_names = ["get", "post"]
     permission_classes = [IsAuthenticated]
     queryset = Approval.objects_active.select_related("approver", "created_by", "updated_by")
