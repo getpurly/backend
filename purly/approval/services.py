@@ -300,7 +300,7 @@ def check_current_approver(approval):
     return approval.sequence_number == sequence_min_value
 
 
-def approval_decision_validation(action, approval, request_user):
+def approval_request_validation(request_user, action, approval):
     if approval.approver != request_user:
         raise exceptions.PermissionDenied(f"You cannot {action} on someone else's behalf.")
 

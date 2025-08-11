@@ -57,7 +57,7 @@ class ApprovalListSerializer(CustomToRepresentation, serializers.ModelSerializer
         ]
 
 
-class ApprovalDecisionSerializer(serializers.ModelSerializer):
+class ApprovalRequestSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:

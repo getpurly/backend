@@ -9,11 +9,11 @@ from rest_framework.response import Response
 from .models import Approval, ApprovalStatusChoices
 from .pagination import ApprovalPagination
 from .serializers import (
-    ApprovalDecisionSerializer,
     ApprovalDetailSerializer,
     ApprovalListSerializer,
+    ApprovalRequestSerializer,
 )
-from .services import approval_decision_validation, on_reject_cleanup
+from .services import approval_request_validation, on_reject_cleanup
 
 
 class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -53,9 +53,9 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def approve(self, request, pk=None):
         approval = self.get_object()
 
-        approval_decision_validation("approve", approval, self.request.user)
+        approval_request_validation(self.request.user, "approve", approval)
 
-        serializer = ApprovalDecisionSerializer(approval, data=request.data, partial=True)
+        serializer = ApprovalRequestSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
 
@@ -73,9 +73,9 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def reject(self, request, pk=None):
         approval = self.get_object()
 
-        approval_decision_validation("reject", approval, self.request.user)
+        approval_request_validation(self.request.user, "reject", approval)
 
-        serializer = ApprovalDecisionSerializer(approval, data=request.data, partial=True)
+        serializer = ApprovalRequestSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
 
@@ -84,10 +84,9 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             rejected_at=timezone.now(),
             updated_by=self.request.user,
         )
+        approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         on_reject_cleanup(approval)
-
-        approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)
 
