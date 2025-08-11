@@ -13,7 +13,12 @@ from .serializers import (
     ApprovalListSerializer,
     ApprovalRequestSerializer,
 )
-from .services import approval_request_validation, notify_current_sequence, on_reject_cleanup
+from .services import (
+    approval_request_validation,
+    notify_current_sequence,
+    on_fully_approved,
+    on_reject_cleanup,
+)
 
 
 class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -67,6 +72,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
+        transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
 
         return Response(approval_detail)
 

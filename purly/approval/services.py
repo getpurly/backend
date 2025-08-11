@@ -1,6 +1,7 @@
 import re
 from decimal import Decimal
 
+from django.db import transaction
 from django.db.models import Min, Q
 from django.utils import timezone
 from rest_framework import exceptions
@@ -287,6 +288,21 @@ def on_reject_cleanup(approval):
     )
 
 
+@transaction.atomic
+def on_fully_approved(requisition):
+    if (
+        retrieve_sequence_min(requisition) is None
+        and requisition.status == RequisitionStatusChoices.PENDING_APPROVAL
+        and requisition.approved_at is None
+    ):
+        requisition.status = RequisitionStatusChoices.APPROVED
+        requisition.approved_at = timezone.now()
+
+        requisition.save()
+
+        notify_owner_fully_approved(requisition)
+
+
 def retrieve_sequence_min(requisition):
     value = Approval.objects_active.filter(
         requisition=requisition, status=ApprovalStatusChoices.PENDING
@@ -295,7 +311,7 @@ def retrieve_sequence_min(requisition):
     return value["sequence_number__min"]
 
 
-def check_current_approver(approval):
+def check_if_current_approver(approval):
     sequence_min_value = retrieve_sequence_min(approval.requisition)
 
     return approval.sequence_number == sequence_min_value
@@ -306,7 +322,7 @@ def approval_request_validation(request_user, action, approval):
         raise exceptions.PermissionDenied(f"You cannot {action} on someone else's behalf.")
 
     if (
-        check_current_approver(approval) is False
+        check_if_current_approver(approval) is False
         and approval.status == ApprovalStatusChoices.PENDING
     ):
         raise BadRequest(detail="An earlier approval is still pending.")
@@ -323,6 +339,7 @@ def approval_request_validation(request_user, action, approval):
             raise BadRequest(detail="This approval must be in pending status to reject.")
 
 
+@transaction.atomic
 def notify_current_sequence(requisition):
     approvals = []
 
@@ -345,3 +362,7 @@ def notify_current_sequence(requisition):
             approvals.append(approval)
 
         Approval.objects.bulk_update(approvals, ["notified_at", "updated_at"])
+
+
+def notify_owner_fully_approved(requisition):
+    pass
