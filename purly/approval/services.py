@@ -9,7 +9,7 @@ from rest_framework import exceptions
 from config.exceptions import BadRequest
 from purly.requisition.models import Requisition, RequisitionStatusChoices
 
-from .email import send_approval_email
+from .emails import send_approval_email, send_fully_approved_email
 from .models import (
     Approval,
     ApprovalChain,
@@ -300,7 +300,7 @@ def on_fully_approved(requisition):
 
         requisition.save()
 
-        notify_owner_fully_approved(requisition)
+        send_fully_approved_email(requisition)
 
 
 def retrieve_sequence_min(requisition):
@@ -341,8 +341,6 @@ def approval_request_validation(request_user, action, approval):
 
 @transaction.atomic
 def notify_current_sequence(requisition):
-    approvals = []
-
     sequence_min_value = retrieve_sequence_min(requisition)
 
     if sequence_min_value is not None:
@@ -354,15 +352,9 @@ def notify_current_sequence(requisition):
             notified_at=None,
             deleted=False,
         ).select_related("approver"):
-            send_approval_email(requisition, approval)
-
             approval.notified_at = timestamp
             approval.updated_at = timestamp
 
-            approvals.append(approval)
+            approval.save()
 
-        Approval.objects.bulk_update(approvals, ["notified_at", "updated_at"])
-
-
-def notify_owner_fully_approved(requisition):
-    pass
+            send_approval_email(requisition, approval)
