@@ -117,9 +117,9 @@ class RequisitionViewSet(viewsets.ModelViewSet):
             )
 
         if generate_approvals(requisition) is False:
-            raise BadRequest(
-                detail="The requisition cannot be submitted because no approval chains are defined."
-            )
+            msg = "The requisition cannot be submitted because no approval chains matched."
+
+            raise BadRequest(detail=msg)
 
         requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
         requisition.submitted_at = timezone.now()
