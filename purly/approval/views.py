@@ -94,7 +94,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         )
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
-        on_reject_cleanup(approval)
+        transaction.on_commit(lambda: on_reject_cleanup(obj.requisition))  # type: ignore
 
         return Response(approval_detail)
 

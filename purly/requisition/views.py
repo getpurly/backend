@@ -123,6 +123,8 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
         requisition.submitted_at = timezone.now()
+        requisition.rejected_at = None
+
         requisition.save()
 
         transaction.on_commit(lambda: notify_current_sequence(requisition))
@@ -149,6 +151,8 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         cancel_approvals(requisition)
 
         requisition.status = RequisitionStatusChoices.DRAFT
+        requisition.submitted_at = None
+
         requisition.save()
 
         serializer = RequisitionDetailSerializer(requisition)

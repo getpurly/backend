@@ -7,7 +7,7 @@ from django.utils import timezone
 from rest_framework import exceptions
 
 from config.exceptions import BadRequest
-from purly.requisition.models import Requisition, RequisitionStatusChoices
+from purly.requisition.models import RequisitionStatusChoices
 
 from .emails import send_approval_email, send_fully_approved_email
 from .models import (
@@ -280,12 +280,13 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_reject_cleanup(approval):
-    cancel_approvals(approval.requisition)
+def on_reject_cleanup(requisition):
+    cancel_approvals(requisition)
 
-    Requisition.objects.filter(pk=approval.requisition.id).update(
-        status=RequisitionStatusChoices.DRAFT
-    )
+    requisition.status = RequisitionStatusChoices.DRAFT
+    requisition.rejected_at = timezone.now()
+
+    requisition.save()
 
 
 @transaction.atomic
