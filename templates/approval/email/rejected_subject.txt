@@ -1,0 +1,1 @@
+Requisition #{{ requisition_id }} was rejected

@@ -1,6 +1,6 @@
-Hello {{ approver }},
+Hello {{ owner }},
 
-You have a pending approval request for the following requisition:
+Please note that your requisition was rejected.
 
 Requisition: {{ requisition_id }}
 Owner: {{ owner }}
@@ -8,20 +8,13 @@ Supplier: {{ supplier }}
 {% if project_name %}Project: {{ project_name }}{% else %}Project: Not specified{% endif %}
 Total Amount: {{ total_amount }} {{ currency|upper }}
 Submitted At: {{ submitted_at|date:"F j, Y, g:i a" }}
-
-Justification: {{ justification }}
+Rejected By: {{ rejected_by }}
+Rejected At: {{ rejected_at|date:"F j, Y, g:i a" }}
+{% if rejected_comment %}Rejected Comment: {{ rejected_comment }}{% else %}Rejected Comment: No comment added{% endif %}
 
 To review details, click the link below:
 
 {{ site_url }}/api/v1/requisitions/{{ requisition_id }}/
-
-To approve,
-
-{{ site_url }}/api/v1/approvals/{{ approval_id }}/approve/
-
-To reject,
-
-{{ site_url }}/api/v1/approvals/{{ approval_id }}/reject/
 
 Thank you,
 The Procurement Team

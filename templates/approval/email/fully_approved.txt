@@ -10,8 +10,6 @@ Total Amount: {{ total_amount }} {{ currency|upper }}
 Submitted At: {{ submitted_at|date:"F j, Y, g:i a" }}
 Approved At: {{ approved_at|date:"F j, Y, g:i a" }}
 
-Justification: {{ justification }}
-
 To review details, click the link below:
 
 {{ site_url }}/api/v1/requisitions/{{ requisition_id }}/

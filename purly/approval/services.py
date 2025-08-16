@@ -9,7 +9,7 @@ from rest_framework import exceptions
 from config.exceptions import BadRequest
 from purly.requisition.models import RequisitionStatusChoices
 
-from .emails import send_approval_email, send_fully_approved_email
+from .emails import send_approval_email, send_fully_approved_email, send_reject_email
 from .models import (
     Approval,
     ApprovalChain,
@@ -280,13 +280,15 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_reject_cleanup(requisition):
+def on_reject_cleanup(approval, requisition):
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT
     requisition.rejected_at = timezone.now()
 
     requisition.save()
+
+    send_reject_email(approval, requisition)
 
 
 @transaction.atomic
