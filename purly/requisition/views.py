@@ -1,21 +1,17 @@
 from django.db import transaction
 from django.http import Http404
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from config.exceptions import BadRequest
 from purly.approval.services import (
-    cancel_approvals,
-    generate_approvals,
     notify_current_sequence,
 )
 
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
-from .models import Requisition, RequisitionLine, RequisitionStatusChoices
+from .models import Requisition, RequisitionLine
 from .pagination import RequisitionLinePagination, RequisitionPagination
 from .serializers import (
     RequisitionCreateSerializer,
@@ -24,6 +20,7 @@ from .serializers import (
     RequisitionListSerializer,
     RequisitionUpdateSerializer,
 )
+from .services import on_submit, on_withdraw_cleanup, submit_withdraw_validation
 
 REQUISITION_ORDERING = [
     "total_amount",
@@ -106,30 +103,13 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None):
         requisition = self.get_object()
 
-        if requisition.owner != self.request.user:
-            raise exceptions.PermissionDenied(
-                "You must be the requisition owner to submit for approval."
-            )
+        submit_withdraw_validation(self.request.user, "submit", requisition)
 
-        if requisition.status != RequisitionStatusChoices.DRAFT:
-            raise BadRequest(
-                detail="The requisition must be in draft status to submit for approval."
-            )
+        obj = on_submit(requisition)
 
-        if generate_approvals(requisition) is False:
-            msg = "The requisition cannot be submitted because no approval chains matched."
+        transaction.on_commit(lambda: notify_current_sequence(obj))
 
-            raise BadRequest(detail=msg)
-
-        requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
-        requisition.submitted_at = timezone.now()
-        requisition.rejected_at = None
-
-        requisition.save()
-
-        transaction.on_commit(lambda: notify_current_sequence(requisition))
-
-        serializer = RequisitionDetailSerializer(requisition)
+        serializer = RequisitionDetailSerializer(obj)
 
         return Response(serializer.data)
 
@@ -138,24 +118,11 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     def withdraw(self, request, pk=None):
         requisition = self.get_object()
 
-        if requisition.owner != self.request.user:
-            raise exceptions.PermissionDenied(
-                "You must be the requisition owner to withdraw from approvals."
-            )
+        submit_withdraw_validation(self.request.user, "withdraw", requisition)
 
-        if requisition.status != RequisitionStatusChoices.PENDING_APPROVAL:
-            raise BadRequest(
-                detail="The requisition must be in pending approval status to withdraw."
-            )
+        obj = on_withdraw_cleanup(requisition)
 
-        cancel_approvals(requisition)
-
-        requisition.status = RequisitionStatusChoices.DRAFT
-        requisition.submitted_at = None
-
-        requisition.save()
-
-        serializer = RequisitionDetailSerializer(requisition)
+        serializer = RequisitionDetailSerializer(obj)
 
         return Response(serializer.data)
 
