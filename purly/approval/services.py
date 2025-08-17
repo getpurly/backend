@@ -280,7 +280,7 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_reject_cleanup(approval, requisition):
+def on_reject(approval, requisition):
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT

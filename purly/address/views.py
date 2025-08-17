@@ -1,5 +1,6 @@
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,6 +32,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         except Http404 as exc:
             raise exceptions.NotFound(detail="No address matches the given query.") from exc
 
+    @extend_schema(summary="List addresses", request=None, responses=AddressListSerializer)
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -44,6 +46,9 @@ class AddressViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Create address", request=AddressDetailSerializer, responses=AddressDetailSerializer
+    )
     def create(self, request, *args, **kwargs):
         serializer = AddressCreateSerializer(data=request.data)
 
@@ -56,12 +61,16 @@ class AddressViewSet(viewsets.ModelViewSet):
 
         return Response(address_detail, status=status.HTTP_201_CREATED)
 
+    @extend_schema(summary="Retrieve address", request=None, responses=AddressDetailSerializer)
     def retrieve(self, request, *args, **kwargs):
         address = self.get_object()
         serializer = AddressDetailSerializer(address)
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Update address", request=AddressDetailSerializer, responses=AddressDetailSerializer
+    )
     def update(self, request, *args, **kwargs):
         address = self.get_object()
         serializer = AddressUpdateSerializer(address, data=request.data, partial=True)
@@ -74,6 +83,11 @@ class AddressViewSet(viewsets.ModelViewSet):
         return Response(address_detail, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    summary="List addresses owned by the current user",
+    request=None,
+    responses=AddressListSerializer,
+)
 class AddressMineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]

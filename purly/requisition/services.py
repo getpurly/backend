@@ -44,7 +44,7 @@ def on_submit(requisition):
     return requisition
 
 
-def on_withdraw_cleanup(requisition):
+def on_withdraw(requisition):
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT

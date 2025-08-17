@@ -1,5 +1,6 @@
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -31,6 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         except Http404 as exc:
             raise exceptions.NotFound(detail="No project matches the given query.") from exc
 
+    @extend_schema(summary="List projects", request=None, responses=ProjectListSerializer)
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -44,6 +46,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Create project", request=ProjectCreateSerializer, responses=ProjectDetailSerializer
+    )
     def create(self, request, *args, **kwargs):
         serializer = ProjectCreateSerializer(data=request.data)
 
@@ -54,12 +59,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return Response(project_detail, status=status.HTTP_201_CREATED)
 
+    @extend_schema(summary="Retrieve project", request=None, responses=ProjectDetailSerializer)
     def retrieve(self, request, *args, **kwargs):
         project = self.get_object()
         serializer = ProjectDetailSerializer(project)
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Update project", request=ProjectUpdateSerializer, responses=ProjectDetailSerializer
+    )
     def update(self, request, *args, **kwargs):
         project = self.get_object()
         serializer = ProjectUpdateSerializer(project, data=request.data, partial=True)

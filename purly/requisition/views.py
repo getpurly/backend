@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -20,7 +21,7 @@ from .serializers import (
     RequisitionListSerializer,
     RequisitionUpdateSerializer,
 )
-from .services import on_submit, on_withdraw_cleanup, submit_withdraw_validation
+from .services import on_submit, on_withdraw, submit_withdraw_validation
 
 REQUISITION_ORDERING = [
     "total_amount",
@@ -51,6 +52,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         except Http404 as exc:
             raise exceptions.NotFound(detail="No requisition matches the given query.") from exc
 
+    @extend_schema(summary="List requisitions", request=None, responses=RequisitionListSerializer)
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -64,6 +66,11 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Create requisition",
+        request=RequisitionCreateSerializer,
+        responses=RequisitionDetailSerializer,
+    )
     def create(self, request, *args, **kwargs):
         serializer = RequisitionCreateSerializer(
             data=request.data, context=self.get_serializer_context()
@@ -79,12 +86,20 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(requisition_detail, status=status.HTTP_201_CREATED)
 
+    @extend_schema(
+        summary="Retrieve requisition", request=None, responses=RequisitionDetailSerializer
+    )
     def retrieve(self, request, *args, **kwargs):
         requisition = self.get_object()
         serializer = RequisitionDetailSerializer(requisition)
 
         return Response(serializer.data)
 
+    @extend_schema(
+        summary="Update requisition",
+        request=RequisitionUpdateSerializer,
+        responses=RequisitionDetailSerializer,
+    )
     def update(self, request, *args, **kwargs):
         requisition = self.get_object()
         serializer = RequisitionUpdateSerializer(requisition, data=request.data, partial=True)
@@ -98,6 +113,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         return Response(requisition_detail, status=status.HTTP_200_OK)
 
+    @extend_schema(summary="Submit", request=None, responses=RequisitionDetailSerializer)
     @transaction.atomic
     @action(detail=True, methods=["post"])
     def submit(self, request, pk=None):
@@ -106,27 +122,31 @@ class RequisitionViewSet(viewsets.ModelViewSet):
         submit_withdraw_validation(self.request.user, "submit", requisition)
 
         obj = on_submit(requisition)
+        serializer = RequisitionDetailSerializer(obj)
 
         transaction.on_commit(lambda: notify_current_sequence(obj))
 
-        serializer = RequisitionDetailSerializer(obj)
-
         return Response(serializer.data)
 
+    @extend_schema(summary="Withdraw", request=None, responses=RequisitionDetailSerializer)
     @transaction.atomic
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], serializer_class=RequisitionDetailSerializer)
     def withdraw(self, request, pk=None):
         requisition = self.get_object()
 
         submit_withdraw_validation(self.request.user, "withdraw", requisition)
 
-        obj = on_withdraw_cleanup(requisition)
-
+        obj = on_withdraw(requisition)
         serializer = RequisitionDetailSerializer(obj)
 
         return Response(serializer.data)
 
 
+@extend_schema(
+    summary="List requisitions owned by the current user",
+    request=None,
+    responses=RequisitionListSerializer,
+)
 class RequisitionMineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
@@ -142,6 +162,9 @@ class RequisitionMineListView(generics.ListAPIView):
         ).filter(owner=self.request.user)
 
 
+@extend_schema(
+    summary="List requisition lines", request=None, responses=RequisitionLineListSerializer
+)
 class RequisitionLineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
@@ -155,6 +178,11 @@ class RequisitionLineListView(generics.ListAPIView):
     ordering_fields = REQUISITION_LINE_ORDERING
 
 
+@extend_schema(
+    summary="List requisition lines owned by the current user",
+    request=None,
+    responses=RequisitionListSerializer,
+)
 class RequisitionLineMineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
