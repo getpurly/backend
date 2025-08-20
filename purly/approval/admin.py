@@ -319,7 +319,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
         if obj is None:
-            return [*readonly_fields, "deleted"]
+            return [*readonly_fields, "active", "deleted"]
 
         return readonly_fields
 
