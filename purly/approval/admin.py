@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from purly.requisition.models import Requisition
@@ -56,6 +57,7 @@ class ApprovalChainLineRuleInline(admin.StackedInline):
 class ApprovalAdmin(admin.ModelAdmin):
     actions = ["approve", "reject", "skip"]
     autocomplete_fields = ["approver", "requisition"]
+    change_form_template = "admin/approval/change_form.html"
     fields = [
         "requisition",
         "approver",
@@ -103,7 +105,7 @@ class ApprovalAdmin(admin.ModelAdmin):
     search_fields = []
 
     @transaction.atomic
-    @admin.action(description="Force approve current approver(s)")
+    @admin.action(description="Set approved (only if current approver)")
     def approve(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -142,7 +144,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         admin_action_results(self, request, "approved", changed)
 
     @transaction.atomic
-    @admin.action(description="Force reject current approver(s)")
+    @admin.action(description="Set rejected (only if current approver)")
     def reject(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -176,7 +178,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         admin_action_results(self, request, "rejected", changed)
 
     @transaction.atomic
-    @admin.action(description="Force skip current approver(s)")
+    @admin.action(description="Set skipped (only if current approver)")
     def skip(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -237,7 +239,6 @@ class ApprovalAdmin(admin.ModelAdmin):
             "approver",
             "sequence_number",
             "status",
-            "comment",
             "rule_metadata",
             "system_generated",
             "notified_at",
@@ -249,6 +250,79 @@ class ApprovalAdmin(admin.ModelAdmin):
             "updated_at",
             "updated_by",
         ]
+
+    @transaction.atomic
+    def response_change(self, request, obj):
+        if "_approve" in request.POST or "_reject" in request.POST or "_skip" in request.POST:
+            timestamp = timezone.now()
+
+            if (
+                check_if_current_approver(obj) is False
+                and obj.status == ApprovalStatusChoices.PENDING
+            ):
+                self.message_user(
+                    request, "An earlier approval is still pending.", level=messages.WARNING
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if obj.status != ApprovalStatusChoices.PENDING:
+                self.message_user(
+                    request,
+                    "This approval must be in pending status to update.",
+                    level=messages.WARNING,
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if "_approve" in request.POST:
+                obj.status = ApprovalStatusChoices.APPROVED
+                obj.approved_at = timestamp
+                obj.updated_by = request.user
+
+                obj.save()
+
+                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
+                transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
+
+                self.message_user(
+                    request, "This approval has been approved.", level=messages.SUCCESS
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if "_reject" in request.POST:
+                obj.status = ApprovalStatusChoices.REJECTED
+                obj.rejected_at = timestamp
+                obj.updated_by = request.user
+
+                obj.save()
+
+                transaction.on_commit(lambda: on_reject(obj, obj.requisition))  # type: ignore
+
+                self.message_user(
+                    request, "This approval has been rejected.", level=messages.SUCCESS
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if "_skip" in request.POST:
+                obj.status = ApprovalStatusChoices.SKIPPED
+                obj.skipped_at = timestamp
+                obj.updated_by = request.user
+
+                obj.save()
+
+                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
+                transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
+
+                self.message_user(
+                    request, "This approval has been skipped.", level=messages.SUCCESS
+                )
+
+                return HttpResponseRedirect(request.path)
+
+        return super().response_change(request, obj)
 
     def has_delete_permission(self, request, obj=None):
         return False

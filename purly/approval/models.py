@@ -144,7 +144,7 @@ class Approval(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.requisition.name
+        return f"Approval {self.id}"  # type: ignore
 
 
 class ApprovalGroup(models.Model):
