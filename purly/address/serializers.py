@@ -15,6 +15,7 @@ class AddressListSerializer(CustomToRepresentation, serializers.ModelSerializer)
         model = Address
         fields = [
             "id",
+            "owner",
             "name",
             "address_code",
             "description",
@@ -27,7 +28,6 @@ class AddressListSerializer(CustomToRepresentation, serializers.ModelSerializer)
             "zip_code",
             "country",
             "delivery_instructions",
-            "owner",
             "created_at",
             "created_by",
             "updated_at",
@@ -44,6 +44,7 @@ class AddressDetailSerializer(CustomToRepresentation, serializers.ModelSerialize
         model = Address
         fields = [
             "id",
+            "owner",
             "name",
             "address_code",
             "description",
@@ -56,7 +57,6 @@ class AddressDetailSerializer(CustomToRepresentation, serializers.ModelSerialize
             "zip_code",
             "country",
             "delivery_instructions",
-            "owner",
             "created_at",
             "created_by",
             "updated_at",

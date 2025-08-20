@@ -112,7 +112,7 @@ class Approval(models.Model):
         choices=ApprovalStatusChoices.choices, default=ApprovalStatusChoices.PENDING
     )
     comment = models.TextField(blank=True)
-    trigger_metadata = models.JSONField(blank=True, null=True)
+    rule_metadata = models.JSONField(blank=True, null=True)
     system_generated = models.BooleanField(default=False)
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)

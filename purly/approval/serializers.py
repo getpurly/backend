@@ -19,7 +19,7 @@ class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializ
             "sequence_number",
             "status",
             "comment",
-            "trigger_metadata",
+            "rule_metadata",
             "system_generated",
             "notified_at",
             "approved_at",

@@ -21,6 +21,20 @@ from .services import (
 )
 
 
+def admin_action_results(self, request, action, changed):
+    match changed:
+        case 0:
+            self.message_user(
+                request, "No pending approvals were eligible.", level=messages.WARNING
+            )
+        case _:
+            self.message_user(
+                request,
+                f"The selected approvals were {action} (total = {changed}).",
+                level=messages.SUCCESS,
+            )
+
+
 class ApprovalChainHeaderRuleInline(admin.StackedInline):
     form = ApprovalChainHeaderRuleForm
     model = ApprovalChainHeaderRule
@@ -48,7 +62,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         "sequence_number",
         "status",
         "comment",
-        "trigger_metadata",
+        "rule_metadata",
         "system_generated",
         "notified_at",
         "approved_at",
@@ -89,7 +103,7 @@ class ApprovalAdmin(admin.ModelAdmin):
     search_fields = []
 
     @transaction.atomic
-    @admin.action(description="Set approved on selected approvals")
+    @admin.action(description="Force approve current approver(s)")
     def approve(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -107,12 +121,11 @@ class ApprovalAdmin(admin.ModelAdmin):
 
             approval.save()
 
-            requisitions.add(approval.requisition.id)
-
             changed += 1
 
-        if changed:
-            for requisition_id in requisitions:
+            requisition_id = approval.requisition.id
+
+            if requisition_id not in requisitions:
                 transaction.on_commit(
                     lambda requisition_id=requisition_id: notify_current_sequence(
                         Requisition.objects.get(pk=requisition_id)
@@ -124,20 +137,12 @@ class ApprovalAdmin(admin.ModelAdmin):
                     )
                 )
 
-        match changed:
-            case 0:
-                self.message_user(
-                    request, "No pending approvals were eligible.", level=messages.WARNING
-                )
-            case _:
-                self.message_user(
-                    request,
-                    f"The selected approvals (total = {changed}) were approved.",
-                    level=messages.SUCCESS,
-                )
+                requisitions.add(requisition_id)
+
+        admin_action_results(self, request, "approved", changed)
 
     @transaction.atomic
-    @admin.action(description="Set rejected on selected approvals")
+    @admin.action(description="Force reject current approver(s)")
     def reject(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -168,20 +173,10 @@ class ApprovalAdmin(admin.ModelAdmin):
 
                 requisitions.add(requisition_id)
 
-        match changed:
-            case 0:
-                self.message_user(
-                    request, "No pending approvals were eligible.", level=messages.WARNING
-                )
-            case _:
-                self.message_user(
-                    request,
-                    f"The selected approvals (total = {changed}) were rejected.",
-                    level=messages.SUCCESS,
-                )
+        admin_action_results(self, request, "rejected", changed)
 
     @transaction.atomic
-    @admin.action(description="Set skipped on selected approvals")
+    @admin.action(description="Force skip current approver(s)")
     def skip(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -199,12 +194,11 @@ class ApprovalAdmin(admin.ModelAdmin):
 
             approval.save()
 
-            requisitions.add(approval.requisition.id)
-
             changed += 1
 
-        if changed:
-            for requisition_id in requisitions:
+            requisition_id = approval.requisition.id
+
+            if requisition_id not in requisitions:
                 transaction.on_commit(
                     lambda requisition_id=requisition_id: notify_current_sequence(
                         Requisition.objects.get(pk=requisition_id)
@@ -216,24 +210,16 @@ class ApprovalAdmin(admin.ModelAdmin):
                     )
                 )
 
-        match changed:
-            case 0:
-                self.message_user(
-                    request, "No pending approvals were eligible.", level=messages.WARNING
-                )
-            case _:
-                self.message_user(
-                    request,
-                    f"The selected approvals (total = {changed}) were skipped.",
-                    level=messages.SUCCESS,
-                )
+                requisitions.add(requisition_id)
+
+        admin_action_results(self, request, "skipped", changed)
 
     def get_readonly_fields(self, request, obj=None):
         if obj is None:
             return [
                 "status",
                 "comment",
-                "trigger_metadata",
+                "rule_metadata",
                 "system_generated",
                 "notified_at",
                 "approved_at",
@@ -252,7 +238,7 @@ class ApprovalAdmin(admin.ModelAdmin):
             "sequence_number",
             "status",
             "comment",
-            "trigger_metadata",
+            "rule_metadata",
             "system_generated",
             "notified_at",
             "approved_at",

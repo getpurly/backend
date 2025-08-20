@@ -6,6 +6,7 @@ from .models import Address
 class AddressAdmin(admin.ModelAdmin):
     autocomplete_fields = ["owner"]
     fields = [
+        "owner",
         "name",
         "address_code",
         "description",
@@ -18,7 +19,6 @@ class AddressAdmin(admin.ModelAdmin):
         "zip_code",
         "country",
         "delivery_instructions",
-        "owner",
         "created_at",
         "created_by",
         "updated_at",
@@ -27,6 +27,7 @@ class AddressAdmin(admin.ModelAdmin):
     ]
     list_display = [
         "id",
+        "owner",
         "name",
         "address_code",
         "description",
@@ -38,7 +39,6 @@ class AddressAdmin(admin.ModelAdmin):
         "state",
         "zip_code",
         "country",
-        "owner",
         "created_at",
         "created_by",
         "updated_at",

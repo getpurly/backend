@@ -5,6 +5,9 @@ from .managers import AddressManager, AddressManagerActive
 
 
 class Address(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="addresses_owned"
+    )
     name = models.CharField(max_length=255)
     address_code = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
@@ -17,9 +20,6 @@ class Address(models.Model):
     zip_code = models.CharField(max_length=64)
     country = models.CharField(max_length=64)
     delivery_instructions = models.TextField(blank=True)
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="addresses_owned"
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

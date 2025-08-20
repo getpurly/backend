@@ -233,14 +233,14 @@ def generate_approvals(requisition):
                         break
 
         else:
-            trigger_metadata = fetch_trigger_metadata(approval_chain, header_rules, line_rules)
+            rule_metadata = fetch_trigger_metadata(approval_chain, header_rules, line_rules)
 
             if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
                 approval = Approval(
                     requisition=requisition,
                     approver=approval_chain.approver,
                     sequence_number=approval_chain.sequence_number,
-                    trigger_metadata=trigger_metadata,
+                    rule_metadata=rule_metadata,
                     status=ApprovalStatusChoices.PENDING,
                     system_generated=True,
                 )
@@ -254,7 +254,7 @@ def generate_approvals(requisition):
                         requisition=requisition,
                         approver=approver,
                         sequence_number=approval_chain.sequence_number,
-                        trigger_metadata=trigger_metadata,
+                        rule_metadata=rule_metadata,
                         status=ApprovalStatusChoices.PENDING,
                         system_generated=True,
                     )

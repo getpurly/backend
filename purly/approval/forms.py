@@ -28,9 +28,14 @@ class ApprovalChainForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        min_amount = cleaned_data.get("min_amount")
+        max_amount = cleaned_data.get("max_amount")
         approver_mode = cleaned_data.get("approver_mode")
         approver = cleaned_data.get("approver")
         approver_group = cleaned_data.get("approver_group")
+
+        if max_amount is not None and min_amount >= max_amount:
+            raise ValidationError({"min_amount": "This value must be lower than maximum amount."})
 
         if approver_mode == ApprovalChainModeChoices.INDIVIDUAL and not approver:
             raise ValidationError({"approver": "This field is required."})
