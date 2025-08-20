@@ -9,11 +9,30 @@ class RequisitionLineInline(admin.StackedInline):
     extra = 1
     verbose_name = "requisition line"
     verbose_name_plural = "requisition lines"
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
 
 
 class RequisitionAdmin(admin.ModelAdmin):
     autocomplete_fields = ["owner", "project"]
+    fields = [
+        "name",
+        "external_reference",
+        "status",
+        "owner",
+        "project",
+        "supplier",
+        "justification",
+        "total_amount",
+        "currency",
+        "submitted_at",
+        "approved_at",
+        "rejected_at",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "name",
@@ -58,16 +77,30 @@ class RequisitionAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
-    readonly_fields = [
-        "submitted_at",
-        "approved_at",
-        "rejected_at",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-    ]
     inlines = [RequisitionLineInline]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return [
+                "submitted_at",
+                "approved_at",
+                "rejected_at",
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "deleted",
+            ]
+
+        return [
+            "submitted_at",
+            "approved_at",
+            "rejected_at",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+        ]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -101,6 +134,27 @@ class RequisitionAdmin(admin.ModelAdmin):
 
 class RequisitionLineAdmin(admin.ModelAdmin):
     autocomplete_fields = ["requisition", "ship_to"]
+    fields = [
+        "line_number",
+        "line_type",
+        "description",
+        "category",
+        "manufacturer",
+        "manufacturer_part_number",
+        "quantity",
+        "unit_of_measure",
+        "unit_price",
+        "line_total",
+        "payment_term",
+        "need_by",
+        "requisition",
+        "ship_to",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "line_number",
@@ -140,7 +194,12 @@ class RequisitionLineAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
+
+        return ["created_at", "created_by", "updated_at", "updated_by"]
 
     def has_delete_permission(self, request, obj=None):
         return False

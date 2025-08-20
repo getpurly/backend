@@ -280,6 +280,21 @@ class ApprovalAdmin(admin.ModelAdmin):
 class ApprovalChainAdmin(admin.ModelAdmin):
     autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
+    fields = [
+        "name",
+        "approver_mode",
+        "approver",
+        "approver_group",
+        "sequence_number",
+        "min_amount",
+        "max_amount",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "active",
+        "deleted",
+    ]
     list_display = [
         "id",
         "name",
@@ -297,8 +312,13 @@ class ApprovalChainAdmin(admin.ModelAdmin):
     ]
     list_filter = ["approver_mode", "created_at", "updated_at", "active", "deleted"]
     search_fields = ["name"]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return ["created_at", "created_by", "updated_at", "updated_by", "active", "deleted"]
+
+        return ["created_at", "created_by", "updated_at", "updated_by"]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -331,6 +351,16 @@ class ApprovalChainAdmin(admin.ModelAdmin):
 
 
 class ApprovalGroupAdmin(admin.ModelAdmin):
+    fields = [
+        "name",
+        "description",
+        "approver",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "name",
@@ -342,7 +372,18 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at", "deleted"]
     filter_horizontal = ["approver"]
     search_fields = ["name"]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return [
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "deleted",
+            ]
+
+        return ["created_at", "created_by", "updated_at", "updated_by"]
 
     def has_delete_permission(self, request, obj=None):
         return False

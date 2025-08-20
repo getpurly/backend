@@ -6,6 +6,18 @@ from .models import Project
 
 class ProjectAdmin(admin.ModelAdmin):
     form = ProjectForm
+    fields = [
+        "name",
+        "project_code",
+        "description",
+        "start_date",
+        "end_date",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "name",
@@ -26,7 +38,18 @@ class ProjectAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return [
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "deleted",
+            ]
+
+        return ["created_at", "created_by", "updated_at", "updated_by"]
 
     def save_model(self, request, obj, form, change):
         if change:

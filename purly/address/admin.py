@@ -5,6 +5,26 @@ from .models import Address
 
 class AddressAdmin(admin.ModelAdmin):
     autocomplete_fields = ["owner"]
+    fields = [
+        "name",
+        "address_code",
+        "description",
+        "attention",
+        "phone",
+        "street1",
+        "street2",
+        "city",
+        "state",
+        "zip_code",
+        "country",
+        "delivery_instructions",
+        "owner",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "name",
@@ -43,7 +63,18 @@ class AddressAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return [
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "deleted",
+            ]
+
+        return ["created_at", "created_by", "updated_at", "updated_by"]
 
     def has_delete_permission(self, request, obj=None):
         return False
