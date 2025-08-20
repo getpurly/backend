@@ -80,19 +80,7 @@ class RequisitionAdmin(admin.ModelAdmin):
     inlines = [RequisitionLineInline]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj is None:
-            return [
-                "submitted_at",
-                "approved_at",
-                "rejected_at",
-                "created_at",
-                "created_by",
-                "updated_at",
-                "updated_by",
-                "deleted",
-            ]
-
-        return [
+        readonly_fields = [
             "submitted_at",
             "approved_at",
             "rejected_at",
@@ -101,6 +89,11 @@ class RequisitionAdmin(admin.ModelAdmin):
             "updated_at",
             "updated_by",
         ]
+
+        if obj is None:
+            return [*readonly_fields, "deleted"]
+
+        return readonly_fields
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -196,10 +189,12 @@ class RequisitionLineAdmin(admin.ModelAdmin):
     ]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj is None:
-            return ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
+        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
-        return ["created_at", "created_by", "updated_at", "updated_by"]
+        if obj is None:
+            return [*readonly_fields, "deleted"]
+
+        return readonly_fields
 
     def has_delete_permission(self, request, obj=None):
         return False

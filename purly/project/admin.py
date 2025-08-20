@@ -40,16 +40,12 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj is None:
-            return [
-                "created_at",
-                "created_by",
-                "updated_at",
-                "updated_by",
-                "deleted",
-            ]
+        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
-        return ["created_at", "created_by", "updated_at", "updated_by"]
+        if obj is None:
+            return [*readonly_fields, "deleted"]
+
+        return readonly_fields
 
     def save_model(self, request, obj, form, change):
         if change:
