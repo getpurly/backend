@@ -1,4 +1,8 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.db import transaction
+from django.utils import timezone
+
+from purly.requisition.models import Requisition
 
 from .forms import ApprovalChainForm, ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
 from .models import (
@@ -7,6 +11,13 @@ from .models import (
     ApprovalChainHeaderRule,
     ApprovalChainLineRule,
     ApprovalGroup,
+    ApprovalStatusChoices,
+)
+from .services import (
+    check_if_current_approver,
+    notify_current_sequence,
+    on_fully_approved,
+    on_reject,
 )
 
 
@@ -29,7 +40,26 @@ class ApprovalChainLineRuleInline(admin.StackedInline):
 
 
 class ApprovalAdmin(admin.ModelAdmin):
+    actions = ["approve", "reject", "skip"]
     autocomplete_fields = ["approver", "requisition"]
+    fields = [
+        "requisition",
+        "approver",
+        "sequence_number",
+        "status",
+        "comment",
+        "trigger_metadata",
+        "system_generated",
+        "notified_at",
+        "approved_at",
+        "rejected_at",
+        "skipped_at",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted",
+    ]
     list_display = [
         "id",
         "requisition__id",
@@ -57,18 +87,181 @@ class ApprovalAdmin(admin.ModelAdmin):
         "updated_at",
     ]
     search_fields = []
-    readonly_fields = [
-        "trigger_metadata",
-        "system_generated",
-        "notified_at",
-        "approved_at",
-        "rejected_at",
-        "skipped_at",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-    ]
+
+    @transaction.atomic
+    @admin.action(description="Set approved on selected approvals")
+    def approve(self, request, queryset):
+        changed = 0
+        requisitions = set()
+        timestamp = timezone.now()
+
+        for approval in queryset.filter(
+            status=ApprovalStatusChoices.PENDING, deleted=False
+        ).select_related("requisition"):
+            if check_if_current_approver(approval) is False:
+                continue
+
+            approval.status = ApprovalStatusChoices.APPROVED
+            approval.approved_at = timestamp
+            approval.updated_by = request.user
+
+            approval.save()
+
+            requisitions.add(approval.requisition.id)
+
+            changed += 1
+
+        if changed:
+            for requisition_id in requisitions:
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: notify_current_sequence(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: on_fully_approved(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+
+        match changed:
+            case 0:
+                self.message_user(
+                    request, "No pending approvals were eligible.", level=messages.WARNING
+                )
+            case _:
+                self.message_user(
+                    request,
+                    f"The selected approvals (total = {changed}) were approved.",
+                    level=messages.SUCCESS,
+                )
+
+    @transaction.atomic
+    @admin.action(description="Set rejected on selected approvals")
+    def reject(self, request, queryset):
+        changed = 0
+        requisitions = set()
+        timestamp = timezone.now()
+
+        for approval in queryset.filter(
+            status=ApprovalStatusChoices.PENDING, deleted=False
+        ).select_related("requisition"):
+            if check_if_current_approver(approval) is False:
+                continue
+
+            approval.status = ApprovalStatusChoices.REJECTED
+            approval.rejected_at = timestamp
+            approval.updated_by = request.user
+
+            approval.save()
+
+            changed += 1
+
+            requisition_id = approval.requisition.id
+
+            if requisition_id not in requisitions:
+                transaction.on_commit(
+                    lambda approval=approval, requisition_id=requisition_id: on_reject(
+                        approval, Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+
+                requisitions.add(requisition_id)
+
+        match changed:
+            case 0:
+                self.message_user(
+                    request, "No pending approvals were eligible.", level=messages.WARNING
+                )
+            case _:
+                self.message_user(
+                    request,
+                    f"The selected approvals (total = {changed}) were rejected.",
+                    level=messages.SUCCESS,
+                )
+
+    @transaction.atomic
+    @admin.action(description="Set skipped on selected approvals")
+    def skip(self, request, queryset):
+        changed = 0
+        requisitions = set()
+        timestamp = timezone.now()
+
+        for approval in queryset.filter(
+            status=ApprovalStatusChoices.PENDING, deleted=False
+        ).select_related("requisition"):
+            if check_if_current_approver(approval) is False:
+                continue
+
+            approval.status = ApprovalStatusChoices.SKIPPED
+            approval.skipped_at = timestamp
+            approval.updated_by = request.user
+
+            approval.save()
+
+            requisitions.add(approval.requisition.id)
+
+            changed += 1
+
+        if changed:
+            for requisition_id in requisitions:
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: notify_current_sequence(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: on_fully_approved(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+
+        match changed:
+            case 0:
+                self.message_user(
+                    request, "No pending approvals were eligible.", level=messages.WARNING
+                )
+            case _:
+                self.message_user(
+                    request,
+                    f"The selected approvals (total = {changed}) were skipped.",
+                    level=messages.SUCCESS,
+                )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is None:
+            return [
+                "comment",
+                "trigger_metadata",
+                "system_generated",
+                "notified_at",
+                "approved_at",
+                "rejected_at",
+                "skipped_at",
+                "created_at",
+                "created_by",
+                "updated_at",
+                "updated_by",
+                "deleted",
+            ]
+
+        return [
+            "requisition",
+            "approver",
+            "sequence_number",
+            "status",
+            "comment",
+            "trigger_metadata",
+            "system_generated",
+            "notified_at",
+            "approved_at",
+            "rejected_at",
+            "skipped_at",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+        ]
 
     def has_delete_permission(self, request, obj=None):
         return False

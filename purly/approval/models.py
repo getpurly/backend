@@ -101,6 +101,7 @@ class ApprovalChainModeChoices(models.TextChoices):
 
 
 class Approval(models.Model):
+    requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT, related_name="approvals")
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approvals_as_approver"
     )
@@ -117,7 +118,6 @@ class Approval(models.Model):
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
     skipped_at = models.DateTimeField(blank=True, null=True, editable=False)
-    requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT, related_name="approvals")
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
