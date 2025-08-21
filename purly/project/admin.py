@@ -43,7 +43,7 @@ class ProjectAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = Project.objects.active().all()  # type: ignore
+            queryset = Project.objects.active().all().order_by("id")  # type: ignore
 
         return queryset, use_distinct
 

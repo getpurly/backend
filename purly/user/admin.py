@@ -26,7 +26,7 @@ class UserAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = queryset.filter(is_active=True)
+            queryset = queryset.filter(is_active=True).order_by("username")
 
         return queryset, use_distinct
 

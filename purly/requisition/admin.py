@@ -55,6 +55,7 @@ class RequisitionAdmin(admin.ModelAdmin):
         "updated_by",
     ]
     list_filter = [
+        "status",
         "submitted_at",
         "approved_at",
         "rejected_at",
@@ -88,16 +89,20 @@ class RequisitionAdmin(admin.ModelAdmin):
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == Approval._meta.app_label
         ):
-            queryset = Requisition.objects.active().filter(  # type: ignore
-                status=RequisitionStatusChoices.PENDING_APPROVAL
+            queryset = (
+                Requisition.objects.active()  # type: ignore
+                .filter(status=RequisitionStatusChoices.PENDING_APPROVAL)
+                .order_by("id")
             )
 
         if (
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == RequisitionLine._meta.app_label
         ):
-            queryset = Requisition.objects.active().filter(  # type: ignore
-                status=RequisitionStatusChoices.DRAFT
+            queryset = (
+                Requisition.objects.active()  # type: ignore
+                .filter(status=RequisitionStatusChoices.DRAFT)
+                .order_by("id")
             )
 
         return queryset, use_distinct

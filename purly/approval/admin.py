@@ -392,7 +392,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = ApprovalChain.objects.active().all()  # type: ignore
+            queryset = ApprovalChain.objects.active().all().order_by("name")  # type: ignore
 
         return queryset, use_distinct
 
@@ -461,7 +461,7 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = ApprovalGroup.objects.active().all()  # type: ignore
+            queryset = ApprovalGroup.objects.active().all().order_by("name")  # type: ignore
 
         return queryset, use_distinct
 
