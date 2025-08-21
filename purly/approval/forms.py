@@ -123,7 +123,7 @@ class ApprovalChainRuleForm(forms.ModelForm):
         if lookup == LookupStringChoices.REGEX and value:
             for pattern in value:
                 try:
-                    re.compile(pattern)  # type: ignore
+                    re.compile(pattern)
                 except re.error as e:
                     raise ValidationError(
                         {"value": f"There was an error with regex pattern: {e}."}

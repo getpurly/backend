@@ -19,7 +19,7 @@ from .serializers import (
 class ProjectViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
-    queryset = Project.objects_active.select_related("created_by", "updated_by")
+    queryset = Project.objects.active().select_related("created_by", "updated_by")  # type: ignore
     serializer_class = ProjectListSerializer
     pagination_class = ProjectPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

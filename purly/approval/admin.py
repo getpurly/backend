@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from purly.requisition.models import Requisition
+from purly.user.models import User
 
 from .forms import ApprovalChainForm, ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
 from .models import (
@@ -111,10 +112,14 @@ class ApprovalAdmin(admin.ModelAdmin):
         requisitions = set()
         timestamp = timezone.now()
 
-        for approval in queryset.filter(
-            status=ApprovalStatusChoices.PENDING, deleted=False
-        ).select_related("requisition"):
-            if check_if_current_approver(approval) is False:
+        for approval in queryset:
+            if (
+                check_if_current_approver(approval) is False
+                and approval.status == ApprovalStatusChoices.PENDING
+            ):
+                continue
+
+            if approval.status != ApprovalStatusChoices.PENDING:
                 continue
 
             approval.status = ApprovalStatusChoices.APPROVED
@@ -150,10 +155,14 @@ class ApprovalAdmin(admin.ModelAdmin):
         requisitions = set()
         timestamp = timezone.now()
 
-        for approval in queryset.filter(
-            status=ApprovalStatusChoices.PENDING, deleted=False
-        ).select_related("requisition"):
-            if check_if_current_approver(approval) is False:
+        for approval in queryset:
+            if (
+                check_if_current_approver(approval) is False
+                and approval.status == ApprovalStatusChoices.PENDING
+            ):
+                continue
+
+            if approval.status != ApprovalStatusChoices.PENDING:
                 continue
 
             approval.status = ApprovalStatusChoices.REJECTED
@@ -184,10 +193,14 @@ class ApprovalAdmin(admin.ModelAdmin):
         requisitions = set()
         timestamp = timezone.now()
 
-        for approval in queryset.filter(
-            status=ApprovalStatusChoices.PENDING, deleted=False
-        ).select_related("requisition"):
-            if check_if_current_approver(approval) is False:
+        for approval in queryset:
+            if (
+                check_if_current_approver(approval) is False
+                and approval.status == ApprovalStatusChoices.PENDING
+            ):
+                continue
+
+            if approval.status != ApprovalStatusChoices.PENDING:
                 continue
 
             approval.status = ApprovalStatusChoices.SKIPPED
@@ -282,8 +295,8 @@ class ApprovalAdmin(admin.ModelAdmin):
 
                 obj.save()
 
-                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
-                transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
+                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))
+                transaction.on_commit(lambda: on_fully_approved(obj.requisition))
 
                 self.message_user(
                     request, "This approval has been approved.", level=messages.SUCCESS
@@ -298,7 +311,7 @@ class ApprovalAdmin(admin.ModelAdmin):
 
                 obj.save()
 
-                transaction.on_commit(lambda: on_reject(obj, obj.requisition))  # type: ignore
+                transaction.on_commit(lambda: on_reject(obj, obj.requisition))
 
                 self.message_user(
                     request, "This approval has been rejected.", level=messages.SUCCESS
@@ -313,8 +326,8 @@ class ApprovalAdmin(admin.ModelAdmin):
 
                 obj.save()
 
-                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
-                transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
+                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))
+                transaction.on_commit(lambda: on_fully_approved(obj.requisition))
 
                 self.message_user(
                     request, "This approval has been skipped.", level=messages.SUCCESS
@@ -374,6 +387,14 @@ class ApprovalChainAdmin(admin.ModelAdmin):
     list_filter = ["approver_mode", "created_at", "updated_at", "active", "deleted"]
     search_fields = ["name"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if request.path.endswith("/autocomplete/"):
+            queryset = ApprovalChain.objects.active().all()  # type: ignore
+
+        return queryset, use_distinct
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
@@ -435,6 +456,20 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at", "deleted"]
     filter_horizontal = ["approver"]
     search_fields = ["name"]
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if request.path.endswith("/autocomplete/"):
+            queryset = ApprovalGroup.objects.active().all()  # type: ignore
+
+        return queryset, use_distinct
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "approver":
+            kwargs["queryset"] = User.objects.filter(is_active=True)
+
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]

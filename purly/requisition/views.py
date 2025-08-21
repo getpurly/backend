@@ -37,7 +37,7 @@ REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"
 class RequisitionViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
-    queryset = Requisition.objects_active.select_related(
+    queryset = Requisition.objects.active().select_related(  # type: ignore
         "project", "owner", "created_by", "updated_by"
     )
     serializer_class = RequisitionListSerializer
@@ -156,10 +156,12 @@ class RequisitionMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_FILTER_FIELDS
     ordering_fields = REQUISITION_ORDERING
 
-    def get_queryset(self):  # type: ignore
-        return Requisition.objects_active.select_related(
-            "project", "owner", "created_by", "updated_by"
-        ).filter(owner=self.request.user)
+    def get_queryset(self):
+        return (
+            Requisition.objects.active()  # type: ignore
+            .select_related("project", "owner", "created_by", "updated_by")
+            .filter(owner=self.request.user)
+        )
 
 
 @extend_schema(
@@ -168,7 +170,7 @@ class RequisitionMineListView(generics.ListAPIView):
 class RequisitionLineListView(generics.ListAPIView):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
-    queryset = RequisitionLine.objects_active.select_related(
+    queryset = RequisitionLine.objects.active().select_related(  # type: ignore
         "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
     )
     serializer_class = RequisitionLineListSerializer
@@ -192,7 +194,11 @@ class RequisitionLineMineListView(generics.ListAPIView):
     filterset_fields = REQUISITION_LINE_FILTER_FIELDS
     ordering_fields = REQUISITION_LINE_ORDERING
 
-    def get_queryset(self):  # type: ignore
-        return RequisitionLine.objects_active.select_related(
-            "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
-        ).filter(requisition__owner=self.request.user)
+    def get_queryset(self):
+        return (
+            RequisitionLine.objects.active()  # type: ignore
+            .select_related(
+                "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
+            )
+            .filter(requisition__owner=self.request.user)
+        )

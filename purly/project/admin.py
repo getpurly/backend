@@ -39,6 +39,14 @@ class ProjectAdmin(admin.ModelAdmin):
         "updated_by__username",
     ]
 
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if request.path.endswith("/autocomplete/"):
+            queryset = Project.objects.active().all()  # type: ignore
+
+        return queryset, use_distinct
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 

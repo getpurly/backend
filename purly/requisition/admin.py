@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Requisition, RequisitionLine
+from purly.approval.models import Approval
+
+from .models import Requisition, RequisitionLine, RequisitionStatusChoices
 
 
 class RequisitionLineInline(admin.StackedInline):
@@ -78,6 +80,27 @@ class RequisitionAdmin(admin.ModelAdmin):
         "updated_by__username",
     ]
     inlines = [RequisitionLineInline]
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if (
+            request.path.endswith("/autocomplete/")
+            and request.GET.get("app_label") == Approval._meta.app_label
+        ):
+            queryset = Requisition.objects.active().filter(  # type: ignore
+                status=RequisitionStatusChoices.PENDING_APPROVAL
+            )
+
+        if (
+            request.path.endswith("/autocomplete/")
+            and request.GET.get("app_label") == RequisitionLine._meta.app_label
+        ):
+            queryset = Requisition.objects.active().filter(  # type: ignore
+                status=RequisitionStatusChoices.DRAFT
+            )
+
+        return queryset, use_distinct
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [

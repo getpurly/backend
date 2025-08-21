@@ -22,6 +22,14 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ["is_active", "date_joined", "last_login"]
     search_fields = ["username", "first_name", "last_name", "email"]
 
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+
+        if request.path.endswith("/autocomplete/"):
+            queryset = queryset.filter(is_active=True)
+
+        return queryset, use_distinct
+
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -62,4 +70,3 @@ class EmailAddressAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
-# admin.site.register(EmailAddress, EmailAddressAdmin)  # noqa: ERA001

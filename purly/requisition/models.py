@@ -9,9 +9,7 @@ from purly.project.models import Project
 
 from .managers import (
     RequisitionLineManager,
-    RequisitionLineManagerActive,
     RequisitionManager,
-    RequisitionManagerActive,
 )
 
 
@@ -82,7 +80,6 @@ class Requisition(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = RequisitionManager()
-    objects_active = RequisitionManagerActive()
 
     class Meta:
         db_table = "requisition"
@@ -132,7 +129,6 @@ class RequisitionLine(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = RequisitionLineManager()
-    objects_active = RequisitionLineManagerActive()
 
     class Meta:
         db_table = "requisition_line"

@@ -204,7 +204,8 @@ def generate_approvals(requisition):
     approvals = []
 
     approval_chains = (
-        ApprovalChain.objects_active.filter(min_amount__lte=requisition.total_amount)
+        ApprovalChain.objects.active()  # type: ignore
+        .filter(min_amount__lte=requisition.total_amount)
         .filter(Q(max_amount__gte=requisition.total_amount) | Q(max_amount__isnull=True))
         .filter(active=True)
         .order_by("sequence_number")
@@ -217,8 +218,8 @@ def generate_approvals(requisition):
         return False
 
     for approval_chain in approval_chains:
-        header_rules = approval_chain.approval_chain_header_rules.all()  # type: ignore
-        line_rules = approval_chain.approval_chain_line_rules.all()  # type: ignore
+        header_rules = approval_chain.approval_chain_header_rules.all()
+        line_rules = approval_chain.approval_chain_line_rules.all()
 
         if not all(header_rule_matching(requisition, rule) for rule in header_rules):
             continue
@@ -247,7 +248,7 @@ def generate_approvals(requisition):
 
                 approvals.append(approval)
             else:
-                approvers = approval_chain.approver_group.approver.all()  # type: ignore
+                approvers = approval_chain.approver_group.approver.all()
 
                 for approver in approvers:
                     approval = Approval(
@@ -307,9 +308,11 @@ def on_fully_approved(requisition):
 
 
 def retrieve_sequence_min(requisition):
-    value = Approval.objects_active.filter(
-        requisition=requisition, status=ApprovalStatusChoices.PENDING
-    ).aggregate(Min("sequence_number"))
+    value = (
+        Approval.objects.active()  # type: ignore
+        .filter(requisition=requisition, status=ApprovalStatusChoices.PENDING)
+        .aggregate(Min("sequence_number"))
+    )
 
     return value["sequence_number__min"]
 

@@ -19,7 +19,7 @@ from .serializers import (
 class AddressViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
-    queryset = Address.objects_active.select_related("owner", "created_by", "updated_by")
+    queryset = Address.objects.active().select_related("owner", "created_by", "updated_by")  # type: ignore
     serializer_class = AddressListSerializer
     pagination_class = AddressPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -97,7 +97,9 @@ class AddressMineListView(generics.ListAPIView):
     filterset_fields = ADDRESS_FILTER_FIELDS
     ordering_fields = ["created_at", "updated_at"]
 
-    def get_queryset(self):  # type: ignore
-        return Address.objects_active.filter(owner=self.request.user).select_related(
-            "owner", "created_by", "updated_by"
+    def get_queryset(self):
+        return (
+            Address.objects.active()  # type: ignore
+            .filter(owner=self.request.user)
+            .select_related("owner", "created_by", "updated_by")
         )

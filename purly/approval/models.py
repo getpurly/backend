@@ -9,10 +9,8 @@ from purly.requisition.models import Requisition
 
 from .managers import (
     ApprovalChainManager,
-    ApprovalChainManagerActive,
     ApprovalGroupManager,
     ApprovalManager,
-    ApprovalManagerActive,
 )
 
 
@@ -135,7 +133,6 @@ class Approval(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = ApprovalManager()
-    objects_active = ApprovalManagerActive()
 
     class Meta:
         db_table = "approval"
@@ -233,7 +230,6 @@ class ApprovalChain(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = ApprovalChainManager()
-    objects_active = ApprovalChainManagerActive()
 
     class Meta:
         db_table = "approval_chain"

@@ -5,7 +5,5 @@ class AddressManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset()
 
-
-class AddressManagerActive(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(deleted=False)
+    def active(self):
+        return self.get_queryset().filter(deleted=False)

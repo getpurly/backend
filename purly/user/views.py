@@ -14,7 +14,7 @@ from .serializers import UserDetailSerializer, UserListSerializer
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
+    queryset = User.objects.filter(is_active=True)
     serializer_class = UserListSerializer
     pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

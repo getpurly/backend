@@ -25,7 +25,7 @@ from .services import (
 class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     http_method_names = ["get", "post"]
     permission_classes = [IsAuthenticated]
-    queryset = Approval.objects_active.select_related("approver", "created_by", "updated_by")
+    queryset = Approval.objects.active().select_related("approver", "created_by", "updated_by")  # type: ignore
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
 
@@ -123,7 +123,10 @@ class ApprovalMineListView(generics.ListAPIView):
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
 
-    def get_queryset(self):  # type: ignore
-        return Approval.objects_active.filter(approver=self.request.user).exclude(
-            status=ApprovalStatusChoices.CANCELLED
+    def get_queryset(self):
+        return (
+            Approval.objects.active()  # type: ignore
+            .filter(approver=self.request.user)
+            .exclude(status=ApprovalStatusChoices.CANCELLED)
+            .select_related("approver", "created_by", "updated_by")
         )

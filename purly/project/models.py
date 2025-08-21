@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from .managers import ProjectManager, ProjectManagerActive
+from .managers import ProjectManager
 
 
 class Project(models.Model):
@@ -29,7 +29,6 @@ class Project(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = ProjectManager()
-    objects_active = ProjectManagerActive()
 
     class Meta:
         db_table = "project"

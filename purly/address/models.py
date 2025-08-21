@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from .managers import AddressManager, AddressManagerActive
+from .managers import AddressManager
 
 
 class Address(models.Model):
@@ -35,7 +35,6 @@ class Address(models.Model):
     deleted = models.BooleanField(default=False)
 
     objects = AddressManager()
-    objects_active = AddressManagerActive()
 
     class Meta:
         db_table = "address"
