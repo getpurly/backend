@@ -193,8 +193,8 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
         "max_amount": str(Decimal(approval_chain.max_amount))
         if approval_chain.max_amount
         else None,
-        "header_rules": header_rules_metadata,
-        "line_rules": line_rules_metadata,
+        "header_rules": None if len(header_rules_metadata) == 0 else header_rules_metadata,
+        "line_rules": None if len(line_rules_metadata) == 0 else line_rules_metadata,
     }
 
 
@@ -281,7 +281,24 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
+def on_approve(approval, requisition):
+    approval.status = ApprovalStatusChoices.APPROVED
+    approval.approved_at = timezone.now()
+
+    approval.save()
+
+    transaction.on_commit(lambda: notify_current_sequence(requisition))
+    transaction.on_commit(lambda: on_fully_approved(requisition))
+
+    return approval
+
+
 def on_reject(approval, requisition):
+    approval.status = ApprovalStatusChoices.REJECTED
+    approval.rejected_at = timezone.now()
+
+    approval.save()
+
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT
@@ -291,8 +308,21 @@ def on_reject(approval, requisition):
 
     send_reject_email(approval, requisition)
 
+    return approval
 
-@transaction.atomic
+
+def on_skip(approval, requisition):
+    approval.status = ApprovalStatusChoices.SKIPPED
+    approval.skipped_at = timezone.now()
+
+    approval.save()
+
+    transaction.on_commit(lambda: notify_current_sequence(requisition))
+    transaction.on_commit(lambda: on_fully_approved(requisition))
+
+    return approval
+
+
 def on_fully_approved(requisition):
     if (
         retrieve_sequence_min(requisition) is None
@@ -345,7 +375,6 @@ def approval_request_validation(request_user, action, approval):
             raise BadRequest(detail="This approval must be in pending status to reject.")
 
 
-@transaction.atomic
 def notify_current_sequence(requisition):
     sequence_min_value = retrieve_sequence_min(requisition)
 

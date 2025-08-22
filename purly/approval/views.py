@@ -1,6 +1,5 @@
 from django.db import transaction
 from django.http import Http404
-from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, generics, mixins, viewsets
 from rest_framework.decorators import action
@@ -16,8 +15,7 @@ from .serializers import (
 )
 from .services import (
     approval_request_validation,
-    notify_current_sequence,
-    on_fully_approved,
+    on_approve,
     on_reject,
 )
 
@@ -71,16 +69,10 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer = ApprovalRequestSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        obj = serializer.save(
-            status=ApprovalStatusChoices.APPROVED,
-            approved_at=timezone.now(),
-            updated_by=self.request.user,
-        )
+        obj = on_approve(approval, approval.requisition)
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
-
-        transaction.on_commit(lambda: notify_current_sequence(obj.requisition))  # type: ignore
-        transaction.on_commit(lambda: on_fully_approved(obj.requisition))  # type: ignore
 
         return Response(approval_detail)
 
@@ -99,15 +91,10 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer = ApprovalRequestSerializer(approval, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        obj = serializer.save(
-            status=ApprovalStatusChoices.REJECTED,
-            rejected_at=timezone.now(),
-            updated_by=self.request.user,
-        )
+        obj = on_reject(approval, approval.requisition)
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
-
-        transaction.on_commit(lambda: on_reject(obj, obj.requisition))  # type: ignore
 
         return Response(approval_detail)
 

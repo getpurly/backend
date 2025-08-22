@@ -24,8 +24,10 @@ from .models import (
 from .services import (
     check_if_current_approver,
     notify_current_sequence,
+    on_approve,
     on_fully_approved,
     on_reject,
+    on_skip,
 )
 
 
@@ -274,8 +276,6 @@ class ApprovalAdmin(admin.ModelAdmin):
     @transaction.atomic
     def response_change(self, request, obj):
         if "_approve" in request.POST or "_reject" in request.POST or "_skip" in request.POST:
-            timestamp = timezone.now()
-
             if (
                 check_if_current_approver(obj) is False
                 and obj.status == ApprovalStatusChoices.PENDING
@@ -296,14 +296,7 @@ class ApprovalAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.path)
 
             if "_approve" in request.POST:
-                obj.status = ApprovalStatusChoices.APPROVED
-                obj.approved_at = timestamp
-                obj.updated_by = request.user
-
-                obj.save()
-
-                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))
-                transaction.on_commit(lambda: on_fully_approved(obj.requisition))
+                on_approve(obj, obj.requisition)
 
                 self.message_user(
                     request, "This approval has been approved.", level=messages.SUCCESS
@@ -312,13 +305,7 @@ class ApprovalAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.path)
 
             if "_reject" in request.POST:
-                obj.status = ApprovalStatusChoices.REJECTED
-                obj.rejected_at = timestamp
-                obj.updated_by = request.user
-
-                obj.save()
-
-                transaction.on_commit(lambda: on_reject(obj, obj.requisition))
+                on_reject(obj, obj.requisition)
 
                 self.message_user(
                     request, "This approval has been rejected.", level=messages.SUCCESS
@@ -327,14 +314,7 @@ class ApprovalAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.path)
 
             if "_skip" in request.POST:
-                obj.status = ApprovalStatusChoices.SKIPPED
-                obj.skipped_at = timestamp
-                obj.updated_by = request.user
-
-                obj.save()
-
-                transaction.on_commit(lambda: notify_current_sequence(obj.requisition))
-                transaction.on_commit(lambda: on_fully_approved(obj.requisition))
+                on_skip(obj, obj.requisition)
 
                 self.message_user(
                     request, "This approval has been skipped.", level=messages.SUCCESS
