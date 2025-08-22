@@ -1,9 +1,25 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.db import transaction
+from django.http import HttpResponseRedirect
 
 from purly.approval.models import Approval
+from purly.approval.services import generate_approvals
+from purly.requisition.services import on_submit, on_withdraw
 
 from .forms import RequisitionForm, RequisitionLineForm
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
+
+
+def admin_action_results(self, request, action, changed):
+    match changed:
+        case 0:
+            self.message_user(request, "No requisitions were eligible.", level=messages.WARNING)
+        case _:
+            self.message_user(
+                request,
+                f"The selected requisitions were {action} (total = {changed}).",
+                level=messages.SUCCESS,
+            )
 
 
 class RequisitionLineInline(admin.StackedInline):
@@ -16,7 +32,9 @@ class RequisitionLineInline(admin.StackedInline):
 
 
 class RequisitionAdmin(admin.ModelAdmin):
+    actions = ["submit", "withdraw"]
     autocomplete_fields = ["owner", "project"]
+    change_form_template = "admin/requisition/change_form.html"
     form = RequisitionForm
     fields = [
         "name",
@@ -83,6 +101,91 @@ class RequisitionAdmin(admin.ModelAdmin):
         "updated_by__username",
     ]
     inlines = [RequisitionLineInline]
+
+    @transaction.atomic
+    @admin.action(description="Submit for approval")
+    def submit(self, request, queryset):
+        changed = 0
+
+        for requisition in queryset:
+            if requisition.status != RequisitionStatusChoices.DRAFT:
+                continue
+
+            if generate_approvals(requisition) is False:
+                continue
+
+            on_submit(requisition)
+
+            changed += 1
+
+        admin_action_results(self, request, "submitted", changed)
+
+    @transaction.atomic
+    @admin.action(description="Withdraw from approval")
+    def withdraw(self, request, queryset):
+        changed = 0
+
+        for requisition in queryset:
+            if requisition.status != RequisitionStatusChoices.PENDING_APPROVAL:
+                continue
+
+            on_withdraw(requisition)
+
+            changed += 1
+
+        admin_action_results(self, request, "withdrawn", changed)
+
+    @transaction.atomic
+    def response_change(self, request, obj):
+        if "_submit" in request.POST or "_withdraw" in request.POST:
+            if "_submit" in request.POST:
+                if obj.status != RequisitionStatusChoices.DRAFT:
+                    self.message_user(
+                        request,
+                        "This requisition must be in draft status to submit for approval.",
+                        level=messages.WARNING,
+                    )
+
+                    return HttpResponseRedirect(request.path)
+
+                if generate_approvals(obj) is False:
+                    self.message_user(
+                        request,
+                        "This requisition cannot be submitted because no approval chains matched.",
+                        level=messages.WARNING,
+                    )
+
+                    return HttpResponseRedirect(request.path)
+
+                on_submit(obj)
+
+                self.message_user(
+                    request,
+                    "This requisition has been submitted for approval.",
+                    level=messages.SUCCESS,
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if "_withdraw" in request.POST:
+                if obj.status != RequisitionStatusChoices.PENDING_APPROVAL:
+                    self.message_user(
+                        request,
+                        "This requisition must be in pending approval status to withdraw.",
+                        level=messages.WARNING,
+                    )
+
+                    return HttpResponseRedirect(request.path)
+
+                on_withdraw(obj)
+
+                self.message_user(
+                    request, "This requisition has been withdrawn.", level=messages.SUCCESS
+                )
+
+                return HttpResponseRedirect(request.path)
+
+        return super().response_change(request, obj)
 
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)

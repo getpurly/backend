@@ -7,10 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from purly.approval.services import (
-    notify_current_sequence,
-)
-
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
 from .models import Requisition, RequisitionLine
 from .pagination import RequisitionLinePagination, RequisitionPagination
@@ -123,8 +119,6 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         obj = on_submit(requisition)
         serializer = RequisitionDetailSerializer(obj)
-
-        transaction.on_commit(lambda: notify_current_sequence(obj))
 
         return Response(serializer.data)
 

@@ -1,8 +1,9 @@
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import exceptions
 
 from config.exceptions import BadRequest
-from purly.approval.services import cancel_approvals, generate_approvals
+from purly.approval.services import cancel_approvals, generate_approvals, notify_current_sequence
 
 from .models import RequisitionStatusChoices
 
@@ -40,6 +41,8 @@ def on_submit(requisition):
     requisition.rejected_at = None
 
     requisition.save()
+
+    transaction.on_commit(lambda: notify_current_sequence(requisition))
 
     return requisition
 

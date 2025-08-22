@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+
+{% if original and original.status == "draft" %}
+<div class="submit-row">
+    <input type="submit" value='{% trans "Submit for Approval" %}' name="_submit">
+</div>
+{% endif %}
+
+{% if original and original.status == "pending_approval" %}
+<div class="submit-row">
+    <input type="submit" value='{% trans "Withdraw" %}' name="_withdraw">
+</div>
+{% endif %}
+{% endblock %}
