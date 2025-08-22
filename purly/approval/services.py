@@ -24,7 +24,7 @@ from .models import (
 )
 
 
-def perform_lookup(value, rule_lookup, rule_value):  # noqa: C901 PLR0911 PLR0912
+def perform_lookup(value, rule_lookup, rule_value):  # noqa: PLR0911, PLR0912
     if rule_lookup != LookupStringChoices.IS_NULL and value is None:
         return False
 

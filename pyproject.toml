@@ -39,6 +39,7 @@ ignore = [
     "D105",   # Missing docstring in magic method
     "D106",   # Missing docstring in public nested class
     "D107",   # Missing docstring in `__init__`
+    "C901",   # Function is too complex (> 10)
     "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
     "TRY003", # Avoid specifying long messages outside the exception class
     "EM101",  # Exception must not use a string literal, assign to variable first

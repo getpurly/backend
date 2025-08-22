@@ -32,6 +32,7 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
     list_filter = ["start_date", "end_date", "created_at", "updated_at", "deleted"]
     search_fields = [
+        "id",
         "name",
         "project_code",
         "description",
@@ -43,7 +44,7 @@ class ProjectAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = Project.objects.active().all().order_by("id")  # type: ignore
+            queryset = queryset.filter(deleted=False).order_by("id")  # type: ignore
 
         return queryset, use_distinct
 

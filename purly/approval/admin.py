@@ -6,7 +6,13 @@ from django.utils import timezone
 from purly.requisition.models import Requisition
 from purly.user.models import User
 
-from .forms import ApprovalChainForm, ApprovalChainHeaderRuleForm, ApprovalChainLineRuleForm
+from .forms import (
+    ApprovalChainForm,
+    ApprovalChainHeaderRuleForm,
+    ApprovalChainLineRuleForm,
+    ApprovalForm,
+    ApprovalGroupForm,
+)
 from .models import (
     Approval,
     ApprovalChain,
@@ -59,6 +65,7 @@ class ApprovalAdmin(admin.ModelAdmin):
     actions = ["approve", "reject", "skip"]
     autocomplete_fields = ["approver", "requisition"]
     change_form_template = "admin/approval/change_form.html"
+    form = ApprovalForm
     fields = [
         "requisition",
         "approver",
@@ -392,7 +399,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = ApprovalChain.objects.active().all().order_by("name")  # type: ignore
+            queryset = queryset.filter(active=True, deleted=False).order_by("name")
 
         return queryset, use_distinct
 
@@ -435,6 +442,7 @@ class ApprovalChainAdmin(admin.ModelAdmin):
 
 
 class ApprovalGroupAdmin(admin.ModelAdmin):
+    form = ApprovalGroupForm
     fields = [
         "name",
         "description",
@@ -461,13 +469,13 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = ApprovalGroup.objects.active().all().order_by("name")  # type: ignore
+            queryset = queryset.filter(deleted=False).order_by("name")
 
         return queryset, use_distinct
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "approver":
-            kwargs["queryset"] = User.objects.filter(is_active=True)
+            kwargs["queryset"] = User.objects.filter(is_active=True).order_by("username")
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 

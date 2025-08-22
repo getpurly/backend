@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from purly.approval.models import Approval
 
+from .forms import RequisitionForm, RequisitionLineForm
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
 
 
@@ -16,6 +17,7 @@ class RequisitionLineInline(admin.StackedInline):
 
 class RequisitionAdmin(admin.ModelAdmin):
     autocomplete_fields = ["owner", "project"]
+    form = RequisitionForm
     fields = [
         "name",
         "external_reference",
@@ -89,26 +91,23 @@ class RequisitionAdmin(admin.ModelAdmin):
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == Approval._meta.app_label
         ):
-            queryset = (
-                Requisition.objects.active()  # type: ignore
-                .filter(status=RequisitionStatusChoices.PENDING_APPROVAL)
-                .order_by("id")
-            )
+            queryset = queryset.filter(
+                status=RequisitionStatusChoices.PENDING_APPROVAL, deleted=False
+            ).order_by("id")
 
         if (
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == RequisitionLine._meta.app_label
         ):
-            queryset = (
-                Requisition.objects.active()  # type: ignore
-                .filter(status=RequisitionStatusChoices.DRAFT)
-                .order_by("id")
-            )
+            queryset = queryset.filter(
+                status=RequisitionStatusChoices.DRAFT, deleted=False
+            ).order_by("id")
 
         return queryset, use_distinct
 
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [
+            "status",
             "submitted_at",
             "approved_at",
             "rejected_at",
@@ -155,6 +154,7 @@ class RequisitionAdmin(admin.ModelAdmin):
 
 class RequisitionLineAdmin(admin.ModelAdmin):
     autocomplete_fields = ["requisition", "ship_to"]
+    form = RequisitionLineForm
     fields = [
         "line_number",
         "line_type",

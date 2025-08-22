@@ -1,9 +1,12 @@
 from django.contrib import admin
 
+from purly.address.forms import AddressForm
+
 from .models import Address
 
 
 class AddressAdmin(admin.ModelAdmin):
+    form = AddressForm
     autocomplete_fields = ["owner"]
     fields = [
         "owner",
@@ -47,6 +50,7 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ["created_at", "updated_at", "deleted"]
     search_fields = [
         "id",
+        "owner__username",
         "name",
         "address_code",
         "description",
@@ -59,7 +63,6 @@ class AddressAdmin(admin.ModelAdmin):
         "zip_code",
         "country",
         "delivery_instructions",
-        "owner__username",
         "created_by__username",
         "updated_by__username",
     ]
@@ -68,7 +71,7 @@ class AddressAdmin(admin.ModelAdmin):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
         if request.path.endswith("/autocomplete/"):
-            queryset = Address.objects.active().all().order_by("id")  # type: ignore
+            queryset = queryset.filter(deleted=False).order_by("id")
 
         return queryset, use_distinct
 

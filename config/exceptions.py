@@ -35,7 +35,7 @@ def handle_error(exc, context, response):
     return response
 
 
-def handle_validation_error(exc, context, response):  # noqa: C901
+def handle_validation_error(exc, context, response):
     errors = []
 
     full_details = exc.get_full_details()
