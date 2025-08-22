@@ -1,9 +1,10 @@
 from django.db import models
 
 
-class AddressManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
-
+class AddressQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
+
+
+class AddressManager(models.Manager.from_queryset(AddressQuerySet)):
+    pass

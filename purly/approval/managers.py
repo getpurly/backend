@@ -1,25 +1,28 @@
 from django.db import models
 
 
-class ApprovalManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
-
+class ApprovalQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
 
 
-class ApprovalChainManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
+class ApprovalManager(models.Manager.from_queryset(ApprovalQuerySet)):
+    pass
 
+
+class ApprovalChainQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
 
 
-class ApprovalGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
+class ApprovalChainManager(models.Manager.from_queryset(ApprovalChainQuerySet)):
+    pass
 
+
+class ApprovalGroupQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
+
+
+class ApprovalGroupManager(models.Manager.from_queryset(ApprovalGroupQuerySet)):
+    pass

@@ -91,17 +91,19 @@ class RequisitionAdmin(admin.ModelAdmin):
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == Approval._meta.app_label
         ):
-            queryset = queryset.filter(
-                status=RequisitionStatusChoices.PENDING_APPROVAL, deleted=False
-            ).order_by("id")
+            queryset = (
+                queryset.active()  # type: ignore
+                .filter(status=RequisitionStatusChoices.PENDING_APPROVAL)
+                .order_by("id")
+            )
 
         if (
             request.path.endswith("/autocomplete/")
             and request.GET.get("app_label") == RequisitionLine._meta.app_label
         ):
-            queryset = queryset.filter(
-                status=RequisitionStatusChoices.DRAFT, deleted=False
-            ).order_by("id")
+            queryset = (
+                queryset.active().filter(status=RequisitionStatusChoices.DRAFT).order_by("id")  # type: ignore
+            )
 
         return queryset, use_distinct
 

@@ -1,17 +1,19 @@
 from django.db import models
 
 
-class RequisitionManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
-
+class RequisitionQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
 
 
-class RequisitionLineManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset()
+class RequisitionManager(models.Manager.from_queryset(RequisitionQuerySet)):
+    pass
 
+
+class RequisitionLineQuerySet(models.QuerySet):
     def active(self):
-        return self.get_queryset().filter(deleted=False)
+        return self.filter(deleted=False)
+
+
+class RequisitionLineManager(models.Manager.from_queryset(RequisitionLineQuerySet)):
+    pass
