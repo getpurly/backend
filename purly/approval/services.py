@@ -197,8 +197,8 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
         "max_amount": str(Decimal(approval_chain.max_amount))
         if approval_chain.max_amount
         else None,
-        "header_rules": None if len(header_rules_metadata) == 0 else header_rules_metadata,
-        "line_rules": None if len(line_rules_metadata) == 0 else line_rules_metadata,
+        "header_rules": header_rules_metadata if len(header_rules_metadata) > 0 else None,
+        "line_rules": line_rules_metadata if len(line_rules_metadata) > 0 else None,
     }
 
 
