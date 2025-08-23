@@ -114,7 +114,7 @@ class RequisitionAdmin(admin.ModelAdmin):
             if generate_approvals(requisition) is False:
                 continue
 
-            on_submit(requisition)
+            on_submit(requisition, request_user=request.user)
 
             changed += 1
 
@@ -129,7 +129,7 @@ class RequisitionAdmin(admin.ModelAdmin):
             if requisition.status != RequisitionStatusChoices.PENDING_APPROVAL:
                 continue
 
-            on_withdraw(requisition)
+            on_withdraw(requisition, request_user=request.user)
 
             changed += 1
 

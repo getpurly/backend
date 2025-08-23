@@ -35,10 +35,15 @@ def submit_withdraw_validation(request_user, action, requisition):
             )
 
 
-def on_submit(requisition):
+def on_submit(requisition, **kwargs):
     requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
     requisition.submitted_at = timezone.now()
     requisition.rejected_at = None
+
+    request_user = kwargs.get("request_user")
+
+    if request_user:
+        requisition.updated_by = request_user
 
     requisition.save()
 
@@ -47,11 +52,16 @@ def on_submit(requisition):
     return requisition
 
 
-def on_withdraw(requisition):
+def on_withdraw(requisition, **kwargs):
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT
     requisition.submitted_at = None
+
+    request_user = kwargs.get("request_user")
+
+    if request_user:
+        requisition.updated_by = request_user
 
     requisition.save()
 
