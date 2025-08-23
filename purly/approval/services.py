@@ -293,9 +293,14 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_approve(approval, requisition):
+def on_approve(approval, requisition, **kwargs):
     approval.status = ApprovalStatusChoices.APPROVED
     approval.approved_at = timezone.now()
+
+    request_user = kwargs.get("request_user")
+
+    if request_user:
+        approval.updated_by = request_user
 
     approval.save()
 
@@ -305,9 +310,14 @@ def on_approve(approval, requisition):
     return approval
 
 
-def on_reject(approval, requisition):
+def on_reject(approval, requisition, **kwargs):
     approval.status = ApprovalStatusChoices.REJECTED
     approval.rejected_at = timezone.now()
+
+    request_user = kwargs.get("request_user")
+
+    if request_user:
+        approval.updated_by = request_user
 
     approval.save()
 

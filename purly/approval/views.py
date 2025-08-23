@@ -71,7 +71,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        obj = on_approve(approval, approval.requisition)
+        obj = on_approve(approval, approval.requisition, request_user=request.user)
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)
@@ -93,7 +93,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        obj = on_reject(approval, approval.requisition)
+        obj = on_reject(approval, approval.requisition, request_user=request.user)
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)

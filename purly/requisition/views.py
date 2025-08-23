@@ -119,7 +119,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         submit_withdraw_validation(self.request.user, requisition, "submit")
 
-        obj = on_submit(requisition)
+        obj = on_submit(requisition, request_user=request.user)
         serializer = RequisitionDetailSerializer(obj)
 
         return Response(serializer.data)
@@ -132,7 +132,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
 
         submit_withdraw_validation(self.request.user, requisition, "withdraw")
 
-        obj = on_withdraw(requisition)
+        obj = on_withdraw(requisition, request_user=request.user)
         serializer = RequisitionDetailSerializer(obj)
 
         return Response(serializer.data)
