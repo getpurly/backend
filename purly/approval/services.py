@@ -46,6 +46,8 @@ def perform_lookup(value, rule_lookup, rule_value):  # noqa: PLR0911, PLR0912
             if not any(val.lower() in value.lower() for val in rule_value):
                 return False
         case LookupStringChoices.STARTS_WITH:
+            if not isinstance(value, str):
+                return False
             if not any(value.startswith(val) for val in rule_value):
                 return False
         case LookupStringChoices.ISTARTS_WITH:
@@ -54,6 +56,8 @@ def perform_lookup(value, rule_lookup, rule_value):  # noqa: PLR0911, PLR0912
             if not any(value.lower().startswith(val.lower()) for val in rule_value):
                 return False
         case LookupStringChoices.ENDS_WITH:
+            if not isinstance(value, str):
+                return False
             if not any(value.endswith(val) for val in rule_value):
                 return False
         case LookupStringChoices.IENDS_WITH:
@@ -86,7 +90,7 @@ def perform_lookup(value, rule_lookup, rule_value):  # noqa: PLR0911, PLR0912
             if not value <= Decimal(rule_value[0]):
                 return False
         case _:
-            raise ValueError(f"Unsupported rule_lookup: {rule_lookup}")
+            return False
 
     return True
 
