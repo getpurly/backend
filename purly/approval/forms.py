@@ -98,7 +98,7 @@ class ApprovalChainForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit):  # type: ignore
-        instance = super().save(commit)
+        instance = super().save(commit=False)
 
         if instance.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
             instance.approver_group = None
@@ -107,6 +107,9 @@ class ApprovalChainForm(forms.ModelForm):
 
         if instance.deleted:
             instance.active = False
+
+        if commit:
+            instance.save()
 
         return instance
 
@@ -216,10 +219,13 @@ class ApprovalChainRuleForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit):  # type: ignore
-        instance = super().save(commit)
+        instance = super().save(commit=False)
 
         if instance.lookup == LookupStringChoices.IS_NULL:
             instance.value = []
+
+        if commit:
+            instance.save()
 
         return instance
 

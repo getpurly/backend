@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from purly.approval.models import Approval
 from purly.approval.services import generate_approvals
 from purly.requisition.services import on_submit, on_withdraw
+from purly.utils import AdminBase, admin_action_delete
 
 from .forms import RequisitionForm, RequisitionLineForm
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
@@ -31,8 +32,8 @@ class RequisitionLineInline(admin.StackedInline):
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
 
 
-class RequisitionAdmin(admin.ModelAdmin):
-    actions = ["submit", "withdraw"]
+class RequisitionAdmin(AdminBase):
+    actions = ["submit", "withdraw", "delete"]
     autocomplete_fields = ["owner", "project"]
     change_form_template = "admin/requisition/change_form.html"
     form = RequisitionForm
@@ -100,10 +101,11 @@ class RequisitionAdmin(admin.ModelAdmin):
         "created_by__username",
         "updated_by__username",
     ]
+
     inlines = [RequisitionLineInline]
 
     @transaction.atomic
-    @admin.action(description="Submit for approval")
+    @admin.action(description="Submit for approval for selected requisitions")
     def submit(self, request, queryset):
         changed = 0
 
@@ -111,7 +113,9 @@ class RequisitionAdmin(admin.ModelAdmin):
             if requisition.status != RequisitionStatusChoices.DRAFT:
                 continue
 
-            if generate_approvals(requisition) is False:
+            success, _ = generate_approvals(requisition)
+
+            if success is False:
                 continue
 
             on_submit(requisition, request_user=request.user)
@@ -121,7 +125,7 @@ class RequisitionAdmin(admin.ModelAdmin):
         admin_action_results(self, request, "submitted", changed)
 
     @transaction.atomic
-    @admin.action(description="Withdraw from approval")
+    @admin.action(description="Withdraw from approval for selected requisitions")
     def withdraw(self, request, queryset):
         changed = 0
 
@@ -134,6 +138,10 @@ class RequisitionAdmin(admin.ModelAdmin):
             changed += 1
 
         admin_action_results(self, request, "withdrawn", changed)
+
+    @admin.action(description="Soft delete selected requisitions")
+    def delete(self, request, queryset):
+        admin_action_delete(self, request, queryset, "requisitions")
 
     @transaction.atomic
     def response_change(self, request, obj):
@@ -148,10 +156,12 @@ class RequisitionAdmin(admin.ModelAdmin):
 
                     return HttpResponseRedirect(request.path)
 
-                if generate_approvals(obj) is False:
+                success, error = generate_approvals(obj)
+
+                if success is False:
                     self.message_user(
                         request,
-                        "This requisition cannot be submitted because no approval chains matched.",
+                        error,
                         level=messages.WARNING,
                     )
 
@@ -220,24 +230,13 @@ class RequisitionAdmin(admin.ModelAdmin):
             "created_by",
             "updated_at",
             "updated_by",
+            "deleted",
         ]
 
-        if obj is None:
-            return [*readonly_fields, "deleted"]
+        if obj and obj.deleted:
+            return [field.name for field in self.model._meta.get_fields()]
 
         return readonly_fields
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.updated_by = request.user
-        else:
-            obj.created_by = request.user
-            obj.updated_by = request.user
-
-        return super().save_model(request, obj, form, change)
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
@@ -257,7 +256,8 @@ class RequisitionAdmin(admin.ModelAdmin):
         formset.save_m2m()
 
 
-class RequisitionLineAdmin(admin.ModelAdmin):
+class RequisitionLineAdmin(AdminBase):
+    actions = ["delete"]
     autocomplete_fields = ["requisition", "ship_to"]
     form = RequisitionLineForm
     fields = [
@@ -321,25 +321,9 @@ class RequisitionLineAdmin(admin.ModelAdmin):
         "updated_by__username",
     ]
 
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
-
-        if obj is None:
-            return [*readonly_fields, "deleted"]
-
-        return readonly_fields
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.updated_by = request.user
-        else:
-            obj.created_by = request.user
-            obj.updated_by = request.user
-
-        return super().save_model(request, obj, form, change)
+    @admin.action(description="Soft delete selected requisition lines")
+    def delete(self, request, queryset):
+        admin_action_delete(self, request, queryset, "requisition lines")
 
 
 admin.site.register(Requisition, RequisitionAdmin)

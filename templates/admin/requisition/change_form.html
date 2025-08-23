@@ -4,13 +4,13 @@
 {% block submit_buttons_bottom %}
 {{ block.super }}
 
-{% if original and original.status == "draft" %}
+{% if original and original.status == "draft" and not original.deleted %}
 <div class="submit-row">
     <input type="submit" value='{% trans "Submit for Approval" %}' name="_submit">
 </div>
 {% endif %}
 
-{% if original and original.status == "pending_approval" %}
+{% if original and original.status == "pending_approval" and not original.deleted %}
 <div class="submit-row">
     <input type="submit" value='{% trans "Withdraw" %}' name="_withdraw">
 </div>

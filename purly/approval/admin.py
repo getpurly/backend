@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from purly.requisition.models import Requisition
 from purly.user.models import User
+from purly.utils import AdminBase, admin_action_delete
 
 from .forms import (
     ApprovalChainForm,
@@ -63,8 +64,8 @@ class ApprovalChainLineRuleInline(admin.StackedInline):
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
 
-class ApprovalAdmin(admin.ModelAdmin):
-    actions = ["approve", "reject", "skip"]
+class ApprovalAdmin(AdminBase):
+    actions = ["approve", "reject", "skip", "delete"]
     autocomplete_fields = ["approver", "requisition"]
     change_form_template = "admin/approval/change_form.html"
     form = ApprovalForm
@@ -115,7 +116,7 @@ class ApprovalAdmin(admin.ModelAdmin):
     search_fields = []
 
     @transaction.atomic
-    @admin.action(description="Set approved (only if current approver)")
+    @admin.action(description="Set approved (only if current approver) for selected approvals")
     def approve(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -158,7 +159,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         admin_action_results(self, request, "approved", changed)
 
     @transaction.atomic
-    @admin.action(description="Set rejected (only if current approver)")
+    @admin.action(description="Set rejected (only if current approver) for selected approvals")
     def reject(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -196,7 +197,7 @@ class ApprovalAdmin(admin.ModelAdmin):
         admin_action_results(self, request, "rejected", changed)
 
     @transaction.atomic
-    @admin.action(description="Set skipped (only if current approver)")
+    @admin.action(description="Set skipped (only if current approver) for selected approvals")
     def skip(self, request, queryset):
         changed = 0
         requisitions = set()
@@ -238,7 +239,29 @@ class ApprovalAdmin(admin.ModelAdmin):
 
         admin_action_results(self, request, "skipped", changed)
 
+    @admin.action(description="Soft delete selected approvals")
+    def delete(self, request, queryset):
+        admin_action_delete(self, request, queryset, "approvals")
+
     def get_readonly_fields(self, request, obj=None):
+        readonly_fields = [
+            "requisition",
+            "approver",
+            "sequence_number",
+            "status",
+            "rule_metadata",
+            "system_generated",
+            "notified_at",
+            "approved_at",
+            "rejected_at",
+            "skipped_at",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+            "deleted",
+        ]
+
         if obj is None:
             return [
                 "status",
@@ -256,22 +279,10 @@ class ApprovalAdmin(admin.ModelAdmin):
                 "deleted",
             ]
 
-        return [
-            "requisition",
-            "approver",
-            "sequence_number",
-            "status",
-            "rule_metadata",
-            "system_generated",
-            "notified_at",
-            "approved_at",
-            "rejected_at",
-            "skipped_at",
-            "created_at",
-            "created_by",
-            "updated_at",
-            "updated_by",
-        ]
+        if obj and obj.deleted:
+            return [field.name for field in self.model._meta.get_fields()]
+
+        return readonly_fields
 
     @transaction.atomic
     def response_change(self, request, obj):
@@ -324,21 +335,9 @@ class ApprovalAdmin(admin.ModelAdmin):
 
         return super().response_change(request, obj)
 
-    def has_delete_permission(self, request, obj=None):
-        return False
 
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.updated_by = request.user
-        else:
-            obj.system_generated = False
-            obj.created_by = request.user
-            obj.updated_by = request.user
-
-        return super().save_model(request, obj, form, change)
-
-
-class ApprovalChainAdmin(admin.ModelAdmin):
+class ApprovalChainAdmin(AdminBase):
+    actions = ["delete"]
     autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
     fields = [
@@ -375,6 +374,10 @@ class ApprovalChainAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
+    @admin.action(description="Soft delete selected approval chains")
+    def delete(self, request, queryset):
+        admin_action_delete(self, request, queryset, "approval chains")
+
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
@@ -384,15 +387,15 @@ class ApprovalChainAdmin(admin.ModelAdmin):
         return queryset, use_distinct
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
 
         if obj is None:
-            return [*readonly_fields, "active", "deleted"]
+            return [*readonly_fields, "active"]
+
+        if obj and obj.deleted:
+            return [field.name for field in self.model._meta.get_fields()]
 
         return readonly_fields
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
@@ -411,17 +414,9 @@ class ApprovalChainAdmin(admin.ModelAdmin):
 
         formset.save_m2m()
 
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.updated_by = request.user
-        else:
-            obj.created_by = request.user
-            obj.updated_by = request.user
 
-        return super().save_model(request, obj, form, change)
-
-
-class ApprovalGroupAdmin(admin.ModelAdmin):
+class ApprovalGroupAdmin(AdminBase):
+    actions = ["delete"]
     form = ApprovalGroupForm
     fields = [
         "name",
@@ -445,6 +440,10 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ["approver"]
     search_fields = ["name"]
 
+    @admin.action(description="Soft delete selected approval groups")
+    def delete(self, request, queryset):
+        admin_action_delete(self, request, queryset, "approval groups")
+
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
 
@@ -458,26 +457,6 @@ class ApprovalGroupAdmin(admin.ModelAdmin):
             kwargs["queryset"] = User.objects.filter(is_active=True).order_by("username")
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
-
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
-
-        if obj is None:
-            return [*readonly_fields, "deleted"]
-
-        return readonly_fields
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.updated_by = request.user
-        else:
-            obj.created_by = request.user
-            obj.updated_by = request.user
-
-        return super().save_model(request, obj, form, change)
 
 
 class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):

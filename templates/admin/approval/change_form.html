@@ -3,7 +3,7 @@
 
 {% block submit_buttons_bottom %}
 {{ block.super }}
-{% if original and original.status == "pending" %}
+{% if original and original.status == "pending" and not original.deleted %}
 <div class="submit-row">
     <input type="submit" value='{% trans "Approve" %}' name="_approve">
     <input type="submit" value='{% trans "Reject" %}' name="_reject">

@@ -198,7 +198,7 @@ def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
     }
 
 
-def generate_approvals(requisition):
+def generate_approvals(requisition):  # noqa: PLR0912
     lines = requisition.lines.all()
 
     approvals = []
@@ -215,7 +215,10 @@ def generate_approvals(requisition):
     )
 
     if not approval_chains.exists():
-        return False
+        return (
+            False,
+            "This requisition cannot be submitted because no approval chains are defined.",
+        )
 
     for approval_chain in approval_chains:
         header_rules = approval_chain.approval_chain_header_rules.all()
@@ -262,9 +265,12 @@ def generate_approvals(requisition):
 
                     approvals.append(approval)
 
-    Approval.objects.bulk_create(approvals)
+    if len(approvals) > 0:
+        Approval.objects.bulk_create(approvals)
 
-    return True
+        return (True, "")
+
+    return (False, "This requisition cannot be submitted because no approval chains matched.")
 
 
 def cancel_approvals(requisition):
@@ -272,7 +278,9 @@ def cancel_approvals(requisition):
 
     timestamp = timezone.now()
 
-    for approval in requisition.approvals.filter(status=ApprovalStatusChoices.PENDING):
+    for approval in requisition.approvals.filter(
+        status=ApprovalStatusChoices.PENDING, deleted=False
+    ):
         approval.status = ApprovalStatusChoices.CANCELLED
         approval.updated_at = timestamp
 
@@ -306,7 +314,7 @@ def on_reject(approval, requisition):
 
     requisition.save()
 
-    send_reject_email(approval, requisition)
+    transaction.on_commit(lambda: send_reject_email(approval, requisition))
 
     return approval
 

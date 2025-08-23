@@ -8,7 +8,7 @@ from purly.approval.services import cancel_approvals, generate_approvals, notify
 from .models import RequisitionStatusChoices
 
 
-def submit_withdraw_validation(request_user, action, requisition):
+def submit_withdraw_validation(request_user, requisition, action):
     if requisition.owner != request_user:
         raise exceptions.PermissionDenied(f"You must be the requisition owner to {action}.")
 
@@ -21,10 +21,11 @@ def submit_withdraw_validation(request_user, action, requisition):
                 detail="This requisition must be in draft status to submit for approval."
             )
 
-        if generate_approvals(requisition) is False:
-            msg = "This requisition cannot be submitted because no approval chains matched."
+        success, error = generate_approvals(requisition)
 
-            raise BadRequest(detail=msg)
+        if success is False:
+            raise BadRequest(detail=error)
+
     else:
         if requisition.status == RequisitionStatusChoices.DRAFT:
             raise BadRequest(detail="This requisition has already been withdrawn.")

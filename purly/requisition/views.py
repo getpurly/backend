@@ -33,8 +33,10 @@ REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"
 class RequisitionViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAuthenticated]
-    queryset = Requisition.objects.active().select_related(  # type: ignore
-        "project", "owner", "created_by", "updated_by"
+    queryset = (
+        Requisition.objects.active()  # type: ignore
+        .select_related("project", "owner", "created_by", "updated_by")
+        .prefetch_related("lines__ship_to")
     )
     serializer_class = RequisitionListSerializer
     pagination_class = RequisitionPagination
@@ -115,7 +117,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     def submit(self, request, pk=None):
         requisition = self.get_object()
 
-        submit_withdraw_validation(self.request.user, "submit", requisition)
+        submit_withdraw_validation(self.request.user, requisition, "submit")
 
         obj = on_submit(requisition)
         serializer = RequisitionDetailSerializer(obj)
@@ -128,7 +130,7 @@ class RequisitionViewSet(viewsets.ModelViewSet):
     def withdraw(self, request, pk=None):
         requisition = self.get_object()
 
-        submit_withdraw_validation(self.request.user, "withdraw", requisition)
+        submit_withdraw_validation(self.request.user, requisition, "withdraw")
 
         obj = on_withdraw(requisition)
         serializer = RequisitionDetailSerializer(obj)
@@ -154,6 +156,7 @@ class RequisitionMineListView(generics.ListAPIView):
         return (
             Requisition.objects.active()  # type: ignore
             .select_related("project", "owner", "created_by", "updated_by")
+            .prefetch_related("lines__ship_to")
             .filter(owner=self.request.user)
         )
 
