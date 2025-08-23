@@ -16,9 +16,12 @@ def submit_withdraw_validation(request_user, requisition, action):
         if requisition.status == RequisitionStatusChoices.PENDING_APPROVAL:
             raise BadRequest(detail="This requisition has already been submitted.")
 
-        if requisition.status != RequisitionStatusChoices.DRAFT:
+        if requisition.status not in [
+            RequisitionStatusChoices.DRAFT,
+            RequisitionStatusChoices.REJECTED,
+        ]:
             raise BadRequest(
-                detail="This requisition must be in draft status to submit for approval."
+                detail="This requisition must be in draft or rejected status to submit."
             )
 
         success, error = generate_approvals(requisition)

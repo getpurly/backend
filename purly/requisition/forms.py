@@ -42,9 +42,12 @@ class RequisitionLineForm(forms.ModelForm):
             or "requisition" in self.changed_data
             or "ship_to" in self.changed_data
         ):
-            if requisition and requisition.status != RequisitionStatusChoices.DRAFT:
+            if requisition and requisition.status not in [
+                RequisitionStatusChoices.DRAFT,
+                RequisitionStatusChoices.REJECTED,
+            ]:
                 raise forms.ValidationError(
-                    {"requisition": "This requisition must be in draft status."}
+                    {"requisition": "This requisition must be in draft or rejected status."}
                 )
 
             if ship_to and ship_to.deleted:

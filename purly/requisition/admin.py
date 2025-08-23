@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 
 from purly.approval.models import Approval
@@ -110,7 +111,10 @@ class RequisitionAdmin(AdminBase):
         changed = 0
 
         for requisition in queryset:
-            if requisition.status != RequisitionStatusChoices.DRAFT:
+            if requisition.status not in [
+                RequisitionStatusChoices.DRAFT,
+                RequisitionStatusChoices.REJECTED,
+            ]:
                 continue
 
             success, _ = generate_approvals(requisition)
@@ -147,10 +151,13 @@ class RequisitionAdmin(AdminBase):
     def response_change(self, request, obj):
         if "_submit" in request.POST or "_withdraw" in request.POST:
             if "_submit" in request.POST:
-                if obj.status != RequisitionStatusChoices.DRAFT:
+                if obj.status not in [
+                    RequisitionStatusChoices.DRAFT,
+                    RequisitionStatusChoices.REJECTED,
+                ]:
                     self.message_user(
                         request,
-                        "This requisition must be in draft status to submit for approval.",
+                        "This requisition must be in draft or rejected status to submit.",
                         level=messages.WARNING,
                     )
 
@@ -215,7 +222,12 @@ class RequisitionAdmin(AdminBase):
             and request.GET.get("app_label") == RequisitionLine._meta.app_label
         ):
             queryset = (
-                queryset.active().filter(status=RequisitionStatusChoices.DRAFT).order_by("id")  # type: ignore
+                queryset.active()  # type: ignore
+                .filter(
+                    Q(status=RequisitionStatusChoices.DRAFT)
+                    | Q(status=RequisitionStatusChoices.REJECTED)
+                )
+                .order_by("id")
             )
 
         return queryset, use_distinct

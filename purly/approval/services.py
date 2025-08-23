@@ -313,7 +313,7 @@ def on_reject(approval, requisition):
 
     cancel_approvals(requisition)
 
-    requisition.status = RequisitionStatusChoices.DRAFT
+    requisition.status = RequisitionStatusChoices.REJECTED
     requisition.rejected_at = timezone.now()
 
     requisition.save()
