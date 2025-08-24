@@ -6,9 +6,9 @@ from django.db import transaction
 from rest_framework import serializers
 
 from purly.address.serializers import AddressSimpleDetailSerializer
+from purly.base import CustomToRepresentation
 from purly.project.serializers import ProjectSimpleDetailSerializer
 from purly.user.serializers import UserSimpleDetailSerializer
-from purly.utils import CustomToRepresentation
 
 from .models import (
     CurrencyChoices,

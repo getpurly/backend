@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
+from purly.base import CustomToRepresentation
 from purly.user.serializers import UserSimpleDetailSerializer
-from purly.utils import CustomToRepresentation
 
 from .models import Project
 

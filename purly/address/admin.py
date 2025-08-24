@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from purly.address.forms import AddressForm
-from purly.utils import AdminBase, admin_action_delete
+from purly.base import AdminBase
+from purly.utils import admin_action_delete
 
 from .models import Address
 

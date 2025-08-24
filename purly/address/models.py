@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.db import models
 
+from purly.base import ModelBase
+
 from .managers import AddressManager
 
 
-class Address(models.Model):
+class Address(ModelBase):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="addresses_owned"
     )
@@ -20,23 +22,10 @@ class Address(models.Model):
     zip_code = models.CharField(max_length=64)
     country = models.CharField(max_length=64)
     delivery_instructions = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="addresses_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="addresses_updated",
-    )
-    deleted = models.BooleanField(default=False)
 
     objects = AddressManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "address"
         verbose_name = "address"
         verbose_name_plural = "addresses"

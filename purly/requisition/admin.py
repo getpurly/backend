@@ -5,8 +5,9 @@ from django.http import HttpResponseRedirect
 
 from purly.approval.models import Approval
 from purly.approval.services import generate_approvals
+from purly.base import AdminBase
 from purly.requisition.services import on_submit, on_withdraw
-from purly.utils import AdminBase, admin_action_delete
+from purly.utils import admin_action_delete
 
 from .forms import RequisitionForm, RequisitionLineForm
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices

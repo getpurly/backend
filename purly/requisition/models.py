@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from purly.address.models import Address
+from purly.base import ModelBase
 from purly.project.models import Project
 
 from .managers import (
@@ -40,7 +41,7 @@ class PaymentTermChoices(models.TextChoices):
     NET90 = ("net_90", "net 90")
 
 
-class Requisition(models.Model):
+class Requisition(ModelBase):
     name = models.CharField(max_length=255)
     external_reference = models.CharField(max_length=255, blank=True)
     status = models.CharField(
@@ -62,26 +63,13 @@ class Requisition(models.Model):
         max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
     )
     currency = models.CharField(choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="requisitions_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="requisitions_updated",
-    )
     submitted_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
-    deleted = models.BooleanField(default=False)
 
     objects = RequisitionManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "requisition"
         verbose_name = "requisition"
         verbose_name_plural = "requisitions"
@@ -91,7 +79,7 @@ class Requisition(models.Model):
         return f"{self.id} - {self.name}"  # type: ignore
 
 
-class RequisitionLine(models.Model):
+class RequisitionLine(ModelBase):
     line_number = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     line_type = models.CharField(choices=LineTypeChoices.choices)
     description = models.CharField(max_length=255)
@@ -114,23 +102,10 @@ class RequisitionLine(models.Model):
     need_by = models.DateField(blank=True, null=True)
     requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE, related_name="lines")
     ship_to = models.ForeignKey(Address, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="requisition_lines_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="requisition_lines_updated",
-    )
-    deleted = models.BooleanField(default=False)
 
     objects = RequisitionLineManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "requisition_line"
         verbose_name = "requisition line"
         verbose_name_plural = "requisition lines"

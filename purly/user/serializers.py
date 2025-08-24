@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from purly.utils import CustomToRepresentation
+from purly.base import CustomToRepresentation
 
 User = get_user_model()
 

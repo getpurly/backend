@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from purly.base import ModelBase
 from purly.requisition.models import Requisition
 
 from .managers import (
@@ -98,7 +99,7 @@ class ApprovalChainModeChoices(models.TextChoices):
     GROUP = ("group", "group")
 
 
-class Approval(models.Model):
+class Approval(ModelBase):
     requisition = models.ForeignKey(Requisition, on_delete=models.PROTECT, related_name="approvals")
     approver = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approvals_as_approver"
@@ -116,25 +117,10 @@ class Approval(models.Model):
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
     rejected_at = models.DateTimeField(blank=True, null=True, editable=False)
     skipped_at = models.DateTimeField(blank=True, null=True, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approvals_created",
-        null=True,
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approvals_updated",
-        null=True,
-    )
-    deleted = models.BooleanField(default=False)
 
     objects = ApprovalManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "approval"
         verbose_name = "approval"
         verbose_name_plural = "approvals"
@@ -144,7 +130,7 @@ class Approval(models.Model):
         return f"Approval {self.id}"  # type: ignore
 
 
-class ApprovalGroup(models.Model):
+class ApprovalGroup(ModelBase):
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -155,23 +141,10 @@ class ApprovalGroup(models.Model):
         settings.AUTH_USER_MODEL,
         related_name="approval_groups",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_groups_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_groups_updated",
-    )
-    deleted = models.BooleanField(default=False)
 
     objects = ApprovalGroupManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "approval_group"
         verbose_name = "approval group"
         verbose_name_plural = "approval groups"
@@ -181,7 +154,7 @@ class ApprovalGroup(models.Model):
         return self.name
 
 
-class ApprovalChain(models.Model):
+class ApprovalChain(ModelBase):
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -216,22 +189,11 @@ class ApprovalChain(models.Model):
     max_amount = models.DecimalField(
         max_digits=9, decimal_places=2, null=True, blank=True, verbose_name="Maximum amount"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_chains_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approval_chains_updated"
-    )
     active = models.BooleanField(default=True)
-    deleted = models.BooleanField(default=False)
 
     objects = ApprovalChainManager()
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "approval_chain"
         verbose_name = "approval chain"
         verbose_name_plural = "approval chains"
@@ -241,7 +203,7 @@ class ApprovalChain(models.Model):
         return self.name
 
 
-class ApprovalChainHeaderRule(models.Model):
+class ApprovalChainHeaderRule(ModelBase):
     approval_chain = models.ForeignKey(
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_header_rules"
     )
@@ -250,20 +212,9 @@ class ApprovalChainHeaderRule(models.Model):
         choices=list(LookupStringChoices.choices) + list(LookupNumberChoices.choices)
     )
     value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_chain_header_rules_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_chain_header_rules_updated",
-    )
+    deleted = None
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "approval_chain_header_rule"
         verbose_name = "header rule"
         verbose_name_plural = "header rules"
@@ -295,7 +246,7 @@ class ApprovalChainHeaderRule(models.Model):
         return f"For header, {field} field {lookup} {value}"
 
 
-class ApprovalChainLineRule(models.Model):
+class ApprovalChainLineRule(ModelBase):
     approval_chain = models.ForeignKey(
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_line_rules"
     )
@@ -307,20 +258,9 @@ class ApprovalChainLineRule(models.Model):
         choices=list(LookupStringChoices.choices) + list(LookupNumberChoices.choices)
     )
     value = ArrayField(models.CharField(max_length=255), default=list, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_chain_line_rules_created",
-    )
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="approval_chain_line_rules_updated",
-    )
+    deleted = None
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "approval_chain_line_rule"
         verbose_name = "line rule"
         verbose_name_plural = "line rules"

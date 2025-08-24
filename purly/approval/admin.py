@@ -3,9 +3,10 @@ from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 
+from purly.base import AdminBase
 from purly.requisition.models import Requisition
 from purly.user.models import User
-from purly.utils import AdminBase, admin_action_delete
+from purly.utils import admin_action_delete
 
 from .forms import (
     ApprovalChainForm,

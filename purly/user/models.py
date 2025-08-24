@@ -5,6 +5,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from purly.base import ModelBase
+
 from .utils import get_ip_address, get_user_agent
 
 
@@ -19,7 +21,7 @@ class User(AbstractUser):
         return self.username
 
 
-class UserProfile(models.Model):
+class UserProfile(ModelBase):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
@@ -27,10 +29,8 @@ class UserProfile(models.Model):
     department = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=32, blank=True)
     bio = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
+    class Meta(ModelBase.Meta):
         db_table = "user_profile"
         verbose_name = "profile"
         verbose_name_plural = "profiles"

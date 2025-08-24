@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from purly.utils import AdminBase, admin_action_delete
+from purly.base import AdminBase
+from purly.utils import admin_action_delete
 
 from .forms import ProjectForm
 from .models import Project
