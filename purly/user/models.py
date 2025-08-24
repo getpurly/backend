@@ -1,6 +1,17 @@
+from allauth.account.signals import (
+    email_added,
+    email_changed,
+    email_removed,
+    password_changed,
+    password_reset,
+    user_logged_in,
+    user_logged_out,
+    user_signed_up,
+)
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.signals import user_logged_in
+from django.contrib.auth.signals import user_logged_in as user_logged_in_admin
+from django.contrib.auth.signals import user_logged_out as user_logged_out_admin
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -48,6 +59,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 class UserActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    context = models.TextField(blank=True)
+    action = models.CharField(max_length=255, blank=True)
     ip_address = models.GenericIPAddressField(
         max_length=255, blank=True, null=True, verbose_name="IP address"
     )
@@ -65,15 +78,68 @@ class UserActivity(models.Model):
         return f"User activity: {self.user.username}"
 
 
-@receiver(user_logged_in)
-def record_user_activity(sender, request, user, **kwargs):
+USER_SIGNALS = {
+    user_signed_up: "Sign up",
+    user_logged_in: "Login",
+    user_logged_in_admin: "Login",
+    user_logged_out: "Logout",
+    user_logged_out_admin: "Logout",
+    password_changed: "Password change",
+    password_reset: "Password reset",
+    email_changed: "Email change",
+    email_added: "Email add",
+    email_removed: "Email remove",
+}
+
+
+@receiver(
+    [
+        user_signed_up,
+        user_logged_in,
+        user_logged_in_admin,
+        user_logged_out,
+        user_logged_out_admin,
+        password_changed,
+        password_reset,
+        email_changed,
+        email_added,
+        email_removed,
+    ]
+)
+def record_user_activity(  # noqa: PLR0913
+    sender,
+    signal,
+    request,
+    user,
+    email_address=None,
+    from_email_address=None,
+    to_email_address=None,
+    **kwargs,
+):
     ip_address = get_ip_address(request)
     user_agent = get_user_agent(request)
 
+    action = USER_SIGNALS.get(signal, "")
+
+    if signal == email_changed:
+        if from_email_address:
+            context = f"Primary email changed from {from_email_address} to {to_email_address}"
+        else:
+            context = f"Primary email set to: {to_email_address}"
+    elif signal == email_added:
+        context = f"Email added: {email_address}"
+    elif signal == email_removed:
+        context = f"Email removed: {email_address}"
+    else:
+        context = ""
+
     new_activity = UserActivity(
         user=user,
+        action=action,
+        context=context,
         ip_address=ip_address,
         user_agent=user_agent,
         session_key=request.session.session_key,
     )
+
     new_activity.save()

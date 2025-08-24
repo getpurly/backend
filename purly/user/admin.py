@@ -66,10 +66,35 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class UserActivityAdmin(admin.ModelAdmin):
-    list_display = ["id", "user", "ip_address", "user_agent", "session_key", "created_at"]
-    list_filter = ["created_at"]
-    search_fields = ["user__username", "ip_address", "user_agent", "session_key"]
-    readonly_fields = ["user", "ip_address", "user_agent", "session_key", "created_at"]
+    list_display = [
+        "id",
+        "action",
+        "context",
+        "user",
+        "ip_address",
+        "user_agent",
+        "session_key",
+        "created_at",
+    ]
+    list_filter = ["action", "created_at"]
+    search_fields = [
+        "id",
+        "action",
+        "context",
+        "user__username",
+        "ip_address",
+        "user_agent",
+        "session_key",
+    ]
+    readonly_fields = [
+        "action",
+        "context",
+        "user",
+        "ip_address",
+        "user_agent",
+        "session_key",
+        "created_at",
+    ]
 
     def has_add_permission(self, request):
         return False
