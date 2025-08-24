@@ -70,6 +70,11 @@ class AddressAdmin(AdminBase):
         "updated_by__username",
     ]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        return queryset.select_related("owner", "created_by", "updated_by")
+
     @admin.action(description="Soft delete selected addresses")
     def delete(self, request, queryset):
         admin_action_delete(self, request, queryset, "addresses")
