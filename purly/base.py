@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db import models
+from django.http import HttpResponseRedirect
 from rest_framework import serializers
 
 
@@ -34,6 +35,16 @@ class AdminBase(admin.ModelAdmin):
             return [field.name for field in self.model._meta.get_fields()]
 
         return readonly_fields
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):  # type: ignore
+        obj = self.get_object(request, object_id) if object_id else None
+
+        if request.method == "POST" and obj and obj.deleted:
+            self.message_user(request, "This record has been deleted.", level=messages.WARNING)
+
+            return HttpResponseRedirect(request.path)
+
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_change_permission(self, request, obj=None):
         if obj and obj.deleted:
