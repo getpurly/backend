@@ -10,8 +10,6 @@ from allauth.account.signals import (
 )
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.signals import user_logged_in as user_logged_in_admin
-from django.contrib.auth.signals import user_logged_out as user_logged_out_admin
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -81,9 +79,7 @@ class UserActivity(models.Model):
 USER_SIGNALS = {
     user_signed_up: "Sign up",
     user_logged_in: "Login",
-    user_logged_in_admin: "Login",
     user_logged_out: "Logout",
-    user_logged_out_admin: "Logout",
     password_changed: "Password change",
     password_reset: "Password reset",
     email_changed: "Email change",
@@ -92,20 +88,7 @@ USER_SIGNALS = {
 }
 
 
-@receiver(
-    [
-        user_signed_up,
-        user_logged_in,
-        user_logged_in_admin,
-        user_logged_out,
-        user_logged_out_admin,
-        password_changed,
-        password_reset,
-        email_changed,
-        email_added,
-        email_removed,
-    ]
-)
+@receiver(list(USER_SIGNALS.keys()), dispatch_uid="test")
 def record_user_activity(  # noqa: PLR0913
     sender,
     signal,

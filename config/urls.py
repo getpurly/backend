@@ -1,3 +1,4 @@
+from allauth.account.decorators import secure_admin_login
 from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import redirect
@@ -9,6 +10,7 @@ from .exceptions import page_not_found, server_error
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 admin.site.index_title = settings.ADMIN_SITE_INDEX_TITLE
 admin.site.site_title = settings.ADMIN_SITE_TITLE
+admin.site.login = secure_admin_login(admin.site.login)  # type: ignore
 
 
 def home(request):
