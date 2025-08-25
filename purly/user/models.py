@@ -19,6 +19,17 @@ from purly.base import ModelBase
 from .utils import get_ip_address, get_user_agent
 
 
+class UserActivityActionChoices(models.TextChoices):
+    SIGNUP = ("signup", "signup")
+    LOGIN = ("login", "login")
+    LOGOUT = ("logout", "logout")
+    PASSWORD_CHANGE = ("password_change", "password_change")
+    PASSWORD_RESET = ("password_reset", "password_reset")
+    EMAIL_CHANGE = ("email_change", "email_change")
+    EMAIL_ADD = ("email_add", "email_add")
+    EMAIL_REMOVE = ("email_remove", "email_remove")
+
+
 class User(AbstractUser):
     class Meta:
         db_table = "user"
@@ -58,7 +69,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 class UserActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     context = models.TextField(blank=True)
-    action = models.CharField(max_length=255, blank=True)
+    action = models.CharField(choices=UserActivityActionChoices)
     ip_address = models.GenericIPAddressField(
         max_length=255, blank=True, null=True, verbose_name="IP address"
     )
@@ -77,18 +88,18 @@ class UserActivity(models.Model):
 
 
 USER_SIGNALS = {
-    user_signed_up: "Sign up",
-    user_logged_in: "Login",
-    user_logged_out: "Logout",
-    password_changed: "Password change",
-    password_reset: "Password reset",
-    email_changed: "Email change",
-    email_added: "Email add",
-    email_removed: "Email remove",
+    user_signed_up: UserActivityActionChoices.SIGNUP,
+    user_logged_in: UserActivityActionChoices.LOGIN,
+    user_logged_out: UserActivityActionChoices.LOGOUT,
+    password_changed: UserActivityActionChoices.PASSWORD_CHANGE,
+    password_reset: UserActivityActionChoices.PASSWORD_RESET,
+    email_changed: UserActivityActionChoices.EMAIL_CHANGE,
+    email_added: UserActivityActionChoices.EMAIL_ADD,
+    email_removed: UserActivityActionChoices.EMAIL_REMOVE,
 }
 
 
-@receiver(list(USER_SIGNALS.keys()), dispatch_uid="test")
+@receiver(list(USER_SIGNALS.keys()))
 def record_user_activity(  # noqa: PLR0913
     sender,
     signal,
