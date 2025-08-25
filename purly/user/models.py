@@ -68,8 +68,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 class UserActivity(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    context = models.TextField(blank=True)
     action = models.CharField(choices=UserActivityActionChoices)
+    context = models.TextField(blank=True)
     ip_address = models.GenericIPAddressField(
         max_length=255, blank=True, null=True, verbose_name="IP address"
     )

@@ -5,10 +5,15 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 
 from purly.address.models import Address
-from purly.approval.models import ApprovalGroup
+from purly.approval.models import ApprovalChain, ApprovalChainModeChoices, ApprovalGroup
 from purly.project.models import Project
-from purly.requisition.models import Requisition, RequisitionLine, RequisitionStatusChoices
-from purly.user.models import User, UserProfile
+from purly.requisition.models import (
+    LineTypeChoices,
+    Requisition,
+    RequisitionLine,
+    RequisitionStatusChoices,
+)
+from purly.user.models import User, UserActivity, UserActivityActionChoices, UserProfile
 
 fake = Faker("en_US")
 
@@ -30,7 +35,8 @@ class Command(BaseCommand):
     created_user_profiles = []
     created_addresses = []
     created_projects = []
-    created_groups = []
+    created_approval_groups = []
+    created_approval_chains = []
 
     def handle(self, *args, **kwargs):
         users = []
@@ -67,9 +73,26 @@ class Command(BaseCommand):
 
         UserProfile.objects.bulk_create(profiles, batch_size=NUMBER_OF_USERS)
 
+        user_activities = []
+
+        for user in self.created_users:
+            activity = UserActivity(
+                user=user,
+                action=UserActivityActionChoices.LOGIN,
+                ip_address=fake.ipv4(),
+                user_agent=fake.user_agent(),
+                session_key=fake.uuid4(),
+                created_at=fake.date(),
+            )
+
+            user_activities.append(activity)
+
+        UserActivity.objects.bulk_create(user_activities, batch_size=NUMBER_OF_USERS)
+
         self.create_addresses()
         self.create_projects()
         self.create_approval_groups()
+        self.create_approval_chains()
         self.create_service_requisitions()
         self.create_goods_requisitions()
 
@@ -141,7 +164,36 @@ class Command(BaseCommand):
 
             groups.append(group)
 
-        self.created_groups = groups
+        self.created_approval_groups = groups
+
+    def create_approval_chains(self, *args, **kwargs):
+        approval_chains = []
+
+        user = random.choice(self.created_users)
+        group = random.choice(self.created_approval_groups)
+
+        approval_chain1 = ApprovalChain.objects.create(
+            name=f"{fake.word()}{fake.random_number(digits=6)}",
+            approver_mode=ApprovalChainModeChoices.GROUP,
+            approver_group=group,
+            sequence_number=1,
+            min_amount=Decimal("0.01"),
+            active=True,
+        )
+
+        approval_chain2 = ApprovalChain.objects.create(
+            name=f"{fake.word()}{fake.random_number(digits=6)}",
+            approver_mode=ApprovalChainModeChoices.INDIVIDUAL,
+            approver=user,
+            sequence_number=2,
+            min_amount=Decimal("0.01"),
+            active=True,
+        )
+
+        approval_chains.append(approval_chain1)
+        approval_chains.append(approval_chain2)
+
+        self.created_approval_chains = approval_chains
 
     def create_service_requisitions(self, *args, **kwargs):
         requisitions = []
@@ -153,7 +205,7 @@ class Command(BaseCommand):
             currency = random.choice(CURRENCY)
 
             requisition = Requisition(
-                f"{fake.word()}{fake.random_number(digits=6)}",
+                name=f"{fake.word()}{fake.random_number(digits=6)}",
                 external_reference=fake.uuid4(),
                 status=RequisitionStatusChoices.DRAFT,
                 owner=user,
@@ -181,7 +233,7 @@ class Command(BaseCommand):
 
             line = RequisitionLine(
                 line_number=1,
-                line_type="service",
+                line_type=LineTypeChoices.SERVICE,
                 description=fake.sentence(),
                 category=category,
                 line_total=Decimal(50),
@@ -199,7 +251,7 @@ class Command(BaseCommand):
 
             line = RequisitionLine(
                 line_number=2,
-                line_type="service",
+                line_type=LineTypeChoices.SERVICE,
                 description=fake.sentence(),
                 category=category,
                 line_total=Decimal(50),
@@ -227,7 +279,7 @@ class Command(BaseCommand):
             currency = random.choice(CURRENCY)
 
             requisition = Requisition(
-                f"{fake.word()}{fake.random_number(digits=6)}",
+                name=f"{fake.word()}{fake.random_number(digits=6)}",
                 external_reference=fake.uuid4(),
                 status=RequisitionStatusChoices.DRAFT,
                 owner=user,
@@ -256,7 +308,7 @@ class Command(BaseCommand):
 
             line = RequisitionLine(
                 line_number=1,
-                line_type="goods",
+                line_type=LineTypeChoices.GOODS,
                 description=fake.sentence(),
                 category=category,
                 manufacturer=fake.company(),
@@ -279,7 +331,7 @@ class Command(BaseCommand):
 
             line = RequisitionLine(
                 line_number=2,
-                line_type="goods",
+                line_type=LineTypeChoices.GOODS,
                 description=fake.sentence(),
                 category=category,
                 manufacturer=fake.company(),
