@@ -5,15 +5,17 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 
 from purly.address.models import Address
+from purly.approval.models import ApprovalGroup
 from purly.project.models import Project
 from purly.requisition.models import Requisition, RequisitionLine, RequisitionStatusChoices
-from purly.user.models import User
+from purly.user.models import User, UserProfile
 
 fake = Faker("en_US")
 
 NUMBER_OF_USERS = 100
 NUMBER_OF_ADDRESSES = 250
 NUMBER_OF_PROJECTS = 30
+NUMBER_OF_APPROVAL_GROUPS = 30
 NUMBER_OF_SERVICE_REQUISITIONS = 500
 NUMBER_OF_GOODS_REQUISITIONS = 500
 
@@ -25,8 +27,10 @@ UOM = ["each", "box"]
 
 class Command(BaseCommand):
     created_users = []
+    created_user_profiles = []
     created_addresses = []
     created_projects = []
+    created_groups = []
 
     def handle(self, *args, **kwargs):
         users = []
@@ -48,8 +52,24 @@ class Command(BaseCommand):
 
         self.created_users = User.objects.bulk_create(users, batch_size=NUMBER_OF_USERS)
 
+        profiles = []
+
+        for user in self.created_users:
+            profile = UserProfile(
+                user=user,
+                job_title=fake.job(),
+                department=fake.word(),
+                phone=fake.phone_number(),
+                bio=fake.sentence(),
+            )
+
+            profiles.append(profile)
+
+        UserProfile.objects.bulk_create(profiles, batch_size=NUMBER_OF_USERS)
+
         self.create_addresses()
         self.create_projects()
+        self.create_approval_groups()
         self.create_service_requisitions()
         self.create_goods_requisitions()
 
@@ -60,7 +80,7 @@ class Command(BaseCommand):
             user = random.choice(self.created_users)
 
             address = Address(
-                name=fake.word(),
+                name=f"{fake.word()}{fake.random_number(digits=6)}",
                 address_code=fake.uuid4(),
                 description=fake.sentence(),
                 attention=f"{user.first_name} {user.last_name}",
@@ -106,6 +126,23 @@ class Command(BaseCommand):
 
         self.created_projects = Project.objects.bulk_create(projects, batch_size=NUMBER_OF_PROJECTS)
 
+    def create_approval_groups(self, *args, **kwargs):
+        groups = []
+
+        for _ in range(NUMBER_OF_APPROVAL_GROUPS):
+            user1, user2 = random.sample(self.created_users, 2)
+
+            group = ApprovalGroup.objects.create(
+                name=f"{fake.word()}{fake.random_number(digits=6)}",
+                description=fake.sentence(),
+            )
+
+            group.approver.add(user1, user2)
+
+            groups.append(group)
+
+        self.created_groups = groups
+
     def create_service_requisitions(self, *args, **kwargs):
         requisitions = []
         lines = []
@@ -116,7 +153,7 @@ class Command(BaseCommand):
             currency = random.choice(CURRENCY)
 
             requisition = Requisition(
-                name=fake.word(),
+                f"{fake.word()}{fake.random_number(digits=6)}",
                 external_reference=fake.uuid4(),
                 status=RequisitionStatusChoices.DRAFT,
                 owner=user,
@@ -190,7 +227,7 @@ class Command(BaseCommand):
             currency = random.choice(CURRENCY)
 
             requisition = Requisition(
-                name=fake.word(),
+                f"{fake.word()}{fake.random_number(digits=6)}",
                 external_reference=fake.uuid4(),
                 status=RequisitionStatusChoices.DRAFT,
                 owner=user,
