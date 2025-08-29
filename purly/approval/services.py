@@ -8,8 +8,9 @@ from rest_framework import exceptions
 
 from config.exceptions import BadRequest
 from purly.requisition.models import RequisitionStatusChoices
+from purly.requisition.services import on_reject_requisition
 
-from .emails import send_approval_email, send_fully_approved_email, send_reject_email
+from .emails import send_approval_email, send_fully_approved_email
 from .models import (
     Approval,
     ApprovalChain,
@@ -293,9 +294,14 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_approve(approval, requisition, **kwargs):
-    approval.status = ApprovalStatusChoices.APPROVED
-    approval.approved_at = timezone.now()
+def on_approve_or_skip(approval, requisition, action, **kwargs):
+    if action == "approve":
+        approval.status = ApprovalStatusChoices.APPROVED
+        approval.approved_at = timezone.now()
+
+    if action == "skip":
+        approval.status = ApprovalStatusChoices.SKIPPED
+        approval.skipped_at = timezone.now()
 
     request_user = kwargs.get("request_user")
 
@@ -304,8 +310,11 @@ def on_approve(approval, requisition, **kwargs):
 
     approval.save()
 
-    transaction.on_commit(lambda: notify_current_sequence(requisition))
-    transaction.on_commit(lambda: on_fully_approved(requisition))
+    send_email = kwargs.get("send_email", True)
+
+    if send_email:
+        transaction.on_commit(lambda: notify_current_sequence(requisition))
+        transaction.on_commit(lambda: on_fully_approved(requisition))
 
     return approval
 
@@ -323,24 +332,10 @@ def on_reject(approval, requisition, **kwargs):
 
     cancel_approvals(requisition)
 
-    requisition.status = RequisitionStatusChoices.REJECTED
-    requisition.rejected_at = timezone.now()
+    update_requisition = kwargs.get("update_requisition", True)
 
-    requisition.save()
-
-    transaction.on_commit(lambda: send_reject_email(approval, requisition))
-
-    return approval
-
-
-def on_skip(approval, requisition):
-    approval.status = ApprovalStatusChoices.SKIPPED
-    approval.skipped_at = timezone.now()
-
-    approval.save()
-
-    transaction.on_commit(lambda: notify_current_sequence(requisition))
-    transaction.on_commit(lambda: on_fully_approved(requisition))
+    if update_requisition:
+        on_reject_requisition(approval, requisition)
 
     return approval
 

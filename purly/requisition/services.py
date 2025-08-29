@@ -3,12 +3,14 @@ from django.utils import timezone
 from rest_framework import exceptions
 
 from config.exceptions import BadRequest
-from purly.approval.services import cancel_approvals, generate_approvals, notify_current_sequence
+from purly.approval.emails import send_reject_email
 
 from .models import RequisitionStatusChoices
 
 
 def submit_withdraw_validation(request_user, requisition, action):
+    from purly.approval.services import generate_approvals
+
     if requisition.owner != request_user:
         raise exceptions.PermissionDenied(f"You must be the requisition owner to {action}.")
 
@@ -40,6 +42,8 @@ def submit_withdraw_validation(request_user, requisition, action):
 
 
 def on_submit(requisition, **kwargs):
+    from purly.approval.services import notify_current_sequence
+
     requisition.status = RequisitionStatusChoices.PENDING_APPROVAL
     requisition.submitted_at = timezone.now()
     requisition.rejected_at = None
@@ -57,6 +61,8 @@ def on_submit(requisition, **kwargs):
 
 
 def on_withdraw(requisition, **kwargs):
+    from purly.approval.services import cancel_approvals
+
     cancel_approvals(requisition)
 
     requisition.status = RequisitionStatusChoices.DRAFT
@@ -68,5 +74,16 @@ def on_withdraw(requisition, **kwargs):
         requisition.updated_by = request_user
 
     requisition.save()
+
+    return requisition
+
+
+def on_reject_requisition(approval, requisition):
+    requisition.status = RequisitionStatusChoices.REJECTED
+    requisition.rejected_at = timezone.now()
+
+    requisition.save()
+
+    transaction.on_commit(lambda: send_reject_email(approval, requisition))
 
     return requisition

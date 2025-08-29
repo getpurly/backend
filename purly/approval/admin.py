@@ -1,7 +1,6 @@
 from django.contrib import admin, messages
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.utils import timezone
 
 from purly.base import AdminBase
 from purly.requisition.models import Requisition
@@ -26,10 +25,10 @@ from .models import (
 from .services import (
     check_if_current_approver,
     notify_current_sequence,
-    on_approve,
+    on_approve_or_skip,
     on_fully_approved,
     on_reject,
-    on_skip,
+    on_reject_requisition,
 )
 
 
@@ -45,6 +44,16 @@ def admin_action_results(self, request, action, changed):
                 f"The selected approvals were {action} (total = {changed}).",
                 level=messages.SUCCESS,
             )
+
+
+def is_actionable(approval):
+    if (  # noqa: SIM103
+        check_if_current_approver(approval) is False
+        or approval.status != ApprovalStatusChoices.PENDING
+    ):
+        return False
+
+    return True
 
 
 class ApprovalChainHeaderRuleInline(admin.StackedInline):
@@ -121,23 +130,18 @@ class ApprovalAdmin(AdminBase):
     def approve(self, request, queryset):
         changed = 0
         requisitions = set()
-        timestamp = timezone.now()
 
         for approval in queryset:
-            if (
-                check_if_current_approver(approval) is False
-                and approval.status == ApprovalStatusChoices.PENDING
-            ):
+            if not is_actionable(approval):
                 continue
 
-            if approval.status != ApprovalStatusChoices.PENDING:
-                continue
-
-            approval.status = ApprovalStatusChoices.APPROVED
-            approval.approved_at = timestamp
-            approval.updated_by = request.user
-
-            approval.save()
+            on_approve_or_skip(
+                approval,
+                approval.requisition,
+                "approve",
+                request_user=request.user,
+                send_email=False,
+            )
 
             changed += 1
 
@@ -164,23 +168,12 @@ class ApprovalAdmin(AdminBase):
     def reject(self, request, queryset):
         changed = 0
         requisitions = set()
-        timestamp = timezone.now()
 
         for approval in queryset:
-            if (
-                check_if_current_approver(approval) is False
-                and approval.status == ApprovalStatusChoices.PENDING
-            ):
+            if not is_actionable(approval):
                 continue
 
-            if approval.status != ApprovalStatusChoices.PENDING:
-                continue
-
-            approval.status = ApprovalStatusChoices.REJECTED
-            approval.rejected_at = timestamp
-            approval.updated_by = request.user
-
-            approval.save()
+            on_reject(approval, approval.requisition, update_requisition=False)
 
             changed += 1
 
@@ -188,7 +181,7 @@ class ApprovalAdmin(AdminBase):
 
             if requisition_id not in requisitions:
                 transaction.on_commit(
-                    lambda approval=approval, requisition_id=requisition_id: on_reject(
+                    lambda approval=approval, requisition_id=requisition_id: on_reject_requisition(
                         approval, Requisition.objects.get(pk=requisition_id)
                     )
                 )
@@ -202,23 +195,18 @@ class ApprovalAdmin(AdminBase):
     def skip(self, request, queryset):
         changed = 0
         requisitions = set()
-        timestamp = timezone.now()
 
         for approval in queryset:
-            if (
-                check_if_current_approver(approval) is False
-                and approval.status == ApprovalStatusChoices.PENDING
-            ):
+            if not is_actionable(approval):
                 continue
 
-            if approval.status != ApprovalStatusChoices.PENDING:
-                continue
-
-            approval.status = ApprovalStatusChoices.SKIPPED
-            approval.skipped_at = timestamp
-            approval.updated_by = request.user
-
-            approval.save()
+            on_approve_or_skip(
+                approval,
+                approval.requisition,
+                "skip",
+                request_user=request.user,
+                send_email=False,
+            )
 
             changed += 1
 
@@ -308,7 +296,7 @@ class ApprovalAdmin(AdminBase):
                 return HttpResponseRedirect(request.path)
 
             if "_approve" in request.POST:
-                on_approve(obj, obj.requisition)
+                on_approve_or_skip(obj, obj.requisition, "approve")
 
                 self.message_user(
                     request, "This approval has been approved.", level=messages.SUCCESS
@@ -326,7 +314,7 @@ class ApprovalAdmin(AdminBase):
                 return HttpResponseRedirect(request.path)
 
             if "_skip" in request.POST:
-                on_skip(obj, obj.requisition)
+                on_approve_or_skip(obj, obj.requisition, "skip")
 
                 self.message_user(
                     request, "This approval has been skipped.", level=messages.SUCCESS
