@@ -80,6 +80,7 @@ def on_withdraw(requisition, **kwargs):
 
 def on_reject_requisition(approval, requisition):
     requisition.status = RequisitionStatusChoices.REJECTED
+    requisition.submitted_at = None
     requisition.rejected_at = timezone.now()
 
     requisition.save()
