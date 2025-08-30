@@ -105,7 +105,7 @@ class Approval(ModelBase):
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approvals_as_approver"
     )
     sequence_number = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+        validators=[MinValueValidator(1), MaxValueValidator(settings.MAX_SEQUENCE_NUMBER)]
     )
     status = models.CharField(
         choices=ApprovalStatusChoices.choices, default=ApprovalStatusChoices.PENDING
@@ -178,7 +178,7 @@ class ApprovalChain(ModelBase):
         null=True,
     )
     sequence_number = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(1000)]
+        validators=[MinValueValidator(1), MaxValueValidator(settings.MAX_SEQUENCE_NUMBER)]
     )
     min_amount = models.DecimalField(
         max_digits=9,

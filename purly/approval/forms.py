@@ -2,9 +2,11 @@ import re
 from decimal import Decimal, InvalidOperation
 
 from django import forms
+from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 
+from purly.approval.services import retrieve_sequence_max
 from purly.requisition.models import RequisitionStatusChoices
 
 from .models import (
@@ -47,6 +49,15 @@ class ApprovalForm(forms.ModelForm):
 
             if approver and not approver.is_active:
                 raise forms.ValidationError({"approver": "This account must be active."})
+
+        if self.instance.pk is None and requisition:
+            sequence_max = retrieve_sequence_max(requisition)
+
+            if sequence_max >= settings.MAX_SEQUENCE_NUMBER:
+                error = "The sequence number has been reached for this requisition. You cannot add \
+                    any additional approvers."
+
+                raise forms.ValidationError({"requisition": error})
 
         return cleaned_data
 

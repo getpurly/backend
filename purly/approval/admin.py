@@ -29,6 +29,7 @@ from .services import (
     on_fully_approved,
     on_reject,
     on_reject_requisition,
+    retrieve_sequence_max,
 )
 
 
@@ -253,6 +254,7 @@ class ApprovalAdmin(AdminBase):
 
         if obj is None:
             return [
+                "sequence_number",
                 "status",
                 "comment",
                 "rule_metadata",
@@ -272,6 +274,14 @@ class ApprovalAdmin(AdminBase):
             return [field.name for field in self.model._meta.get_fields()]
 
         return readonly_fields
+
+    def save_model(self, request, obj, form, change):
+        if not change and obj.requisition_id:
+            sequence_max = retrieve_sequence_max(obj.requisition)
+
+            obj.sequence_number = sequence_max + 1
+
+        super().save_model(request, obj, form, change)
 
     @transaction.atomic
     def response_change(self, request, obj):

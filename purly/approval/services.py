@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Min, Q
+from django.db.models import Max, Min, Q
 from django.utils import timezone
 from rest_framework import exceptions
 
@@ -362,6 +362,15 @@ def retrieve_sequence_min(requisition):
     )
 
     return value["sequence_number__min"]
+
+def retrieve_sequence_max(requisition):
+    value = (
+        Approval.objects.active()  # type: ignore
+        .filter(requisition=requisition, status=ApprovalStatusChoices.PENDING)
+        .aggregate(Max("sequence_number"))
+    )
+
+    return value["sequence_number__max"]
 
 
 def check_if_current_approver(approval):
