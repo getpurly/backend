@@ -294,7 +294,7 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
-def on_approve_or_skip(approval, requisition, action, **kwargs):
+def on_approve_skip(approval, requisition, action, **kwargs):
     if action == "approve":
         approval.status = ApprovalStatusChoices.APPROVED
         approval.approved_at = timezone.now()

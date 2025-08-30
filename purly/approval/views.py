@@ -15,7 +15,7 @@ from .serializers import (
 )
 from .services import (
     approval_request_validation,
-    on_approve_or_skip,
+    on_approve_skip,
     on_reject,
 )
 
@@ -71,7 +71,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        obj = on_approve_or_skip(
+        obj = on_approve_skip(
             approval, approval.requisition, "approve", request_user=request.user
         )
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data

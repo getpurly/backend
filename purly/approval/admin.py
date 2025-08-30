@@ -25,7 +25,7 @@ from .models import (
 from .services import (
     check_if_current_approver,
     notify_current_sequence,
-    on_approve_or_skip,
+    on_approve_skip,
     on_fully_approved,
     on_reject,
     on_reject_requisition,
@@ -135,7 +135,7 @@ class ApprovalAdmin(AdminBase):
             if not is_actionable(approval):
                 continue
 
-            on_approve_or_skip(
+            on_approve_skip(
                 approval,
                 approval.requisition,
                 "approve",
@@ -200,7 +200,7 @@ class ApprovalAdmin(AdminBase):
             if not is_actionable(approval):
                 continue
 
-            on_approve_or_skip(
+            on_approve_skip(
                 approval,
                 approval.requisition,
                 "skip",
@@ -296,7 +296,7 @@ class ApprovalAdmin(AdminBase):
                 return HttpResponseRedirect(request.path)
 
             if "_approve" in request.POST:
-                on_approve_or_skip(obj, obj.requisition, "approve")
+                on_approve_skip(obj, obj.requisition, "approve")
 
                 self.message_user(
                     request, "This approval has been approved.", level=messages.SUCCESS
@@ -314,7 +314,7 @@ class ApprovalAdmin(AdminBase):
                 return HttpResponseRedirect(request.path)
 
             if "_skip" in request.POST:
-                on_approve_or_skip(obj, obj.requisition, "skip")
+                on_approve_skip(obj, obj.requisition, "skip")
 
                 self.message_user(
                     request, "This approval has been skipped.", level=messages.SUCCESS
