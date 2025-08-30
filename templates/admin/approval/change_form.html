@@ -1,6 +1,17 @@
 {% extends "admin/change_form.html" %}
 {% load i18n %}
 
+{% block content %}
+{% if add and opts.app_label == "approval" and opts.model_name == "approval" %}
+<div class="messagelist">
+    <div class="info">
+        <p>{% trans "<strong>Note:</strong> This approval will be added to pending requisition at the very end." %}</p>
+    </div>
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}
+
 {% block submit_buttons_bottom %}
 {{ block.super }}
 {% if original and original.status == "pending" and not original.deleted %}

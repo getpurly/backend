@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from purly.permissions import IsOwnerOrAdmin
+
 from .filters import REQUISITION_FILTER_FIELDS, REQUISITION_LINE_FILTER_FIELDS
 from .models import Requisition, RequisitionLine
 from .pagination import RequisitionLinePagination, RequisitionPagination
@@ -32,17 +34,24 @@ REQUISITION_LINE_ORDERING = ["line_total", "need_by", "created_at", "updated_at"
 
 class RequisitionViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdmin]
     queryset = (
         Requisition.objects.active()  # type: ignore
         .select_related("project", "owner", "created_by", "updated_by")
-        .prefetch_related("lines__ship_to")
+        .prefetch_related("lines")
     )
-    serializer_class = RequisitionListSerializer
     pagination_class = RequisitionPagination
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_fields = REQUISITION_FILTER_FIELDS
     ordering_fields = REQUISITION_ORDERING
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser:
+            return self.queryset
+
+        return self.queryset.filter(owner=user)
 
     def get_object(self):
         try:
@@ -156,7 +165,7 @@ class RequisitionMineListView(generics.ListAPIView):
         return (
             Requisition.objects.active()  # type: ignore
             .select_related("project", "owner", "created_by", "updated_by")
-            .prefetch_related("lines__ship_to")
+            .prefetch_related("lines")
             .filter(owner=self.request.user)
         )
 
@@ -166,15 +175,23 @@ class RequisitionMineListView(generics.ListAPIView):
 )
 class RequisitionLineListView(generics.ListAPIView):
     http_method_names = ["get"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdmin]
     queryset = RequisitionLine.objects.active().select_related(  # type: ignore
-        "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
+        "ship_to", "created_by", "updated_by"
     )
     serializer_class = RequisitionLineListSerializer
     pagination_class = RequisitionLinePagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = REQUISITION_LINE_FILTER_FIELDS
     ordering_fields = REQUISITION_LINE_ORDERING
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser:
+            return self.queryset
+
+        return self.queryset.filter(requisition__owner=user)
 
 
 @extend_schema(
@@ -194,8 +211,6 @@ class RequisitionLineMineListView(generics.ListAPIView):
     def get_queryset(self):
         return (
             RequisitionLine.objects.active()  # type: ignore
-            .select_related(
-                "ship_to", "ship_to__owner", "ship_to__created_by", "ship_to__updated_by"
-            )
+            .select_related("ship_to", "created_by", "updated_by")
             .filter(requisition__owner=self.request.user)
         )

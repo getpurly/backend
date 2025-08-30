@@ -131,9 +131,9 @@ def record_user_activity(  # noqa: PLR0913
         user=user,
         action=action,
         context=context,
-        ip_address=ip_address,
-        user_agent=user_agent,
-        session_key=request.session.session_key,
+        ip_address=ip_address if ip_address else None,
+        user_agent=user_agent if user_agent else "",
+        session_key=request.session.session_key if request.session.session_key else "",
     )
 
     new_activity.save()

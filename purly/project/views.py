@@ -2,8 +2,9 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, status, viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from purly.permissions import IsAdminOrReadOnlyAuthenticated
 
 from .filters import PROJECT_FILTER_FIELDS
 from .models import Project
@@ -18,9 +19,8 @@ from .serializers import (
 
 class ProjectViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnlyAuthenticated]
     queryset = Project.objects.active().select_related("created_by", "updated_by")  # type: ignore
-    serializer_class = ProjectListSerializer
     pagination_class = ProjectPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = PROJECT_FILTER_FIELDS

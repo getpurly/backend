@@ -109,7 +109,9 @@ class RequisitionAdmin(AdminBase):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
 
-        return queryset.select_related("project", "owner", "created_by", "updated_by")
+        return queryset.select_related(
+            "project", "owner", "created_by", "updated_by"
+        ).prefetch_related("lines")
 
     @transaction.atomic
     @admin.action(description="Submit for approval for selected requisitions")
@@ -342,9 +344,7 @@ class RequisitionLineAdmin(AdminBase):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
 
-        return queryset.select_related("created_by", "updated_by").prefetch_related(
-            "requisition", "ship_to"
-        )
+        return queryset.select_related("requisition", "ship_to", "created_by", "updated_by")
 
     @admin.action(description="Soft delete selected requisition lines")
     def delete(self, request, queryset):

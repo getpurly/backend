@@ -76,7 +76,7 @@ class Requisition(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.id} - {self.name}"  # type: ignore
+        return f"{self.pk} - {self.name}"
 
 
 class RequisitionLine(ModelBase):
@@ -112,4 +112,4 @@ class RequisitionLine(ModelBase):
         ordering = ["requisition", "line_number"]
 
     def __str__(self):
-        return self.description
+        return f"{self.pk} - {self.description}"

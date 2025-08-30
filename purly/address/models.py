@@ -32,4 +32,4 @@ class Address(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.id} - {self.name}"  # type: ignore
+        return f"{self.pk} - {self.name}"

@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from purly.permissions import IsOwnerOrAdmin
+
 from .models import Approval, ApprovalStatusChoices
 from .pagination import ApprovalPagination
 from .serializers import (
@@ -22,10 +24,19 @@ from .services import (
 
 class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     http_method_names = ["get", "post"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdmin]
     queryset = Approval.objects.active().select_related("approver", "created_by", "updated_by")  # type: ignore
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
+    ordering_fields = ["created_at", "updated_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser:
+            return self.queryset
+
+        return self.queryset.filter(approver=user)
 
     def get_object(self):
         try:
@@ -71,9 +82,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        obj = on_approve_skip(
-            approval, approval.requisition, "approve", request_user=request.user
-        )
+        obj = on_approve_skip(approval, approval.requisition, "approve", request_user=request.user)
         approval_detail = ApprovalDetailSerializer(obj, context=self.get_serializer_context()).data
 
         return Response(approval_detail)
@@ -111,6 +120,7 @@ class ApprovalMineListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
+    ordering_fields = ["created_at", "updated_at"]
 
     def get_queryset(self):
         return (

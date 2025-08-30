@@ -15,6 +15,7 @@ class ApprovalListSerializer(CustomToRepresentation, serializers.ModelSerializer
         model = Approval
         fields = [
             "id",
+            "requisition",
             "approver",
             "sequence_number",
             "status",
@@ -39,6 +40,7 @@ class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializ
         model = Approval
         fields = [
             "id",
+            "requisition",
             "approver",
             "sequence_number",
             "status",

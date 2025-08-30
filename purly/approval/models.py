@@ -127,7 +127,7 @@ class Approval(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Approval {self.id}"  # type: ignore
+        return f"Approval - {self.pk}"
 
 
 class ApprovalGroup(ModelBase):
@@ -151,7 +151,7 @@ class ApprovalGroup(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name
+        return f"{self.pk} - {self.name}"
 
 
 class ApprovalChain(ModelBase):
@@ -200,7 +200,7 @@ class ApprovalChain(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name
+        return f"{self.pk} - {self.name}"
 
 
 class ApprovalChainHeaderRule(ModelBase):

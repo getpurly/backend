@@ -5,6 +5,8 @@ from rest_framework import exceptions, filters, generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from purly.permissions import IsOwnerOrAdmin
+
 from .filters import ADDRESS_FILTER_FIELDS
 from .models import Address
 from .pagination import AddressPagination
@@ -18,13 +20,20 @@ from .serializers import (
 
 class AddressViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrAdmin]
     queryset = Address.objects.active().select_related("owner", "created_by", "updated_by")  # type: ignore
-    serializer_class = AddressListSerializer
     pagination_class = AddressPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ADDRESS_FILTER_FIELDS
     ordering_fields = ["created_at", "updated_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser:
+            return self.queryset
+
+        return self.queryset.filter(owner=user)
 
     def get_object(self):
         try:

@@ -126,6 +126,11 @@ class ApprovalAdmin(AdminBase):
     ]
     search_fields = []
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        return queryset.select_related("approver", "requisition", "created_by", "updated_by")
+
     @transaction.atomic
     @admin.action(description="Set approved (only if current approver) for selected approvals")
     def approve(self, request, queryset):
@@ -373,6 +378,11 @@ class ApprovalChainAdmin(AdminBase):
     search_fields = ["name"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        return queryset.select_related("approver", "created_by", "updated_by")
+
     @admin.action(description="Soft delete selected approval chains")
     def delete(self, request, queryset):
         admin_action_delete(self, request, queryset, "approval chains")
@@ -438,6 +448,11 @@ class ApprovalGroupAdmin(AdminBase):
     list_filter = ["created_at", "updated_at", "deleted"]
     filter_horizontal = ["approver"]
     search_fields = ["name"]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        return queryset.select_related("created_by", "updated_by")
 
     @admin.action(description="Soft delete selected approval groups")
     def delete(self, request, queryset):

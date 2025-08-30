@@ -12,3 +12,9 @@ python manage.py makemigrations
 python manage.py migrate
 python manage.py create_fake_data
 python manage.py createsuperuser --noinput
+
+export DJANGO_SUPERUSER_USERNAME="dev2"
+export DJANGO_SUPERUSER_PASSWORD="dev2"
+export DJANGO_SUPERUSER_EMAIL="dev2@localhost"
+
+python manage.py createsuperuser --noinput

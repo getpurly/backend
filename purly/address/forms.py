@@ -12,8 +12,11 @@ class AddressForm(forms.ModelForm):
         cleaned_data = super().clean()
         owner = cleaned_data.get("owner")
 
-        if (self.instance.pk is None or "owner" in self.changed_data) and owner:  # noqa: SIM102
-            if not owner.is_active:
-                raise forms.ValidationError({"owner": "This account must be active."})
+        if (
+            (self.instance.pk is None or "owner" in self.changed_data)
+            and owner
+            and not owner.is_active
+        ):
+            raise forms.ValidationError({"owner": "This account must be active."})
 
         return cleaned_data
