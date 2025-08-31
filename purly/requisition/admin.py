@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 
 from purly.approval.models import Approval
-from purly.approval.services import generate_approvals
+from purly.approval.services import bypass_approvals, generate_approvals
 from purly.base import AdminBase
 from purly.requisition.services import on_submit, on_withdraw
 from purly.utils import admin_action_delete
@@ -156,8 +156,8 @@ class RequisitionAdmin(AdminBase):
         admin_action_delete(self, request, queryset, "requisitions")
 
     @transaction.atomic
-    def response_change(self, request, obj):
-        if "_submit" in request.POST or "_withdraw" in request.POST:
+    def response_change(self, request, obj):  # noqa: PLR0911
+        if "_submit" in request.POST or "_withdraw" in request.POST or "_bypass" in request.POST:
             if "_submit" in request.POST:
                 if obj.status not in [
                     RequisitionStatusChoices.DRAFT,
@@ -206,6 +206,24 @@ class RequisitionAdmin(AdminBase):
 
                 self.message_user(
                     request, "This requisition has been withdrawn.", level=messages.SUCCESS
+                )
+
+                return HttpResponseRedirect(request.path)
+
+            if "_bypass" in request.POST:
+                if obj.status != RequisitionStatusChoices.PENDING_APPROVAL:
+                    self.message_user(
+                        request,
+                        "This requisition must be in pending approval status to bypass approvals.",
+                        level=messages.WARNING,
+                    )
+
+                    return HttpResponseRedirect(request.path)
+
+                bypass_approvals(obj, request.user)
+
+                self.message_user(
+                    request, "Bypassed approvals for this requisition.", level=messages.SUCCESS
                 )
 
                 return HttpResponseRedirect(request.path)

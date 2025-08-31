@@ -294,6 +294,25 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
+def bypass_approvals(requisition, request_user):
+    approvals = []
+
+    timestamp = timezone.now()
+
+    for approval in requisition.approvals.filter(
+        status=ApprovalStatusChoices.PENDING, deleted=False
+    ):
+        approval.status = ApprovalStatusChoices.SKIPPED
+        approval.updated_at = timestamp
+        approval.updated_by = request_user
+
+        approvals.append(approval)
+
+    Approval.objects.bulk_update(approvals, ["status", "updated_at", "updated_by"])
+
+    transaction.on_commit(lambda: on_fully_approved(requisition))
+
+
 def on_approve_skip(approval, requisition, action, **kwargs):
     if action == "approve":
         approval.status = ApprovalStatusChoices.APPROVED
@@ -362,6 +381,7 @@ def retrieve_sequence_min(requisition):
     )
 
     return value["sequence_number__min"]
+
 
 def retrieve_sequence_max(requisition):
     value = (

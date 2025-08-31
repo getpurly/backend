@@ -14,6 +14,7 @@
 
 {% if original and original.status == "pending_approval" and not original.deleted %}
 <div class="submit-row">
+    <input type="submit" value='{% trans "Bypass Approvals" %}' name="_bypass">
     <input type="submit" value='{% trans "Withdraw" %}' name="_withdraw">
 </div>
 {% endif %}
