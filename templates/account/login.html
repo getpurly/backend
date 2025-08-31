@@ -3,7 +3,7 @@
 {% load allauth_ui %}
 {% load widget_tweaks %}
 {% block content %}
-    {% trans "Sign In" as heading %}
+    {% trans "Log In" as heading %}
     {% #container heading=heading  %}
     {% if not SOCIALACCOUNT_ONLY %}
         {% url 'account_login' as action_url %}
