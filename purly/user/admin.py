@@ -22,7 +22,6 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ["is_active", "date_joined", "last_login"]
     search_fields = ["username", "first_name", "last_name", "email"]
 
-    # https://stackoverflow.com/questions/53827800/running-n-time-django-content-type-query
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         from django.contrib.auth.models import Permission
 
