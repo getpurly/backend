@@ -152,7 +152,7 @@ def line_rule_matching(line, rule):
     return perform_lookup(line_value, rule.lookup, rule.value)
 
 
-def fetch_trigger_metadata(approval_chain, header_rules, line_rules):
+def fetch_rule_metadata(approval_chain, header_rules, line_rules):
     header_rules_metadata = []
     line_rules_metadata = []
 
@@ -242,7 +242,7 @@ def generate_approvals(requisition):  # noqa: PLR0912
                         break
 
         else:
-            rule_metadata = fetch_trigger_metadata(approval_chain, header_rules, line_rules)
+            rule_metadata = fetch_rule_metadata(approval_chain, header_rules, line_rules)
 
             if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
                 approval = Approval(
@@ -310,7 +310,7 @@ def bypass_approvals(requisition, request_user):
 
     Approval.objects.bulk_update(approvals, ["status", "skipped_at", "updated_at", "updated_by"])
 
-    transaction.on_commit(lambda: on_fully_approved(requisition))
+    transaction.on_commit(lambda: check_fully_approved(requisition))
 
 
 def on_approve_skip(approval, requisition, action, **kwargs):
@@ -333,7 +333,7 @@ def on_approve_skip(approval, requisition, action, **kwargs):
 
     if send_email:
         transaction.on_commit(lambda: notify_current_sequence(requisition))
-        transaction.on_commit(lambda: on_fully_approved(requisition))
+        transaction.on_commit(lambda: check_fully_approved(requisition))
 
     return approval
 
@@ -357,20 +357,6 @@ def on_reject(approval, requisition, **kwargs):
         on_reject_requisition(approval, requisition)
 
     return approval
-
-
-def on_fully_approved(requisition):
-    if (
-        retrieve_sequence_min(requisition) is None
-        and requisition.status == RequisitionStatusChoices.PENDING_APPROVAL
-        and requisition.approved_at is None
-    ):
-        requisition.status = RequisitionStatusChoices.APPROVED
-        requisition.approved_at = timezone.now()
-
-        requisition.save()
-
-        send_fully_approved_email(requisition)
 
 
 def retrieve_sequence_min(requisition):
@@ -397,6 +383,20 @@ def check_if_current_approver(approval):
     sequence_min_value = retrieve_sequence_min(approval.requisition)
 
     return approval.sequence_number == sequence_min_value
+
+
+def check_fully_approved(requisition):
+    if (
+        retrieve_sequence_min(requisition) is None
+        and requisition.status == RequisitionStatusChoices.PENDING_APPROVAL
+        and requisition.approved_at is None
+    ):
+        requisition.status = RequisitionStatusChoices.APPROVED
+        requisition.approved_at = timezone.now()
+
+        requisition.save()
+
+        send_fully_approved_email(requisition)
 
 
 def approval_request_validation(request_user, action, approval):

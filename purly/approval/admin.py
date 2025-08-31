@@ -23,10 +23,10 @@ from .models import (
     ApprovalStatusChoices,
 )
 from .services import (
+    check_fully_approved,
     check_if_current_approver,
     notify_current_sequence,
     on_approve_skip,
-    on_fully_approved,
     on_reject,
     on_reject_requisition,
     retrieve_sequence_max,
@@ -160,7 +160,7 @@ class ApprovalAdmin(AdminBase):
                     )
                 )
                 transaction.on_commit(
-                    lambda requisition_id=requisition_id: on_fully_approved(
+                    lambda requisition_id=requisition_id: check_fully_approved(
                         Requisition.objects.get(pk=requisition_id)
                     )
                 )
@@ -225,7 +225,7 @@ class ApprovalAdmin(AdminBase):
                     )
                 )
                 transaction.on_commit(
-                    lambda requisition_id=requisition_id: on_fully_approved(
+                    lambda requisition_id=requisition_id: check_fully_approved(
                         Requisition.objects.get(pk=requisition_id)
                     )
                 )

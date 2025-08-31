@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.db import transaction
 
+from purly.approval.models import ApprovalStatusChoices
+
 
 @transaction.atomic
 def admin_action_delete(self, request, queryset, model_name):
@@ -12,6 +14,9 @@ def admin_action_delete(self, request, queryset, model_name):
 
         instance.deleted = True
         instance.updated_by = request.user
+
+        if model_name == "approvals" and instance.status == ApprovalStatusChoices.PENDING:
+            instance.status = ApprovalStatusChoices.CANCELLED
 
         if model_name == "approval chains":
             instance.active = False
