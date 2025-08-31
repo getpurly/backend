@@ -113,6 +113,7 @@ class ApprovalAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
+        "deleted",
     ]
     list_filter = [
         "status",
@@ -123,6 +124,7 @@ class ApprovalAdmin(AdminBase):
         "skipped_at",
         "created_at",
         "updated_at",
+        "deleted",
     ]
     search_fields = []
 
@@ -373,6 +375,7 @@ class ApprovalChainAdmin(AdminBase):
         "updated_at",
         "updated_by",
         "active",
+        "deleted",
     ]
     list_filter = ["approver_mode", "created_at", "updated_at", "active", "deleted"]
     search_fields = ["name"]
@@ -444,6 +447,7 @@ class ApprovalGroupAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
+        "deleted",
     ]
     list_filter = ["created_at", "updated_at", "deleted"]
     filter_horizontal = ["approver"]

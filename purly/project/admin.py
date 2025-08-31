@@ -33,6 +33,7 @@ class ProjectAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
+        "deleted",
     ]
     list_filter = ["start_date", "end_date", "created_at", "updated_at", "deleted"]
     search_fields = [

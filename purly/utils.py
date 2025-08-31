@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.db import transaction
 
 from purly.approval.models import ApprovalStatusChoices
+from purly.requisition.models import RequisitionStatusChoices
+from purly.requisition.services import on_withdraw
 
 
 @transaction.atomic
@@ -29,6 +31,9 @@ def admin_action_delete(self, request, queryset, model_name):
                 line.updated_by = request.user
 
                 line.save()
+
+            if instance.status == RequisitionStatusChoices.PENDING_APPROVAL:
+                on_withdraw(instance)
 
         instance.save()
 

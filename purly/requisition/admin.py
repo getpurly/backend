@@ -31,7 +31,7 @@ class RequisitionLineInline(admin.StackedInline):
     extra = 1
     verbose_name = "requisition line"
     verbose_name_plural = "requisition lines"
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
 
 class RequisitionAdmin(AdminBase):
@@ -76,6 +76,7 @@ class RequisitionAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
+        "deleted",
     ]
     list_filter = [
         "status",
@@ -317,7 +318,6 @@ class RequisitionLineAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted",
     ]
     list_display = [
         "id",
@@ -344,7 +344,6 @@ class RequisitionLineAdmin(AdminBase):
         "need_by",
         "created_at",
         "updated_at",
-        "deleted",
     ]
     search_fields = [
         "description",
@@ -363,10 +362,6 @@ class RequisitionLineAdmin(AdminBase):
         queryset = super().get_queryset(request)
 
         return queryset.select_related("requisition", "ship_to", "created_by", "updated_by")
-
-    @admin.action(description="Soft delete selected requisition lines")
-    def delete(self, request, queryset):
-        admin_action_delete(self, request, queryset, "requisition lines")
 
 
 admin.site.register(Requisition, RequisitionAdmin)
