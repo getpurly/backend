@@ -2,7 +2,7 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import exceptions, filters, generics, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import USER_FILTER_FIELDS
@@ -13,7 +13,7 @@ from .serializers import UserDetailSerializer, UserListSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get"]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserListSerializer
     pagination_class = UserPagination
