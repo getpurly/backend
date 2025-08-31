@@ -303,12 +303,12 @@ def bypass_approvals(requisition, request_user):
         status=ApprovalStatusChoices.PENDING, deleted=False
     ):
         approval.status = ApprovalStatusChoices.SKIPPED
-        approval.updated_at = timestamp
+        approval.skipped_at = approval.updated_at = timestamp
         approval.updated_by = request_user
 
         approvals.append(approval)
 
-    Approval.objects.bulk_update(approvals, ["status", "updated_at", "updated_by"])
+    Approval.objects.bulk_update(approvals, ["status", "skipped_at", "updated_at", "updated_by"])
 
     transaction.on_commit(lambda: on_fully_approved(requisition))
 
