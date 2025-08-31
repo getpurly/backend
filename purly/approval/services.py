@@ -433,8 +433,7 @@ def notify_current_sequence(requisition):
             notified_at=None,
             deleted=False,
         ).select_related("approver"):
-            approval.notified_at = timestamp
-            approval.updated_at = timestamp
+            approval.notified_at = approval.updated_at = timestamp
 
             approval.save()
 
