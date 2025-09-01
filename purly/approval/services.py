@@ -22,6 +22,7 @@ from .models import (
     LineMatchModeChoices,
     LookupNumberChoices,
     LookupStringChoices,
+    OperatorChoices,
 )
 
 
@@ -198,6 +199,8 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         "max_amount": str(Decimal(approval_chain.max_amount))
         if approval_chain.max_amount
         else None,
+        "header_rule_logic": approval_chain.header_rule_logic,
+        "line_rule_logic": approval_chain.line_rule_logic,
         "header_rules": header_rules_metadata if len(header_rules_metadata) > 0 else None,
         "line_rules": line_rules_metadata if len(line_rules_metadata) > 0 else None,
     }
@@ -226,20 +229,35 @@ def generate_approvals(requisition):  # noqa: PLR0912
         )
 
     for approval_chain in approval_chains:
+        line_rule_results = []
+
         header_rules = approval_chain.approval_chain_header_rules.all()
         line_rules = approval_chain.approval_chain_line_rules.all()
 
-        if not all(header_rule_matching(requisition, rule) for rule in header_rules):
+        if approval_chain.header_rule_logic == OperatorChoices.AND:
+            if not all(header_rule_matching(requisition, rule) for rule in header_rules):
+                continue
+        # If list is empty, then any returns False by default
+        elif header_rules and not any(
+            header_rule_matching(requisition, rule) for rule in header_rules
+        ):
             continue
 
         for rule in line_rules:
-            match rule.match_mode:
-                case LineMatchModeChoices.ALL:
-                    if not all(line_rule_matching(line, rule) for line in lines):
-                        break
-                case _:
-                    if not any(line_rule_matching(line, rule) for line in lines):
-                        break
+            if rule.match_mode == LineMatchModeChoices.ALL:
+                result = all(line_rule_matching(line, rule) for line in lines)
+            elif rule.match_mode == LineMatchModeChoices.ANY:
+                result = any(line_rule_matching(line, rule) for line in lines)
+            else:
+                result = False
+
+            line_rule_results.append(result)
+
+            if approval_chain.line_rule_logic == OperatorChoices.AND:
+                if not all(line_rule_results):
+                    break
+            elif not any(line_rule_results):
+                break
 
         else:
             rule_metadata = fetch_rule_metadata(approval_chain, header_rules, line_rules)
@@ -270,12 +288,12 @@ def generate_approvals(requisition):  # noqa: PLR0912
 
                     approvals.append(approval)
 
-    if len(approvals) > 0:
-        Approval.objects.bulk_create(approvals)
+    if len(approvals) == 0:
+        return (False, "This requisition cannot be submitted because no approval chains matched.")
 
-        return (True, "")
+    Approval.objects.bulk_create(approvals)
 
-    return (False, "This requisition cannot be submitted because no approval chains matched.")
+    return (True, "")
 
 
 def cancel_approvals(requisition):

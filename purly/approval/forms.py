@@ -66,6 +66,10 @@ class ApprovalChainForm(forms.ModelForm):
     class Meta:
         model = ApprovalChain
         fields = "__all__"
+        help_texts = {
+            "header_rule_logic": "Select how multiple header rules are evaluated.",
+            "line_rule_logic": "Select how multiple line rules are evaluated.",
+        }
 
     class Media:
         js = ["admin/js/approver_mode_toggle.js"]

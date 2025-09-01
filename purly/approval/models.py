@@ -23,6 +23,11 @@ class ApprovalStatusChoices(models.TextChoices):
     CANCELLED = ("cancelled", "cancelled")
 
 
+class OperatorChoices(models.TextChoices):
+    AND = ("and", "and")
+    OR = ("or", "or")
+
+
 class LookupStringChoices(models.TextChoices):
     EXACT = ("exact", "exact")
     IEXACT = ("iexact", "iexact")
@@ -189,6 +194,8 @@ class ApprovalChain(ModelBase):
     max_amount = models.DecimalField(
         max_digits=9, decimal_places=2, null=True, blank=True, verbose_name="Maximum amount"
     )
+    header_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
+    line_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
     active = models.BooleanField(default=True)
 
     objects = ApprovalChainManager()
@@ -243,7 +250,7 @@ class ApprovalChainHeaderRule(ModelBase):
         if self.lookup in LookupNumberChoices.values:
             lookup = LookupNumberChoices(self.lookup).label
 
-        return f"For header, {field} field {lookup} {value}"
+        return f"Field {field} {lookup} {value}"
 
 
 class ApprovalChainLineRule(ModelBase):

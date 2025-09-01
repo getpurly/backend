@@ -354,6 +354,8 @@ class ApprovalChainAdmin(AdminBase):
         "sequence_number",
         "min_amount",
         "max_amount",
+        "header_rule_logic",
+        "line_rule_logic",
         "created_at",
         "created_by",
         "updated_at",
@@ -370,6 +372,8 @@ class ApprovalChainAdmin(AdminBase):
         "sequence_number",
         "min_amount",
         "max_amount",
+        "header_rule_logic",
+        "line_rule_logic",
         "created_at",
         "created_by",
         "updated_at",
@@ -377,7 +381,15 @@ class ApprovalChainAdmin(AdminBase):
         "active",
         "deleted",
     ]
-    list_filter = ["approver_mode", "created_at", "updated_at", "active", "deleted"]
+    list_filter = [
+        "approver_mode",
+        "header_rule_logic",
+        "line_rule_logic",
+        "created_at",
+        "updated_at",
+        "active",
+        "deleted",
+    ]
     search_fields = ["name"]
     inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
