@@ -144,7 +144,7 @@ class RequisitionLineCreateSerializer(serializers.ModelSerializer):
         unit_of_measure = attrs.get("unit_of_measure", "")
         line_total = attrs.get("line_total", Decimal("0.00"))
 
-        if line_type == "service":
+        if line_type == LineTypeChoices.SERVICE:
             if any([quantity, unit_price, unit_of_measure]):
                 raise serializers.ValidationError(
                     f"Line {line_number} marked as service: quantity, unit price, and unit of measure fields must be excluded."  # noqa: E501

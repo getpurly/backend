@@ -2,13 +2,15 @@ from django.contrib import messages
 from django.db import transaction
 
 from purly.approval.models import ApprovalStatusChoices
-from purly.requisition.models import RequisitionStatusChoices
+from purly.approval.services import check_fully_approved, notify_current_sequence
+from purly.requisition.models import Requisition, RequisitionStatusChoices
 from purly.requisition.services import on_withdraw
 
 
 @transaction.atomic
 def admin_action_delete(self, request, queryset, model_name):
     changed = 0
+    requisitions = set()
 
     for instance in queryset:
         if instance.deleted:
@@ -17,8 +19,25 @@ def admin_action_delete(self, request, queryset, model_name):
         instance.deleted = True
         instance.updated_by = request.user
 
-        if model_name == "approvals" and instance.status == ApprovalStatusChoices.PENDING:
-            instance.status = ApprovalStatusChoices.CANCELLED
+        if model_name == "approvals":
+            requisition_id = instance.requisition.id
+
+            if requisition_id not in requisitions:
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: notify_current_sequence(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+                transaction.on_commit(
+                    lambda requisition_id=requisition_id: check_fully_approved(
+                        Requisition.objects.get(pk=requisition_id)
+                    )
+                )
+
+                requisitions.add(requisition_id)
+
+            if instance.status == ApprovalStatusChoices.PENDING:
+                instance.status = ApprovalStatusChoices.CANCELLED
 
         if model_name == "approval chains":
             instance.active = False
