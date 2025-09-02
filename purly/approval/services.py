@@ -255,7 +255,7 @@ def generate_approvals(requisition):
         )
     )
 
-    if not approval_chains.exists():
+    if len(approval_chains) == 0:
         return (
             False,
             "This requisition cannot be submitted because no approval chains are defined.",
