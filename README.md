@@ -24,7 +24,7 @@ A rule engine for creating approval chains/requisition approvals:
 - You can also set cross logic for header and line rules
     - For example, header rule #1 OR line rule #1 must be true to trigger
 - String lookups include exact, contains, starts with, ends with, custom regex, and is null (and their case insentive counterparts)
-- Number lookups include equal, not equal, greater than, greater than, or equal, less than, and less than, or equal
+- Number lookups include equal, not equal, greater than, greater than or equal, less than, and less than or equal
 - All fields supported on requisitions, as well as related records (e.g., user and project fields)
 - And finally, safe guards in-place to prevent requisition submission if no approval chains defined or existing ones do not contain matching rules
 
