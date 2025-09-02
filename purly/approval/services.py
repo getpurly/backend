@@ -201,15 +201,48 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         else None,
         "header_rule_logic": approval_chain.header_rule_logic,
         "line_rule_logic": approval_chain.line_rule_logic,
+        "cross_rule_logic": approval_chain.cross_rule_logic,
         "header_rules": header_rules_metadata if len(header_rules_metadata) > 0 else None,
         "line_rules": line_rules_metadata if len(line_rules_metadata) > 0 else None,
     }
 
 
-def generate_approvals(requisition):  # noqa: PLR0912
-    lines = requisition.lines.all()
+def header_check(requisition, approval_chain, header_rules):
+    if len(header_rules) == 0:
+        return True
 
+    if approval_chain.header_rule_logic == OperatorChoices.AND:
+        return all(header_rule_matching(requisition, rule) for rule in header_rules)
+
+    return any(header_rule_matching(requisition, rule) for rule in header_rules)
+
+
+def line_check(lines, approval_chain, line_rules):
+    line_rule_results = []
+
+    if len(line_rules) == 0:
+        return True
+
+    for rule in line_rules:
+        if rule.match_mode == LineMatchModeChoices.ALL:
+            result = all(line_rule_matching(line, rule) for line in lines)
+        elif rule.match_mode == LineMatchModeChoices.ANY:
+            result = any(line_rule_matching(line, rule) for line in lines)
+        else:
+            result = False
+
+        line_rule_results.append(result)
+
+    if approval_chain.line_rule_logic == OperatorChoices.AND:
+        return all(line_rule_results)
+
+    return any(line_rule_results)
+
+
+def generate_approvals(requisition):
     approvals = []
+
+    lines = requisition.lines.select_related("ship_to")
 
     approval_chains = (
         ApprovalChain.objects.active()  # type: ignore
@@ -229,43 +262,38 @@ def generate_approvals(requisition):  # noqa: PLR0912
         )
 
     for approval_chain in approval_chains:
-        line_rule_results = []
-
         header_rules = approval_chain.approval_chain_header_rules.all()
         line_rules = approval_chain.approval_chain_line_rules.all()
 
-        if approval_chain.header_rule_logic == OperatorChoices.AND:
-            if not all(header_rule_matching(requisition, rule) for rule in header_rules):
+        header_result = header_check(requisition, approval_chain, header_rules)
+        line_result = line_check(lines, approval_chain, line_rules)
+
+        if approval_chain.cross_rule_logic == OperatorChoices.AND:
+            if not all([header_result, line_result]):
                 continue
-        # If list is empty, then any returns False by default
-        elif header_rules and not any(
-            header_rule_matching(requisition, rule) for rule in header_rules
-        ):
+        elif not any([header_result, line_result]):
             continue
 
-        for rule in line_rules:
-            if rule.match_mode == LineMatchModeChoices.ALL:
-                result = all(line_rule_matching(line, rule) for line in lines)
-            elif rule.match_mode == LineMatchModeChoices.ANY:
-                result = any(line_rule_matching(line, rule) for line in lines)
-            else:
-                result = False
+        rule_metadata = fetch_rule_metadata(approval_chain, header_rules, line_rules)
 
-            line_rule_results.append(result)
+        if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
+            approval = Approval(
+                requisition=requisition,
+                approver=approval_chain.approver,
+                sequence_number=approval_chain.sequence_number,
+                rule_metadata=rule_metadata,
+                status=ApprovalStatusChoices.PENDING,
+                system_generated=True,
+            )
 
-            if approval_chain.line_rule_logic == OperatorChoices.AND:
-                if not all(line_rule_results):
-                    break
-            elif not any(line_rule_results):
-                break
-
+            approvals.append(approval)
         else:
-            rule_metadata = fetch_rule_metadata(approval_chain, header_rules, line_rules)
+            approvers = approval_chain.approver_group.approver.all()
 
-            if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
+            for approver in approvers:
                 approval = Approval(
                     requisition=requisition,
-                    approver=approval_chain.approver,
+                    approver=approver,
                     sequence_number=approval_chain.sequence_number,
                     rule_metadata=rule_metadata,
                     status=ApprovalStatusChoices.PENDING,
@@ -273,20 +301,6 @@ def generate_approvals(requisition):  # noqa: PLR0912
                 )
 
                 approvals.append(approval)
-            else:
-                approvers = approval_chain.approver_group.approver.all()
-
-                for approver in approvers:
-                    approval = Approval(
-                        requisition=requisition,
-                        approver=approver,
-                        sequence_number=approval_chain.sequence_number,
-                        rule_metadata=rule_metadata,
-                        status=ApprovalStatusChoices.PENDING,
-                        system_generated=True,
-                    )
-
-                    approvals.append(approval)
 
     if len(approvals) == 0:
         return (False, "This requisition cannot be submitted because no approval chains matched.")

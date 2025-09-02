@@ -196,6 +196,7 @@ class ApprovalChain(ModelBase):
     )
     header_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
     line_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
+    cross_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
     active = models.BooleanField(default=True)
 
     objects = ApprovalChainManager()

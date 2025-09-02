@@ -67,8 +67,9 @@ class ApprovalChainForm(forms.ModelForm):
         model = ApprovalChain
         fields = "__all__"
         help_texts = {
-            "header_rule_logic": "Select how multiple header rules are evaluated.",
-            "line_rule_logic": "Select how multiple line rules are evaluated.",
+            "header_rule_logic": "Select how multiple header rules are evaluated together.",
+            "line_rule_logic": "Select how multiple line rules are evaluated together.",
+            "cross_rule_logic": "Select how header and line rules are evaluated together.",
         }
 
     class Media:
