@@ -197,6 +197,8 @@ class ApprovalChain(ModelBase):
     header_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
     line_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
     cross_rule_logic = models.CharField(choices=OperatorChoices, default=OperatorChoices.AND)
+    valid_from = models.DateField(blank=True, null=True)
+    valid_to = models.DateField(blank=True, null=True)
     active = models.BooleanField(default=True)
 
     objects = ApprovalChainManager()
@@ -208,7 +210,7 @@ class ApprovalChain(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.pk} - {self.name}"
+        return f"{self.pk} - {self.name}" if self.active else f"{self.pk} - {self.name} (disabled)"
 
 
 class ApprovalChainHeaderRule(ModelBase):
@@ -258,7 +260,7 @@ class ApprovalChainLineRule(ModelBase):
     approval_chain = models.ForeignKey(
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_line_rules"
     )
-    match_mode = models.CharField(choices=LineMatchModeChoices)
+    match_mode = models.CharField(choices=LineMatchModeChoices, default=LineMatchModeChoices.ALL)
     field = models.CharField(
         choices=sorted(list(LineFieldStringChoices.choices) + list(LineFieldNumberChoices.choices))
     )

@@ -202,6 +202,8 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         "header_rule_logic": approval_chain.header_rule_logic,
         "line_rule_logic": approval_chain.line_rule_logic,
         "cross_rule_logic": approval_chain.cross_rule_logic,
+        "valid_from": str(approval_chain.valid_from),
+        "valid_to": str(approval_chain.valid_to),
         "header_rules": header_rules_metadata if len(header_rules_metadata) > 0 else None,
         "line_rules": line_rules_metadata if len(line_rules_metadata) > 0 else None,
     }
@@ -214,7 +216,10 @@ def header_check(requisition, approval_chain, header_rules):
     if approval_chain.header_rule_logic == OperatorChoices.AND:
         return all(header_rule_matching(requisition, rule) for rule in header_rules)
 
-    return any(header_rule_matching(requisition, rule) for rule in header_rules)
+    if approval_chain.header_rule_logic == OperatorChoices.OR:
+        return any(header_rule_matching(requisition, rule) for rule in header_rules)
+
+    return False
 
 
 def line_check(lines, approval_chain, line_rules):
@@ -236,7 +241,10 @@ def line_check(lines, approval_chain, line_rules):
     if approval_chain.line_rule_logic == OperatorChoices.AND:
         return all(line_rule_results)
 
-    return any(line_rule_results)
+    if approval_chain.line_rule_logic == OperatorChoices.OR:
+        return any(line_rule_results)
+
+    return False
 
 
 def generate_approvals(requisition):
@@ -245,21 +253,14 @@ def generate_approvals(requisition):
     lines = requisition.lines.select_related("ship_to")
 
     approval_chains = (
-        ApprovalChain.objects.active()  # type: ignore
+        ApprovalChain.objects.current()  # type: ignore
         .filter(min_amount__lte=requisition.total_amount)
         .filter(Q(max_amount__gte=requisition.total_amount) | Q(max_amount__isnull=True))
-        .filter(active=True)
         .order_by("sequence_number")
         .prefetch_related(
             "approval_chain_header_rules", "approval_chain_line_rules", "approver_group__approver"
         )
     )
-
-    if len(approval_chains) == 0:
-        return (
-            False,
-            "This requisition cannot be submitted because no approval chains are defined.",
-        )
 
     for approval_chain in approval_chains:
         header_rules = approval_chain.approval_chain_header_rules.all()

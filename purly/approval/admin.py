@@ -346,24 +346,51 @@ class ApprovalChainAdmin(AdminBase):
     actions = ["delete"]
     autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
-    fields = [
-        "name",
-        "approver_mode",
-        "approver",
-        "approver_group",
-        "sequence_number",
-        "min_amount",
-        "max_amount",
-        "header_rule_logic",
-        "line_rule_logic",
-        "cross_rule_logic",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "active",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("name",),
+            },
+        ),
+        (
+            "Approval Settings",
+            {
+                "fields": ("approver_mode", "approver", "approver_group", "sequence_number"),
+            },
+        ),
+        (
+            "Trigger Conditions",
+            {
+                "fields": ("min_amount", "max_amount"),
+            },
+        ),
+        (
+            "Logic Conditions",
+            {
+                "fields": ("header_rule_logic", "line_rule_logic", "cross_rule_logic"),
+            },
+        ),
+        (
+            "Effective and Expiration Settings",
+            {
+                "fields": ("valid_from", "valid_to"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": (
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                    "updated_by",
+                    "active",
+                    "deleted",
+                ),
+            },
+        ),
+    )
     list_display = [
         "id",
         "name",
@@ -376,6 +403,8 @@ class ApprovalChainAdmin(AdminBase):
         "header_rule_logic",
         "line_rule_logic",
         "cross_rule_logic",
+        "valid_from",
+        "valid_to",
         "created_at",
         "created_by",
         "updated_at",
@@ -388,6 +417,8 @@ class ApprovalChainAdmin(AdminBase):
         "header_rule_logic",
         "line_rule_logic",
         "cross_rule_logic",
+        "valid_from",
+        "valid_to",
         "created_at",
         "updated_at",
         "active",
@@ -445,16 +476,20 @@ class ApprovalChainAdmin(AdminBase):
 class ApprovalGroupAdmin(AdminBase):
     actions = ["delete"]
     form = ApprovalGroupForm
-    fields = [
-        "name",
-        "description",
-        "approver",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("name", "description", "approver"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "name",
@@ -495,6 +530,20 @@ class ApprovalGroupAdmin(AdminBase):
 class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
     autocomplete_fields = ["approval_chain"]
     form = ApprovalChainHeaderRuleForm
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("field", "lookup", "value"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "approval_chain__name",
@@ -523,6 +572,20 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
 class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
     autocomplete_fields = ["approval_chain"]
     form = ApprovalChainLineRuleForm
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("match_mode", "field", "lookup", "value"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "approval_chain__name",

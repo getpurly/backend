@@ -9,6 +9,26 @@ admin.site.unregister(Group)
 
 
 class UserAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("username", "password", "first_name", "last_name", "email"),
+            },
+        ),
+        (
+            "Permission Settings",
+            {
+                "fields": ("user_permissions", "groups", "is_staff", "is_superuser"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("date_joined", "last_login", "is_active"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "username",
@@ -44,17 +64,20 @@ class UserAdmin(admin.ModelAdmin):
 
 class UserProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user"]
-    fields = [
-        "user",
-        "job_title",
-        "department",
-        "phone",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("user", "job_title", "department", "phone"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
+            },
+        ),
+    )
     list_display = ["id", "user", "job_title", "department", "phone", "created_at", "updated_at"]
     list_filter = ["created_at", "updated_at"]
     search_fields = ["user__username", "job_title", "department", "phone", "bio"]
@@ -74,11 +97,26 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class UserActivityAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (
+            "Basic Information",
+            {
+                "fields": ("user", "action", "context", "ip_address", "user_agent", "session_key"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at",),
+            },
+        ),
+    )
+
     list_display = [
         "id",
+        "user",
         "action",
         "context",
-        "user",
         "ip_address",
         "user_agent",
         "session_key",
@@ -87,17 +125,17 @@ class UserActivityAdmin(admin.ModelAdmin):
     list_filter = ["action", "created_at"]
     search_fields = [
         "id",
+        "user__username",
         "action",
         "context",
-        "user__username",
         "ip_address",
         "user_agent",
         "session_key",
     ]
     readonly_fields = [
+        "user",
         "action",
         "context",
-        "user",
         "ip_address",
         "user_agent",
         "session_key",

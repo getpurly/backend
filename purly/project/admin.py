@@ -10,18 +10,20 @@ from .models import Project
 class ProjectAdmin(AdminBase):
     actions = ["delete"]
     form = ProjectForm
-    fields = [
-        "name",
-        "project_code",
-        "description",
-        "start_date",
-        "end_date",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("name", "project_code", "description", "start_date", "end_date"),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "name",

@@ -70,6 +70,8 @@ class ApprovalChainForm(forms.ModelForm):
             "header_rule_logic": "Select how multiple header rules are evaluated together.",
             "line_rule_logic": "Select how multiple line rules are evaluated together.",
             "cross_rule_logic": "Select how header and line rules are evaluated together.",
+            "valid_from": "Leave blank to trigger approval chain indefinitely.",
+            "valid_to": "Leave blank to trigger approval chain indefinitely.",
         }
 
     class Media:
@@ -82,6 +84,8 @@ class ApprovalChainForm(forms.ModelForm):
         approver_mode = cleaned_data.get("approver_mode")
         approver = cleaned_data.get("approver")
         approver_group = cleaned_data.get("approver_group")
+        valid_from = cleaned_data.get("valid_from")
+        valid_to = cleaned_data.get("valid_to")
 
         if max_amount is not None and min_amount >= max_amount:
             raise ValidationError({"min_amount": "This value must be lower than maximum amount."})
@@ -110,6 +114,11 @@ class ApprovalChainForm(forms.ModelForm):
                 and approver_group.deleted
             ):
                 raise forms.ValidationError({"approver_group": "This approval group was deleted."})
+
+        if valid_from and valid_to and valid_from > valid_to:
+            raise forms.ValidationError(
+                {"valid_to": "The valid to date must be after valid from date."}
+            )
 
         return cleaned_data
 

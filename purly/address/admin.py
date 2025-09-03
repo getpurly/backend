@@ -11,26 +11,34 @@ class AddressAdmin(AdminBase):
     form = AddressForm
     actions = ["delete"]
     autocomplete_fields = ["owner"]
-    fields = [
-        "owner",
-        "name",
-        "address_code",
-        "description",
-        "attention",
-        "phone",
-        "street1",
-        "street2",
-        "city",
-        "state",
-        "zip_code",
-        "country",
-        "delivery_instructions",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": (
+                    "owner",
+                    "name",
+                    "address_code",
+                    "description",
+                    "attention",
+                    "phone",
+                    "street1",
+                    "street2",
+                    "city",
+                    "state",
+                    "zip_code",
+                    "country",
+                    "delivery_instructions",
+                ),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
+            },
+        ),
+    )
     list_display = [
         "id",
         "owner",
