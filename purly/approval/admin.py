@@ -361,7 +361,7 @@ class ApprovalAdmin(AdminBase):
 
 
 class ApprovalChainAdmin(AdminBase):
-    actions = ["delete"]
+    actions = ["activate", "deactivate", "delete"]
     autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
     fieldsets = (
@@ -449,6 +449,54 @@ class ApprovalChainAdmin(AdminBase):
         queryset = super().get_queryset(request)
 
         return queryset.select_related("approver", "created_by", "updated_by")
+
+    @admin.action(description="Active selected approval chains")
+    def activate(self, request, queryset):
+        changed = 0
+
+        for approval_chain in queryset:
+            if approval_chain.deleted is False and approval_chain.active is False:
+                approval_chain.active = True
+
+                changed += 1
+
+                approval_chain.save()
+
+        match changed:
+            case 0:
+                self.message_user(
+                    request, "No approval chains were eligible.", level=messages.WARNING
+                )
+            case _:
+                self.message_user(
+                    request,
+                    f"The selected approval chains were activated (total = {changed}).",
+                    level=messages.SUCCESS,
+                )
+
+    @admin.action(description="Deactive selected approval chains")
+    def deactivate(self, request, queryset):
+        changed = 0
+
+        for approval_chain in queryset:
+            if approval_chain.deleted is False and approval_chain.active is True:
+                approval_chain.active = False
+
+                changed += 1
+
+                approval_chain.save()
+
+        match changed:
+            case 0:
+                self.message_user(
+                    request, "No approval chains were eligible.", level=messages.WARNING
+                )
+            case _:
+                self.message_user(
+                    request,
+                    f"The selected approval chains were activated (total = {changed}).",
+                    level=messages.SUCCESS,
+                )
 
     @admin.action(description="Soft delete selected approval chains")
     def delete(self, request, queryset):
