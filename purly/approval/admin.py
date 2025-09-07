@@ -378,7 +378,7 @@ class ApprovalChainAdmin(AdminBase):
                     "approver_mode",
                     "approver",
                     "approver_group",
-                    "approver_group_mode",
+                    "group_mode",
                     "sequence_number",
                 ),
             },
@@ -421,7 +421,7 @@ class ApprovalChainAdmin(AdminBase):
         "approver_mode",
         "approver__username",
         "approver_group__name",
-        "approver_group_mode",
+        "group_mode",
         "sequence_number",
         "min_amount",
         "max_amount",
@@ -439,7 +439,7 @@ class ApprovalChainAdmin(AdminBase):
     ]
     list_filter = [
         "approver_mode",
-        "approver_group_mode",
+        "group_mode",
         "header_rule_logic",
         "line_rule_logic",
         "cross_rule_logic",

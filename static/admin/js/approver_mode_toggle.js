@@ -3,7 +3,7 @@
         const approverMode = document.querySelector("#id_approver_mode");
         const approverField = document.querySelector(".form-row.field-approver");
         const approverGroupField = document.querySelector(".form-row.field-approver_group");
-        const approverGroupModeField = document.querySelector(".form-row.field-approver_group_mode");
+        const approverGroupModeField = document.querySelector(".form-row.field-group_mode");
 
         function toggleFields() {
             const mode = approverMode.value;

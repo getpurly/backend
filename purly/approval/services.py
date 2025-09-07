@@ -186,7 +186,7 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         approver_group_data = {
             "id": approval_chain.approver_group.id,
             "name": approval_chain.approver_group.name,
-            "approver_mode": approval_chain.approver_group_mode,
+            "group_mode": approval_chain.group_mode,
         }
 
     return {
@@ -203,8 +203,8 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         "header_rule_logic": approval_chain.header_rule_logic,
         "line_rule_logic": approval_chain.line_rule_logic,
         "cross_rule_logic": approval_chain.cross_rule_logic,
-        "valid_from": str(approval_chain.valid_from),
-        "valid_to": str(approval_chain.valid_to),
+        "valid_from": str(approval_chain.valid_from) if approval_chain.valid_from else None,
+        "valid_to": str(approval_chain.valid_to) if approval_chain.valid_to else None,
         "header_rules": header_rules_metadata if len(header_rules_metadata) > 0 else None,
         "line_rules": line_rules_metadata if len(line_rules_metadata) > 0 else None,
     }
@@ -328,6 +328,25 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
+def cancel_group_approvals(approval):
+    approvals = []
+
+    timestamp = timezone.now()
+
+    for related_approval in Approval.objects.active().filter(  # type: ignore
+        status=ApprovalStatusChoices.PENDING,
+        requisition=approval.requisition,
+        sequence_number=approval.sequence_number,
+        deleted=False,
+    ):
+        related_approval.status = ApprovalStatusChoices.CANCELLED
+        approval.updated_at = timestamp
+
+        approvals.append(related_approval)
+
+    Approval.objects.bulk_update(approvals, ["status", "updated_at"])
+
+
 def bypass_approvals(requisition, request_user):
     approvals = []
 
@@ -362,6 +381,12 @@ def on_approve_skip(approval, requisition, action, **kwargs):
         approval.updated_by = request_user
 
     approval.save()
+
+    if approval.rule_metadata is not None and approval.rule_metadata["approver_mode"] == "group":
+        group_mode = approval.rule_metadata["approver_group"]["group_mode"]
+
+        if group_mode == MatchModeChoices.ANY:
+            cancel_group_approvals(approval)
 
     send_email = kwargs.get("send_email", True)
 

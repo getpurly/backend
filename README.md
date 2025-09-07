@@ -15,6 +15,7 @@ Dependancies:
 A rule engine for creating approval chains/requisition approvals:
 
 - Use individual or group approvers
+    - Further define if all members must approve or any member for group approvers
 - Set minimum and maximum amounts for when to trigger
 - Define approval chain valid from and to dates
 - Create header and line rules

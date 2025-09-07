@@ -182,7 +182,7 @@ class ApprovalChain(ModelBase):
         blank=True,
         null=True,
     )
-    approver_group_mode = models.CharField(
+    group_mode = models.CharField(
         choices=MatchModeChoices, default=MatchModeChoices.ALL, blank=True
     )
     sequence_number = models.PositiveIntegerField(

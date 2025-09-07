@@ -67,7 +67,7 @@ class ApprovalChainForm(forms.ModelForm):
         model = ApprovalChain
         fields = "__all__"
         help_texts = {
-            "approver_group_mode": "Select whether all group members must approve or any member.",
+            "group_mode": "Select whether all group members must approve or any member.",
             "header_rule_logic": "Select how multiple header rules are evaluated together.",
             "line_rule_logic": "Select how multiple line rules are evaluated together.",
             "cross_rule_logic": "Select how header and line rules are evaluated together.",
@@ -85,7 +85,7 @@ class ApprovalChainForm(forms.ModelForm):
         approver_mode = cleaned_data.get("approver_mode")
         approver = cleaned_data.get("approver")
         approver_group = cleaned_data.get("approver_group")
-        approver_group_mode = cleaned_data.get("approver_group_mode")
+        group_mode = cleaned_data.get("group_mode")
         valid_from = cleaned_data.get("valid_from")
         valid_to = cleaned_data.get("valid_to")
 
@@ -98,20 +98,20 @@ class ApprovalChainForm(forms.ModelForm):
         if (
             approver_mode == ApprovalChainModeChoices.GROUP
             and not approver_group
-            and not approver_group_mode
+            and not group_mode
         ):
             raise ValidationError(
                 {
                     "approver_group": "This field is required.",
-                    "approver_group_mode": "This field is required.",
+                    "group_mode": "This field is required.",
                 }
             )
 
         if approver_mode == ApprovalChainModeChoices.GROUP and not approver_group:
             raise ValidationError({"approver_group": "This field is required."})
 
-        if approver_mode == ApprovalChainModeChoices.GROUP and not approver_group_mode:
-            raise ValidationError({"approver_group_mode": "This field is required."})
+        if approver_mode == ApprovalChainModeChoices.GROUP and not group_mode:
+            raise ValidationError({"group_mode": "This field is required."})
 
         if (
             self.instance.pk is None
@@ -144,7 +144,7 @@ class ApprovalChainForm(forms.ModelForm):
 
         if instance.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
             instance.approver_group = None
-            instance.approver_group_mode = ""
+            instance.group_mode = ""
         else:
             instance.approver = None
 
