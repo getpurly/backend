@@ -12,7 +12,7 @@ class RequisitionManager(models.Manager.from_queryset(RequisitionQuerySet)):
 
 class RequisitionLineQuerySet(models.QuerySet):
     def active(self):
-        return self
+        return self.filter(deleted=False)
 
 
 class RequisitionLineManager(models.Manager.from_queryset(RequisitionLineQuerySet)):

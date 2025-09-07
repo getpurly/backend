@@ -31,7 +31,7 @@ class RequisitionLineInline(admin.StackedInline):
     extra = 1
     verbose_name = "requisition line"
     verbose_name_plural = "requisition lines"
-    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
+    readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
 
 
 class RequisitionAdmin(AdminBase):
@@ -348,6 +348,7 @@ class RequisitionLineAdmin(AdminBase):
                     "created_by",
                     "updated_at",
                     "updated_by",
+                    "deleted",
                 ),
             },
         ),
@@ -372,11 +373,13 @@ class RequisitionLineAdmin(AdminBase):
         "created_by",
         "updated_at",
         "updated_by",
+        "deleted",
     ]
     list_filter = [
         "need_by",
         "created_at",
         "updated_at",
+        "deleted",
     ]
     search_fields = [
         "description",

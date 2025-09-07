@@ -102,7 +102,6 @@ class RequisitionLine(ModelBase):
     need_by = models.DateField(blank=True, null=True)
     requisition = models.ForeignKey(Requisition, on_delete=models.CASCADE, related_name="lines")
     ship_to = models.ForeignKey(Address, on_delete=models.CASCADE)
-    deleted = None
 
     objects = RequisitionLineManager()
 
