@@ -19,9 +19,9 @@ from .models import (
     HeaderFieldStringChoices,
     LineFieldNumberChoices,
     LineFieldStringChoices,
-    LineMatchModeChoices,
     LookupNumberChoices,
     LookupStringChoices,
+    MatchModeChoices,
     OperatorChoices,
 )
 
@@ -186,6 +186,7 @@ def fetch_rule_metadata(approval_chain, header_rules, line_rules):
         approver_group_data = {
             "id": approval_chain.approver_group.id,
             "name": approval_chain.approver_group.name,
+            "approver_mode": approval_chain.approver_group_mode,
         }
 
     return {
@@ -229,9 +230,9 @@ def line_check(lines, approval_chain, line_rules):
         return True
 
     for rule in line_rules:
-        if rule.match_mode == LineMatchModeChoices.ALL:
+        if rule.match_mode == MatchModeChoices.ALL:
             result = all(line_rule_matching(line, rule) for line in lines)
-        elif rule.match_mode == LineMatchModeChoices.ANY:
+        elif rule.match_mode == MatchModeChoices.ANY:
             result = any(line_rule_matching(line, rule) for line in lines)
         else:
             result = False

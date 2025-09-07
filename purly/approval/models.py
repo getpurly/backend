@@ -94,7 +94,7 @@ class LineFieldNumberChoices(models.TextChoices):
     UNIT_PRICE = ("unit_price", "unit price")
 
 
-class LineMatchModeChoices(models.TextChoices):
+class MatchModeChoices(models.TextChoices):
     ALL = ("all", "all")
     ANY = ("any", "any")
 
@@ -182,6 +182,9 @@ class ApprovalChain(ModelBase):
         blank=True,
         null=True,
     )
+    approver_group_mode = models.CharField(
+        choices=MatchModeChoices, default=MatchModeChoices.ALL, blank=True
+    )
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(settings.MAX_SEQUENCE_NUMBER)]
     )
@@ -260,7 +263,7 @@ class ApprovalChainLineRule(ModelBase):
     approval_chain = models.ForeignKey(
         ApprovalChain, on_delete=models.PROTECT, related_name="approval_chain_line_rules"
     )
-    match_mode = models.CharField(choices=LineMatchModeChoices, default=LineMatchModeChoices.ALL)
+    match_mode = models.CharField(choices=MatchModeChoices, default=MatchModeChoices.ALL)
     field = models.CharField(
         choices=sorted(list(LineFieldStringChoices.choices) + list(LineFieldNumberChoices.choices))
     )
@@ -302,7 +305,7 @@ class ApprovalChainLineRule(ModelBase):
         if self.lookup in LookupNumberChoices.values:
             lookup = LookupNumberChoices(self.lookup).label
 
-        if self.match_mode == LineMatchModeChoices.ANY:
+        if self.match_mode == MatchModeChoices.ANY:
             return f"For {self.match_mode} line, {field} field {lookup} {value}"
 
         return f"For {self.match_mode} lines, {field} field {lookup} {value}"
