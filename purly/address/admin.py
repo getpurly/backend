@@ -18,6 +18,13 @@ class AddressAdmin(AdminBase):
                 "fields": (
                     "owner",
                     "name",
+                ),
+            },
+        ),
+        (
+            "Address Information",
+            {
+                "fields": (
                     "address_code",
                     "description",
                     "attention",

@@ -39,25 +39,44 @@ class RequisitionAdmin(AdminBase):
     autocomplete_fields = ["owner", "project"]
     change_form_template = "admin/requisition/change_form.html"
     form = RequisitionForm
-    fields = [
-        "name",
-        "external_reference",
-        "status",
-        "owner",
-        "project",
-        "supplier",
-        "justification",
-        "total_amount",
-        "currency",
-        "submitted_at",
-        "approved_at",
-        "rejected_at",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("name",),
+            },
+        ),
+        (
+            "Requisition Information",
+            {
+                "fields": (
+                    "external_reference",
+                    "status",
+                    "owner",
+                    "project",
+                    "supplier",
+                    "justification",
+                    "total_amount",
+                    "currency",
+                ),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": (
+                    "submitted_at",
+                    "approved_at",
+                    "rejected_at",
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                    "updated_by",
+                    "deleted",
+                ),
+            },
+        ),
+    )
     list_display = [
         "id",
         "name",
@@ -299,26 +318,40 @@ class RequisitionLineAdmin(AdminBase):
     actions = ["delete"]
     autocomplete_fields = ["requisition", "ship_to"]
     form = RequisitionLineForm
-    fields = [
-        "line_number",
-        "line_type",
-        "description",
-        "category",
-        "manufacturer",
-        "manufacturer_part_number",
-        "quantity",
-        "unit_of_measure",
-        "unit_price",
-        "line_total",
-        "payment_term",
-        "need_by",
-        "requisition",
-        "ship_to",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-    ]
+    fieldsets = (
+        (
+            "Requisition Line Information",
+            {
+                "fields": (
+                    "line_number",
+                    "line_type",
+                    "description",
+                    "category",
+                    "manufacturer",
+                    "manufacturer_part_number",
+                    "quantity",
+                    "unit_of_measure",
+                    "unit_price",
+                    "line_total",
+                    "payment_term",
+                    "need_by",
+                    "requisition",
+                    "ship_to",
+                ),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": (
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                    "updated_by",
+                ),
+            },
+        ),
+    )
     list_display = [
         "id",
         "line_number",

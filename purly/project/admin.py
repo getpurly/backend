@@ -14,7 +14,13 @@ class ProjectAdmin(AdminBase):
         (
             "Basic Settings",
             {
-                "fields": ("name", "project_code", "description", "start_date", "end_date"),
+                "fields": ("name",),
+            },
+        ),
+        (
+            "Project Information",
+            {
+                "fields": ("project_code", "description", "start_date", "end_date"),
             },
         ),
         (

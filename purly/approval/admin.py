@@ -80,24 +80,42 @@ class ApprovalAdmin(AdminBase):
     autocomplete_fields = ["approver", "requisition"]
     change_form_template = "admin/approval/change_form.html"
     form = ApprovalForm
-    fields = [
-        "requisition",
-        "approver",
-        "sequence_number",
-        "status",
-        "comment",
-        "rule_metadata",
-        "system_generated",
-        "notified_at",
-        "approved_at",
-        "rejected_at",
-        "skipped_at",
-        "created_at",
-        "created_by",
-        "updated_at",
-        "updated_by",
-        "deleted",
-    ]
+    fieldsets = (
+        (
+            "Basic Settings",
+            {
+                "fields": ("requisition", "approver"),
+            },
+        ),
+        (
+            "Approval Information",
+            {
+                "fields": (
+                    "sequence_number",
+                    "status",
+                    "comment",
+                    "rule_metadata",
+                    "system_generated",
+                ),
+            },
+        ),
+        (
+            "Misc",
+            {
+                "fields": (
+                    "notified_at",
+                    "approved_at",
+                    "rejected_at",
+                    "skipped_at",
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                    "updated_by",
+                    "deleted",
+                ),
+            },
+        ),
+    )
     list_display = [
         "id",
         "requisition__id",
@@ -360,19 +378,19 @@ class ApprovalChainAdmin(AdminBase):
             },
         ),
         (
-            "Trigger Conditions",
+            "Trigger Settings",
             {
                 "fields": ("min_amount", "max_amount"),
             },
         ),
         (
-            "Logic Conditions",
+            "Logic Settings",
             {
                 "fields": ("header_rule_logic", "line_rule_logic", "cross_rule_logic"),
             },
         ),
         (
-            "Effective and Expiration Settings",
+            "Effective Date Settings",
             {
                 "fields": ("valid_from", "valid_to"),
             },
@@ -480,7 +498,19 @@ class ApprovalGroupAdmin(AdminBase):
         (
             "Basic Settings",
             {
-                "fields": ("name", "description", "approver"),
+                "fields": ("name",),
+            },
+        ),
+        (
+            "Group Information",
+            {
+                "fields": ("description",),
+            },
+        ),
+        (
+            "Approver Settings",
+            {
+                "fields": ("approver",),
             },
         ),
         (
@@ -532,9 +562,9 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
     form = ApprovalChainHeaderRuleForm
     fieldsets = (
         (
-            "Basic Settings",
+            "Rule Settings",
             {
-                "fields": ("field", "lookup", "value"),
+                "fields": ("approval_chain", "field", "lookup", "value"),
             },
         ),
         (
@@ -574,9 +604,9 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
     form = ApprovalChainLineRuleForm
     fieldsets = (
         (
-            "Basic Settings",
+            "Rule Settings",
             {
-                "fields": ("match_mode", "field", "lookup", "value"),
+                "fields": ("approval_chain", "match_mode", "field", "lookup", "value"),
             },
         ),
         (
