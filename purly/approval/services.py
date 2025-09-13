@@ -337,7 +337,6 @@ def cancel_group_approvals(approval):
         status=ApprovalStatusChoices.PENDING,
         requisition=approval.requisition,
         sequence_number=approval.sequence_number,
-        deleted=False,
     ):
         related_approval.status = ApprovalStatusChoices.CANCELLED
         approval.updated_at = timestamp
