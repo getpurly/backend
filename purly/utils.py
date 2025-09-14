@@ -20,21 +20,7 @@ def admin_action_delete(self, request, queryset, model_name):
         instance.updated_by = request.user
 
         if model_name == "approvals":
-            requisition_id = instance.requisition.id
-
-            if requisition_id not in requisitions:
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: notify_current_sequence(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
-                )
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: check_fully_approved(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
-                )
-
-                requisitions.add(requisition_id)
+            requisitions.add(instance.requisition_id)
 
             if instance.status == ApprovalStatusChoices.PENDING:
                 instance.status = ApprovalStatusChoices.CANCELLED
@@ -57,6 +43,19 @@ def admin_action_delete(self, request, queryset, model_name):
         instance.save()
 
         changed += 1
+
+    if model_name == "approvals" and requisitions:
+        for requisition_id in requisitions:
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: notify_current_sequence(
+                    Requisition.objects.get(pk=requisition_id)
+                )
+            )
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: check_fully_approved(
+                    Requisition.objects.get(pk=requisition_id)
+                )
+            )
 
     match changed:
         case 0:

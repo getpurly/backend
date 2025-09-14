@@ -14,6 +14,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from purly.approval.services import cancel_user_approvals
 from purly.base import ModelBase
 
 from .utils import get_ip_address, get_user_agent
@@ -39,6 +40,12 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def deactivate_approvals(sender, instance, **kwargs):
+    if instance.is_active is False:
+        cancel_user_approvals(instance)
 
 
 class UserProfile(ModelBase):

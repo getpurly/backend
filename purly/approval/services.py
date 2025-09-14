@@ -7,7 +7,7 @@ from django.utils import timezone
 from rest_framework import exceptions
 
 from config.exceptions import BadRequest
-from purly.requisition.models import RequisitionStatusChoices
+from purly.requisition.models import Requisition, RequisitionStatusChoices
 from purly.requisition.services import on_reject_requisition
 
 from .emails import send_approval_email, send_fully_approved_email
@@ -279,6 +279,12 @@ def generate_approvals(requisition):
         rule_metadata = fetch_rule_metadata(approval_chain, header_rules, line_rules)
 
         if approval_chain.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
+            if not approval_chain.approver.is_active:
+                return (
+                    False,
+                    f"This requisition cannot be submitted because the approval chain {approval_chain} contains an inactive approver.",  # noqa: E501
+                )
+
             approval = Approval(
                 requisition=requisition,
                 approver=approval_chain.approver,
@@ -290,7 +296,13 @@ def generate_approvals(requisition):
 
             approvals.append(approval)
         else:
-            approvers = approval_chain.approver_group.approver.all()
+            approvers = approval_chain.approver_group.approver.filter(is_active=True)
+
+            if len(approvers) == 0:
+                return (
+                    False,
+                    f"This requisition cannot be submitted because the approval group {approval_chain.approver_group} contains no active approvers.",  # noqa: E501
+                )
 
             for approver in approvers:
                 approval = Approval(
@@ -328,6 +340,38 @@ def cancel_approvals(requisition):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
 
+@transaction.atomic
+def cancel_user_approvals(user):
+    approvals = []
+    requisitions = set()
+
+    timestamp = timezone.now()
+
+    for approval in Approval.objects.active().filter(  # type: ignore
+        status=ApprovalStatusChoices.PENDING, approver=user
+    ):
+        approval.status = ApprovalStatusChoices.CANCELLED
+        approval.updated_at = timestamp
+
+        approvals.append(approval)
+
+        requisitions.add(approval.requisition_id)
+
+    Approval.objects.bulk_update(approvals, ["status", "updated_at"])
+
+    for requisition_id in requisitions:
+        transaction.on_commit(
+            lambda requisition_id=requisition_id: notify_current_sequence(
+                Requisition.objects.get(pk=requisition_id)
+            )
+        )
+        transaction.on_commit(
+            lambda requisition_id=requisition_id: check_fully_approved(
+                Requisition.objects.get(pk=requisition_id)
+            )
+        )
+
+
 def cancel_group_approvals(approval):
     approvals = []
 
@@ -339,7 +383,7 @@ def cancel_group_approvals(approval):
         sequence_number=approval.sequence_number,
     ):
         related_approval.status = ApprovalStatusChoices.CANCELLED
-        approval.updated_at = timestamp
+        related_approval.updated_at = timestamp
 
         approvals.append(related_approval)
 

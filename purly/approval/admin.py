@@ -171,21 +171,19 @@ class ApprovalAdmin(AdminBase):
 
             changed += 1
 
-            requisition_id = approval.requisition.id
+            requisitions.add(approval.requisition_id)
 
-            if requisition_id not in requisitions:
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: notify_current_sequence(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
+        for requisition_id in requisitions:
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: notify_current_sequence(
+                    Requisition.objects.get(pk=requisition_id)
                 )
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: check_fully_approved(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
+            )
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: check_fully_approved(
+                    Requisition.objects.get(pk=requisition_id)
                 )
-
-                requisitions.add(requisition_id)
+            )
 
         admin_action_results(self, request, "approved", changed)
 
@@ -236,21 +234,19 @@ class ApprovalAdmin(AdminBase):
 
             changed += 1
 
-            requisition_id = approval.requisition.id
+            requisitions.add(approval.requisition_id)
 
-            if requisition_id not in requisitions:
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: notify_current_sequence(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
+        for requisition_id in requisitions:
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: notify_current_sequence(
+                    Requisition.objects.get(pk=requisition_id)
                 )
-                transaction.on_commit(
-                    lambda requisition_id=requisition_id: check_fully_approved(
-                        Requisition.objects.get(pk=requisition_id)
-                    )
+            )
+            transaction.on_commit(
+                lambda requisition_id=requisition_id: check_fully_approved(
+                    Requisition.objects.get(pk=requisition_id)
                 )
-
-                requisitions.add(requisition_id)
+            )
 
         admin_action_results(self, request, "skipped", changed)
 
