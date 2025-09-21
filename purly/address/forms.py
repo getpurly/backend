@@ -17,6 +17,6 @@ class AddressForm(forms.ModelForm):
             and owner
             and not owner.is_active
         ):
-            raise forms.ValidationError({"owner": "This account must be active."})
+            raise forms.ValidationError({"owner": "This account was deactivated."})
 
         return cleaned_data

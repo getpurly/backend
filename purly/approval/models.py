@@ -211,7 +211,7 @@ class ApprovalChain(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.name if self.active else f"{self.name} (disabled)"
+        return self.name if self.active else f"{self.name} (deactivated)"
 
 
 class ApprovalChainHeaderRule(ModelBase):

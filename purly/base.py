@@ -47,10 +47,7 @@ class AdminBase(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_change_permission(self, request, obj=None):
-        if obj and obj.deleted:
-            return False
-
-        return super().has_change_permission(request, obj)
+        return not (obj and obj.deleted)
 
     def has_view_permission(self, request, obj=None):
         return True

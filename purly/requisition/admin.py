@@ -39,12 +39,27 @@ class RequisitionLineInline(admin.StackedInline):
     verbose_name_plural = "requisition lines"
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
 
+    def has_add_permission(self, request, obj=None):
+        return not (
+            obj
+            and obj.status
+            not in [RequisitionStatusChoices.DRAFT, RequisitionStatusChoices.REJECTED]
+        )
+
+    def has_delete_permission(self, request, obj=None):
+        return not (
+            obj
+            and obj.status
+            not in [RequisitionStatusChoices.DRAFT, RequisitionStatusChoices.REJECTED]
+        )
+
 
 class RequisitionAdmin(AdminBase):
     actions = ["submit", "withdraw", "delete"]
     autocomplete_fields = ["owner", "project"]
     change_form_template = "admin/requisition/change_form.html"
     form = RequisitionForm
+    inlines = [RequisitionLineInline]
     fieldsets = (
         (
             "Basic Settings",
@@ -129,8 +144,6 @@ class RequisitionAdmin(AdminBase):
         "created_by__username",
         "updated_by__username",
     ]
-
-    inlines = [RequisitionLineInline]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -329,9 +342,6 @@ class RequisitionAdmin(AdminBase):
 
 
 class RequisitionLineAdmin(AdminBase):
-    actions = ["delete"]
-    autocomplete_fields = ["requisition", "ship_to"]
-    form = RequisitionLineForm
     fieldsets = (
         (
             "Requisition Line Information",

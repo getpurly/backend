@@ -366,6 +366,7 @@ class ApprovalChainAdmin(AdminBase):
     actions = ["activate", "deactivate", "delete"]
     autocomplete_fields = ["approver", "approver_group"]
     form = ApprovalChainForm
+    inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
     fieldsets = (
         (
             "Basic Settings",
@@ -453,7 +454,6 @@ class ApprovalChainAdmin(AdminBase):
         "deleted",
     ]
     search_fields = ["name"]
-    inlines = [ApprovalChainHeaderRuleInline, ApprovalChainLineRuleInline]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

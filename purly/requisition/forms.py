@@ -1,9 +1,12 @@
+from decimal import Decimal
+
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import models
+from django.utils import timezone
 
-from .models import Requisition, RequisitionLine, RequisitionStatusChoices
+from .models import LineTypeChoices, Requisition, RequisitionLine
 
 
 class RequisitionForm(forms.ModelForm):
@@ -22,10 +25,10 @@ class RequisitionForm(forms.ModelForm):
             or "project" in self.changed_data
         ):
             if owner and not owner.is_active:
-                raise forms.ValidationError({"owner": "This account must be active."})
+                self.add_error("owner", "This account was deactivated.")
 
             if project and project.deleted:
-                raise forms.ValidationError({"project": "This project was deleted."})
+                self.add_error("project", "This project was deleted.")
 
         return cleaned_data
 
@@ -36,30 +39,63 @@ class RequisitionLineForm(forms.ModelForm):
         fields = "__all__"
 
     class Media:
-        js = ["admin/js/requisition_line_toggle.js"]
+        js = ["admin/js/line_type_toggle.js"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["line_type"].widget.attrs.update({"class": "line_type-select"})
 
     def clean(self):
         cleaned_data = super().clean()
-        requisition = cleaned_data.get("requisition")
+        line_type = cleaned_data.get("line_type")
+        quantity = cleaned_data.get("quantity")
+        unit_of_measure = cleaned_data.get("unit_of_measure")
+        unit_price = cleaned_data.get("unit_price")
+        line_total = cleaned_data.get("line_total")
+        need_by = cleaned_data.get("need_by")
         ship_to = cleaned_data.get("ship_to")
 
         if (
-            self.instance.pk is None
-            or "requisition" in self.changed_data
-            or "ship_to" in self.changed_data
+            (self.instance.pk is None or "ship_to" in self.changed_data)
+            and ship_to
+            and ship_to.deleted
         ):
-            if requisition and requisition.status not in [
-                RequisitionStatusChoices.DRAFT,
-                RequisitionStatusChoices.REJECTED,
-            ]:
-                raise forms.ValidationError(
-                    {"requisition": "This requisition must be in draft or rejected status."}
-                )
+            self.add_error("ship_to", "This address was deleted.")
 
-            if ship_to and ship_to.deleted:
-                raise forms.ValidationError({"ship_to": "This address was deleted."})
+        if line_type and line_type == LineTypeChoices.GOODS:
+            if not quantity:
+                self.add_error("quantity", "This field is required.")
+
+            if not unit_of_measure:
+                self.add_error("unit_of_measure", "This field is required.")
+
+            if not unit_price:
+                self.add_error("unit_price", "This field is required.")
+
+        if line_type and line_type == LineTypeChoices.SERVICE and not line_total:
+            self.add_error("line_total", "This field is required.")
+
+        if need_by and need_by < timezone.now().date():
+            self.add_error("need_by", "This must be a future date.")
 
         return cleaned_data
+
+    def save(self, commit):  # type: ignore
+        instance = super().save(commit=False)
+
+        if instance.line_type == LineTypeChoices.GOODS:
+            instance.line_total = Decimal(instance.quantity) * Decimal(instance.unit_price)
+
+        if instance.line_type == LineTypeChoices.SERVICE:
+            instance.quantity = None
+            instance.unit_of_measure = ""
+            instance.unit_price = None
+
+        if commit:
+            instance.save()
+
+        return instance
 
 
 class RequisitionLineInlineFormSet(models.BaseInlineFormSet):

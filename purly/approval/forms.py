@@ -40,24 +40,25 @@ class ApprovalForm(forms.ModelForm):
             or "approver" in self.changed_data
         ):
             if requisition and requisition.deleted:
-                raise forms.ValidationError({"requisition": "This requisition was deleted."})
+                self.add_error("requisition", "This requisition was deleted.")
 
-            if requisition and requisition.status != RequisitionStatusChoices.PENDING_APPROVAL:
-                raise forms.ValidationError(
-                    {"requisition": "This requisition must be in pending status."}
-                )
+            if (
+                requisition
+                and requisition.status != RequisitionStatusChoices.PENDING_APPROVAL
+                and not requisition.deleted
+            ):
+                self.add_error("requisition", "This requisition must be in pending status.")
 
             if approver and not approver.is_active:
-                raise forms.ValidationError({"approver": "This account must be active."})
+                self.add_error("approver", "This account was deactivated.")
 
-        if self.instance.pk is None and requisition:
+        if self.instance.pk is None and requisition and not requisition.deleted:
             sequence_max = retrieve_sequence_max(requisition)
 
             if sequence_max >= settings.MAX_SEQUENCE_NUMBER:
-                error = "The sequence number has been reached for this requisition. You cannot add \
-                    any additional approvers."
-
-                raise forms.ValidationError({"requisition": error})
+                self.add_error(
+                    "requisition", "The sequence number has been reached for this requisition."
+                )
 
         return cleaned_data
 
@@ -85,33 +86,8 @@ class ApprovalChainForm(forms.ModelForm):
         approver_mode = cleaned_data.get("approver_mode")
         approver = cleaned_data.get("approver")
         approver_group = cleaned_data.get("approver_group")
-        group_mode = cleaned_data.get("group_mode")
         valid_from = cleaned_data.get("valid_from")
         valid_to = cleaned_data.get("valid_to")
-
-        if max_amount is not None and min_amount >= max_amount:
-            raise ValidationError({"min_amount": "This value must be lower than maximum amount."})
-
-        if approver_mode == ApprovalChainModeChoices.INDIVIDUAL and not approver:
-            raise ValidationError({"approver": "This field is required."})
-
-        if (
-            approver_mode == ApprovalChainModeChoices.GROUP
-            and not approver_group
-            and not group_mode
-        ):
-            raise ValidationError(
-                {
-                    "approver_group": "This field is required.",
-                    "group_mode": "This field is required.",
-                }
-            )
-
-        if approver_mode == ApprovalChainModeChoices.GROUP and not approver_group:
-            raise ValidationError({"approver_group": "This field is required."})
-
-        if approver_mode == ApprovalChainModeChoices.GROUP and not group_mode:
-            raise ValidationError({"group_mode": "This field is required."})
 
         if (
             self.instance.pk is None
@@ -123,19 +99,26 @@ class ApprovalChainForm(forms.ModelForm):
                 and approver
                 and not approver.is_active
             ):
-                raise forms.ValidationError({"approver": "This account must be active."})
+                self.add_error("approver", "This account was deactivated.")
 
             if (
                 approver_mode == ApprovalChainModeChoices.GROUP
                 and approver_group
                 and approver_group.deleted
             ):
-                raise forms.ValidationError({"approver_group": "This approval group was deleted."})
+                self.add_error("approver_group", "This approval group was deleted.")
+
+        if max_amount is not None and min_amount >= max_amount:
+            self.add_error("min_amount", "This value must be lower than maximum amount.")
+
+        if approver_mode == ApprovalChainModeChoices.INDIVIDUAL and not approver:
+            self.add_error("approver", "This field is required.")
+
+        if approver_mode == ApprovalChainModeChoices.GROUP and not approver_group:
+            self.add_error("approver_group", "This field is required.")
 
         if valid_from and valid_to and valid_from > valid_to:
-            raise forms.ValidationError(
-                {"valid_to": "The valid to date must be after valid from date."}
-            )
+            self.add_error("valid_to", "This must be after valid from date.")
 
         return cleaned_data
 
@@ -209,30 +192,33 @@ class ApprovalChainRuleForm(forms.ModelForm):
         lookup = cleaned_data.get("lookup")
         value = cleaned_data.get("value")
 
+        if self.instance.pk is None or "approval_chain" in self.changed_data:
+            if approval_chain and approval_chain.deleted:
+                self.add_error("approval_chain", "This approval chain was deleted.")
+
+            if approval_chain and not approval_chain.active and not approval_chain.deleted:
+                self.add_error("approval_chain", "This approval chain was deactivated.")
+
         if lookup != LookupStringChoices.IS_NULL and not value:
-            raise ValidationError({"value": "This field is required."})
+            self.add_error("value", "This field is required.")
 
         if (
             value
             and lookup in LookupStringChoices
             and (field not in HeaderFieldStringChoices and field not in LineFieldStringChoices)
         ):
-            raise ValidationError(
-                {
-                    "field": "Using a string lookup on a number field is not valid.",
-                    "lookup": "Using a string lookup on a number field is not valid.",
-                }
-            )
+            error_msg = "Using a string lookup on a number field is not valid."
+
+            self.add_error("field", error_msg)
+            self.add_error("lookup", error_msg)
 
         if value and lookup in LookupNumberChoices and field not in LineFieldNumberChoices:
-            raise ValidationError(
-                {
-                    "field": "Using a number lookup on a string field is not valid.",
-                    "lookup": "Using a number lookup on a string field is not valid.",
-                }
-            )
+            error_msg = "Using a number lookup on a string field is not valid."
 
-        if lookup in LookupNumberChoices:
+            self.add_error("field", error_msg)
+            self.add_error("lookup", error_msg)
+
+        if lookup in LookupNumberChoices and value:
             if len(value) > 1:  # type: ignore
                 raise ValidationError({"value": "This field must contain only one number."})
 
@@ -249,15 +235,6 @@ class ApprovalChainRuleForm(forms.ModelForm):
                     raise ValidationError(
                         {"value": f"There was an error with regex pattern: {e}."}
                     ) from e
-
-        if self.instance.pk is None or "approval_chain" in self.changed_data:
-            if approval_chain and approval_chain.deleted:
-                raise forms.ValidationError({"approval_chain": "This approval chain was deleted."})
-
-            if approval_chain and not approval_chain.active:
-                raise forms.ValidationError(
-                    {"approval_chain": "This approval chain must be active."}
-                )
 
         return cleaned_data
 

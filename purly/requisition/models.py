@@ -79,7 +79,7 @@ class Requisition(ModelBase):
 
 class RequisitionLine(ModelBase):
     line_number = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    line_type = models.CharField(choices=LineTypeChoices.choices)
+    line_type = models.CharField(choices=LineTypeChoices.choices, default=LineTypeChoices.GOODS)
     description = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
     manufacturer = models.CharField(max_length=255, blank=True)
@@ -94,7 +94,11 @@ class RequisitionLine(ModelBase):
         null=True,
     )
     line_total = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+        max_digits=9,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        blank=True,
+        null=True,
     )
     payment_term = models.CharField(choices=PaymentTermChoices.choices)
     need_by = models.DateField(blank=True, null=True)
