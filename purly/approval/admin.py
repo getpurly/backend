@@ -302,6 +302,12 @@ class ApprovalAdmin(AdminBase):
 
             obj.sequence_number = sequence_max + 1
 
+        if change:
+            obj.updated_by = request.user
+        else:
+            obj.created_by = request.user
+            obj.updated_by = request.user
+
         super().save_model(request, obj, form, change)
 
     @transaction.atomic

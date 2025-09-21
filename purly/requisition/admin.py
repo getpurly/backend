@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from django.contrib import admin, messages
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponseRedirect
 
 from purly.approval.models import Approval
@@ -9,7 +11,7 @@ from purly.base import AdminBase
 from purly.requisition.services import on_submit, on_withdraw
 from purly.utils import admin_action_delete
 
-from .forms import RequisitionForm, RequisitionLineForm
+from .forms import RequisitionForm, RequisitionLineForm, RequisitionLineInlineFormSet
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
 
 
@@ -27,8 +29,12 @@ def admin_action_results(self, request, action, changed):
 
 class RequisitionLineInline(admin.StackedInline):
     autocomplete_fields = ["ship_to"]
+    form = RequisitionLineForm
+    formset = RequisitionLineInlineFormSet
     model = RequisitionLine
-    extra = 1
+    min_num = 1
+    validate_min = True
+    extra = 0
     verbose_name = "requisition line"
     verbose_name_plural = "requisition lines"
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by", "deleted"]
@@ -281,6 +287,7 @@ class RequisitionAdmin(AdminBase):
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = [
             "status",
+            "total_amount",
             "submitted_at",
             "approved_at",
             "rejected_at",
@@ -312,6 +319,13 @@ class RequisitionAdmin(AdminBase):
             instance.delete()
 
         formset.save_m2m()
+
+        total_amount = Decimal(
+            form.instance.lines.aggregate(total_amount=Sum("line_total"))["total_amount"]
+        )
+
+        form.instance.total_amount = total_amount
+        form.instance.save()
 
 
 class RequisitionLineAdmin(AdminBase):
@@ -398,6 +412,12 @@ class RequisitionLineAdmin(AdminBase):
         queryset = super().get_queryset(request)
 
         return queryset.select_related("requisition", "ship_to", "created_by", "updated_by")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(Requisition, RequisitionAdmin)

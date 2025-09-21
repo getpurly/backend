@@ -156,7 +156,7 @@ class ApprovalGroup(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.pk} - {self.name}"
+        return self.name
 
 
 class ApprovalChain(ModelBase):
@@ -182,9 +182,7 @@ class ApprovalChain(ModelBase):
         blank=True,
         null=True,
     )
-    group_mode = models.CharField(
-        choices=MatchModeChoices, default=MatchModeChoices.ALL, blank=True
-    )
+    group_mode = models.CharField(choices=MatchModeChoices, default=MatchModeChoices.ALL)
     sequence_number = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(settings.MAX_SEQUENCE_NUMBER)]
     )
@@ -213,7 +211,7 @@ class ApprovalChain(ModelBase):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.pk} - {self.name}" if self.active else f"{self.pk} - {self.name} (disabled)"
+        return self.name if self.active else f"{self.name} (disabled)"
 
 
 class ApprovalChainHeaderRule(ModelBase):

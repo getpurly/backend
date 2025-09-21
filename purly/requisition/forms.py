@@ -1,4 +1,7 @@
 from django import forms
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.forms import models
 
 from .models import Requisition, RequisitionLine, RequisitionStatusChoices
 
@@ -32,6 +35,9 @@ class RequisitionLineForm(forms.ModelForm):
         model = RequisitionLine
         fields = "__all__"
 
+    class Media:
+        js = ["admin/js/requisition_line_toggle.js"]
+
     def clean(self):
         cleaned_data = super().clean()
         requisition = cleaned_data.get("requisition")
@@ -54,3 +60,41 @@ class RequisitionLineForm(forms.ModelForm):
                 raise forms.ValidationError({"ship_to": "This address was deleted."})
 
         return cleaned_data
+
+
+class RequisitionLineInlineFormSet(models.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        line_numbers = []
+        forms = []
+
+        total_lines = 0
+        total_deleted = 0
+
+        for form in self.forms:
+            if form.instance.pk or form.has_changed():
+                total_lines += 1
+
+            deleted = form.cleaned_data.get("DELETE")
+
+            if deleted:
+                total_deleted += 1
+
+            line_number = form.cleaned_data.get("line_number")
+
+            if not deleted and line_number is not None:
+                line_numbers.append(line_number)
+                forms.append(form)
+
+        if total_deleted > 0 and total_deleted == total_lines:
+            raise ValidationError("Ensure at least one line is present before deleting.")
+
+        if total_lines > settings.MAX_REQUISITION_LINES:
+            raise ValidationError("Ensure only 250 or less lines are provided.")
+
+        if len(line_numbers) > len(set(line_numbers)):
+            for form in forms:
+                form.add_error(
+                    "line_number", ValidationError("Line numbers must contain unique values.")
+                )

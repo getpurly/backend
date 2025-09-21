@@ -59,9 +59,7 @@ class Requisition(ModelBase):
     )
     supplier = models.CharField(max_length=255)
     justification = models.TextField()
-    total_amount = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
-    )
+    total_amount = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal("0.00"))
     currency = models.CharField(choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
     submitted_at = models.DateTimeField(blank=True, null=True, editable=False)
     approved_at = models.DateTimeField(blank=True, null=True, editable=False)
@@ -96,7 +94,7 @@ class RequisitionLine(ModelBase):
         null=True,
     )
     line_total = models.DecimalField(
-        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))]
+        max_digits=9, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
     )
     payment_term = models.CharField(choices=PaymentTermChoices.choices)
     need_by = models.DateField(blank=True, null=True)

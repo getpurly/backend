@@ -265,7 +265,7 @@ class RequisitionCreateSerializer(serializers.ModelSerializer):
         if len(lines) == 0:
             raise serializers.ValidationError({"lines": "Ensure at least one line is provided."})
 
-        if len(lines) >= settings.MAX_REQUISITION_LINES:
+        if len(lines) > settings.MAX_REQUISITION_LINES:
             raise serializers.ValidationError(
                 {"lines": "Ensure only 250 or less lines are provided."}
             )
