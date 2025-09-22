@@ -26,6 +26,7 @@ class ProjectAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
             },
         ),

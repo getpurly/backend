@@ -42,6 +42,7 @@ class AddressAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
             },
         ),
@@ -60,6 +61,7 @@ class AddressAdmin(AdminBase):
         "state",
         "zip_code",
         "country",
+        "delivery_instructions",
         "created_at",
         "created_by",
         "updated_at",

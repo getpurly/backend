@@ -25,6 +25,7 @@ class UserAdmin(admin.ModelAdmin):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("date_joined", "last_login", "is_active"),
             },
         ),
@@ -74,6 +75,7 @@ class UserProfileAdmin(admin.ModelAdmin):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
             },
         ),
@@ -107,6 +109,7 @@ class UserActivityAdmin(admin.ModelAdmin):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at",),
             },
         ),

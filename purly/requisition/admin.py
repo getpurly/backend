@@ -85,6 +85,7 @@ class RequisitionAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": (
                     "submitted_at",
                     "approved_at",
@@ -346,6 +347,7 @@ class RequisitionLineAdmin(AdminBase):
         (
             "Requisition Line Information",
             {
+                "classes": ["collapse"],
                 "fields": (
                     "line_number",
                     "line_type",

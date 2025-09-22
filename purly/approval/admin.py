@@ -102,6 +102,7 @@ class ApprovalAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": (
                     "notified_at",
                     "approved_at",
@@ -144,7 +145,6 @@ class ApprovalAdmin(AdminBase):
         "updated_at",
         "deleted",
     ]
-    search_fields = []
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -407,6 +407,7 @@ class ApprovalChainAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": (
                     "created_at",
                     "created_by",
@@ -574,6 +575,7 @@ class ApprovalGroupAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by", "deleted"),
             },
         ),
@@ -628,6 +630,7 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by"),
             },
         ),
@@ -644,7 +647,6 @@ class ApprovalChainHeaderRuleAdmin(admin.ModelAdmin):
         "updated_by",
     ]
     list_filter = ["field", "lookup", "created_at", "updated_at"]
-    search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
     def save_model(self, request, obj, form, change):
@@ -670,6 +672,7 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": ("created_at", "created_by", "updated_at", "updated_by"),
             },
         ),
@@ -687,7 +690,6 @@ class ApprovalChainLineRuleAdmin(admin.ModelAdmin):
         "updated_by",
     ]
     list_filter = ["field", "lookup", "created_at", "updated_at"]
-    search_fields = []
     readonly_fields = ["created_at", "created_by", "updated_at", "updated_by"]
 
     def save_model(self, request, obj, form, change):
