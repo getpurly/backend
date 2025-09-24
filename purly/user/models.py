@@ -1,3 +1,4 @@
+from allauth.account.models import EmailAddress
 from allauth.account.signals import (
     email_added,
     email_changed,
@@ -80,7 +81,7 @@ class UserActivity(models.Model):
     ip_address = models.GenericIPAddressField(
         max_length=255, blank=True, null=True, verbose_name="IP address"
     )
-    user_agent = models.CharField(max_length=255, blank=True)
+    user_agent = models.TextField(blank=True)
     session_key = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -117,8 +118,12 @@ def record_user_activity(  # noqa: PLR0913
     to_email_address=None,
     **kwargs,
 ):
-    ip_address = get_ip_address(request)
-    user_agent = get_user_agent(request)
+    if request:
+        ip_address = get_ip_address(request)
+        user_agent = get_user_agent(request)
+    else:
+        ip_address = None
+        user_agent = ""
 
     action = USER_SIGNALS.get(signal, "")
 
@@ -138,9 +143,17 @@ def record_user_activity(  # noqa: PLR0913
         user=user,
         action=action,
         context=context,
-        ip_address=ip_address if ip_address else None,
-        user_agent=user_agent if user_agent else "",
+        ip_address=ip_address,
+        user_agent=user_agent,
         session_key=request.session.session_key if request.session.session_key else "",
     )
 
     new_activity.save()
+
+
+class UserEmailAddress(EmailAddress):
+    class Meta:  # type: ignore
+        proxy = True
+        app_label = "user"
+        verbose_name = "email address"
+        verbose_name_plural = "emails addresses"

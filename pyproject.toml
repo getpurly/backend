@@ -49,5 +49,6 @@ ignore = [
     "PGH003", # Use specific rule codes when ignoring type issues
     "DJ007",  # Do not use `__all__` with `ModelForm`, use `fields` instead
     "SLF001", # Private member accessed: `_meta`
+    "FBT002", # Boolean default positional argument in function definition
 ]
 exclude = ["migrations"]

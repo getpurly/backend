@@ -81,7 +81,7 @@ class RequisitionLineForm(forms.ModelForm):
 
         return cleaned_data
 
-    def save(self, commit):  # type: ignore
+    def save(self, commit=True):
         instance = super().save(commit=False)
 
         if instance.line_type == LineTypeChoices.GOODS:

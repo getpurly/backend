@@ -11,7 +11,7 @@ class CustomToRepresentation(serializers.ModelSerializer):
 
         for key, value in data.items():
             try:
-                if not value:
+                if not value and not isinstance(value, bool):
                     data[key] = None
             except KeyError:
                 pass

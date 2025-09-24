@@ -108,7 +108,7 @@ class ApprovalChainForm(forms.ModelForm):
             ):
                 self.add_error("approver_group", "This approval group was deleted.")
 
-        if max_amount is not None and min_amount >= max_amount:
+        if min_amount and max_amount and min_amount >= max_amount:
             self.add_error("min_amount", "This value must be lower than maximum amount.")
 
         if approver_mode == ApprovalChainModeChoices.INDIVIDUAL and not approver:
@@ -122,7 +122,7 @@ class ApprovalChainForm(forms.ModelForm):
 
         return cleaned_data
 
-    def save(self, commit):  # type: ignore
+    def save(self, commit=True):
         instance = super().save(commit=False)
 
         if instance.approver_mode == ApprovalChainModeChoices.INDIVIDUAL:
@@ -238,7 +238,7 @@ class ApprovalChainRuleForm(forms.ModelForm):
 
         return cleaned_data
 
-    def save(self, commit):  # type: ignore
+    def save(self, commit=True):
         instance = super().save(commit=False)
 
         if instance.lookup == LookupStringChoices.IS_NULL:

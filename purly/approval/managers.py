@@ -2,8 +2,6 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-now = timezone.now().date()
-
 
 class ApprovalQuerySet(models.QuerySet):
     def active(self):
@@ -19,6 +17,8 @@ class ApprovalChainQuerySet(models.QuerySet):
         return self.filter(deleted=False)
 
     def current(self):
+        now = timezone.now().date()
+
         return (
             self.active()
             .filter(Q(valid_from__isnull=True) | Q(valid_from__lte=now))

@@ -22,6 +22,7 @@ class AddressViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsOwnerOrAdmin]
     queryset = Address.objects.active().select_related("owner", "created_by", "updated_by")  # type: ignore
+    serializer_class = AddressListSerializer
     pagination_class = AddressPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ADDRESS_FILTER_FIELDS
@@ -56,7 +57,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Create address", request=AddressDetailSerializer, responses=AddressDetailSerializer
+        summary="Create address", request=AddressCreateSerializer, responses=AddressDetailSerializer
     )
     def create(self, request, *args, **kwargs):
         serializer = AddressCreateSerializer(data=request.data)
@@ -78,7 +79,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @extend_schema(
-        summary="Update address", request=AddressDetailSerializer, responses=AddressDetailSerializer
+        summary="Update address", request=AddressUpdateSerializer, responses=AddressDetailSerializer
     )
     def update(self, request, *args, **kwargs):
         address = self.get_object()

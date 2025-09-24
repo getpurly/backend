@@ -21,6 +21,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put"]
     permission_classes = [IsAdminOrReadOnlyAuthenticated]
     queryset = Project.objects.active().select_related("created_by", "updated_by")  # type: ignore
+    serializer_class = ProjectListSerializer
     pagination_class = ProjectPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = PROJECT_FILTER_FIELDS
