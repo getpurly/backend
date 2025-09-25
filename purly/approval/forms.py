@@ -108,7 +108,7 @@ class ApprovalChainForm(forms.ModelForm):
             ):
                 self.add_error("approver_group", "This approval group was deleted.")
 
-        if min_amount and max_amount and min_amount >= max_amount:
+        if min_amount is not None and max_amount is not None and min_amount >= max_amount:
             self.add_error("min_amount", "This value must be lower than maximum amount.")
 
         if approver_mode == ApprovalChainModeChoices.INDIVIDUAL and not approver:

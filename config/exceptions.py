@@ -21,13 +21,8 @@ def handle_error(exc, context, response):
     else:
         detail = exc.detail
 
-    _type = "client_error"
-
-    if isinstance(exc, exceptions.APIException):
-        _type = "server_error"
-
     response.data = {
-        "type": _type,
+        "type": "client_error",
         "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
         "errors": [{"attr": None, "code": exc.get_codes(), "detail": detail}],
     }

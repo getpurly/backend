@@ -251,13 +251,14 @@ def line_check(lines, approval_chain, line_rules):
 def generate_approvals(requisition):
     approvals = []
 
-    lines = requisition.lines.select_related("ship_to")
+    lines = list(requisition.lines.select_related("ship_to"))
 
     approval_chains = (
         ApprovalChain.objects.current()  # type: ignore
         .filter(min_amount__lte=requisition.total_amount)
         .filter(Q(max_amount__gte=requisition.total_amount) | Q(max_amount__isnull=True))
         .order_by("sequence_number")
+        .select_related("approver", "approver_group")
         .prefetch_related(
             "approval_chain_header_rules", "approval_chain_line_rules", "approver_group__approver"
         )
@@ -360,16 +361,10 @@ def cancel_user_approvals(user):
     Approval.objects.bulk_update(approvals, ["status", "updated_at"])
 
     for requisition_id in requisitions:
-        transaction.on_commit(
-            lambda requisition_id=requisition_id: notify_current_sequence(
-                Requisition.objects.get(pk=requisition_id)
-            )
-        )
-        transaction.on_commit(
-            lambda requisition_id=requisition_id: check_fully_approved(
-                Requisition.objects.get(pk=requisition_id)
-            )
-        )
+        requisition = Requisition.objects.get(pk=requisition_id)
+
+        transaction.on_commit(lambda requisition=requisition: notify_current_sequence(requisition))
+        transaction.on_commit(lambda requisition=requisition: check_fully_approved(requisition))
 
 
 def cancel_group_approvals(approval):

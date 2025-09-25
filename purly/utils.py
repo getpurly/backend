@@ -46,16 +46,12 @@ def admin_action_delete(self, request, queryset, model_name):
 
     if model_name == "approvals" and requisitions:
         for requisition_id in requisitions:
+            requisition = Requisition.objects.get(pk=requisition_id)
+
             transaction.on_commit(
-                lambda requisition_id=requisition_id: notify_current_sequence(
-                    Requisition.objects.get(pk=requisition_id)
-                )
+                lambda requisition=requisition: notify_current_sequence(requisition)
             )
-            transaction.on_commit(
-                lambda requisition_id=requisition_id: check_fully_approved(
-                    Requisition.objects.get(pk=requisition_id)
-                )
-            )
+            transaction.on_commit(lambda requisition=requisition: check_fully_approved(requisition))
 
     match changed:
         case 0:
