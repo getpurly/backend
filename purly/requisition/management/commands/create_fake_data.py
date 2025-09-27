@@ -13,7 +13,7 @@ from purly.requisition.models import (
     RequisitionLine,
     RequisitionStatusChoices,
 )
-from purly.user.models import User, UserActivity, UserActivityActionChoices, UserProfile
+from purly.user.models import CustomUser, UserActivity, UserActivityActionChoices, UserProfile
 
 fake = Faker("en_US")
 
@@ -46,7 +46,7 @@ class Command(BaseCommand):
         ]
 
         for i in range(NUMBER_OF_USERS):
-            user = User(
+            user = CustomUser(
                 username=usernames[i],
                 first_name=fake.first_name(),
                 last_name=fake.last_name(),
@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
             users.append(user)
 
-        self.created_users = User.objects.bulk_create(users, batch_size=NUMBER_OF_USERS)
+        self.created_users = CustomUser.objects.bulk_create(users, batch_size=NUMBER_OF_USERS)
 
         profiles = []
 

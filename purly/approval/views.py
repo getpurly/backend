@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.http import Http404
 from drf_spectacular.utils import extend_schema
-from rest_framework import exceptions, generics, mixins, viewsets
+from rest_framework import exceptions, filters, generics, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -28,6 +28,7 @@ class ApprovalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     queryset = Approval.objects.active().select_related("approver", "created_by", "updated_by")  # type: ignore
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
+    filter_backends = [filters.OrderingFilter]
     ordering_fields = ["created_at", "updated_at"]
 
     def get_queryset(self):
@@ -120,6 +121,7 @@ class ApprovalMineListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ApprovalListSerializer
     pagination_class = ApprovalPagination
+    filter_backends = [filters.OrderingFilter]
     ordering_fields = ["created_at", "updated_at"]
 
     def get_queryset(self):

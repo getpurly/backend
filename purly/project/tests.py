@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
 
-from purly.user.models import User
+from purly.user.models import CustomUser
 
 from .models import Project
 
@@ -10,7 +10,17 @@ factory = APIRequestFactory()
 
 class ProjectTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="test", password="test")  # noqa: S106
+        self.user = CustomUser.objects.create_user(
+            username="test",
+            password="test",  # noqa: S106
+            is_superuser=True,
+        )
+
+        self.user2 = CustomUser.objects.create_user(
+            username="test2",
+            password="test2",  # noqa: S106
+            is_superuser=False,
+        )
 
         self.client.defaults["HTTP_USER_AGENT"] = "test"
         self.client.force_login(user=self.user)
@@ -90,6 +100,22 @@ class ProjectTests(APITestCase):
         self.client.logout()
 
         data = {"name": "test", "description": "test"}
+
+        response = self.client.post(self.url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_project_full_payload_as_normal_user(self):
+        self.client.defaults["HTTP_USER_AGENT"] = "test2"
+        self.client.force_login(user=self.user2)
+
+        data = {
+            "name": "test",
+            "project_code": "test",
+            "description": "test",
+            "start_date": "2025-01-01",
+            "end_date": "2025-01-07",
+        }
 
         response = self.client.post(self.url, data, format="json")
 

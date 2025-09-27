@@ -1,11 +1,12 @@
 from allauth.account.models import EmailAddress
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 
-from .models import User, UserActivity, UserProfile
+from .models import CustomUser, UserActivity, UserProfile
 
 
-class UserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (
             "Basic Settings",
@@ -161,7 +162,7 @@ class EmailAddressAdmin(admin.ModelAdmin):
 admin.site.unregister(EmailAddress)
 admin.site.unregister(Group)
 
-admin.site.register(User, UserAdmin)
+admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
 # admin.site.register(EmailAddress, EmailAddressAdmin)

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import USER_FILTER_FIELDS
-from .models import User
+from .models import CustomUser
 from .pagination import UserPagination
 from .serializers import UserDetailSerializer, UserListSerializer
 
@@ -14,7 +14,7 @@ from .serializers import UserDetailSerializer, UserListSerializer
 class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [IsAdminUser]
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserListSerializer
     pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]

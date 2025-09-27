@@ -51,7 +51,6 @@ class ApprovalDetailSerializer(CustomToRepresentation, serializers.ModelSerializ
             "approved_at",
             "rejected_at",
             "skipped_at",
-            "requisition",
             "created_at",
             "created_by",
             "updated_at",

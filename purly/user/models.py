@@ -31,7 +31,7 @@ class UserActivityActionChoices(models.TextChoices):
     EMAIL_REMOVE = ("email_remove", "email_remove")
 
 
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     class Meta:
         db_table = "user"
         verbose_name = "user"

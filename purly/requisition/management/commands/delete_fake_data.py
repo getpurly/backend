@@ -4,7 +4,7 @@ from purly.address.models import Address
 from purly.approval.models import ApprovalChain, ApprovalGroup
 from purly.project.models import Project
 from purly.requisition.models import Requisition
-from purly.user.models import User, UserProfile
+from purly.user.models import CustomUser, UserProfile
 
 
 class Command(BaseCommand):
@@ -15,4 +15,4 @@ class Command(BaseCommand):
         ApprovalGroup.objects.all().delete()
         ApprovalChain.objects.all().delete()
         UserProfile.objects.all().delete()
-        User.objects.all().exclude(id=1).delete()
+        CustomUser.objects.all().exclude(id=1).delete()

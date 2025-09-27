@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 
 from purly.base import AdminBase
 from purly.requisition.models import Requisition
-from purly.user.models import User
+from purly.user.models import CustomUser
 from purly.utils import admin_action_delete
 
 from .forms import (
@@ -197,7 +197,9 @@ class ApprovalAdmin(AdminBase):
             if not is_actionable(approval):
                 continue
 
-            on_reject(approval, approval.requisition, update_requisition=False)
+            on_reject(
+                approval, approval.requisition, request_user=request.user, update_requisition=False
+            )
 
             changed += 1
 
@@ -468,6 +470,7 @@ class ApprovalChainAdmin(AdminBase):
         for approval_chain in queryset:
             if approval_chain.deleted is False and approval_chain.active is False:
                 approval_chain.active = True
+                approval_chain.updated_by = request.user
 
                 changed += 1
 
@@ -485,13 +488,14 @@ class ApprovalChainAdmin(AdminBase):
                     level=messages.SUCCESS,
                 )
 
-    @admin.action(description="Deactive selected approval chains")
+    @admin.action(description="Deactivate selected approval chains")
     def deactivate(self, request, queryset):
         changed = 0
 
         for approval_chain in queryset:
             if approval_chain.deleted is False and approval_chain.active is True:
                 approval_chain.active = False
+                approval_chain.updated_by = request.user
 
                 changed += 1
 
@@ -505,7 +509,7 @@ class ApprovalChainAdmin(AdminBase):
             case _:
                 self.message_user(
                     request,
-                    f"The selected approval chains were activated (total = {changed}).",
+                    f"The selected approval chains were deactivated (total = {changed}).",
                     level=messages.SUCCESS,
                 )
 
@@ -612,7 +616,7 @@ class ApprovalGroupAdmin(AdminBase):
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "approver":
-            kwargs["queryset"] = User.objects.filter(is_active=True).order_by("username")
+            kwargs["queryset"] = CustomUser.objects.filter(is_active=True).order_by("username")
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 

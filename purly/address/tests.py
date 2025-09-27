@@ -1,14 +1,14 @@
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, APITestCase
 
-from purly.user.models import User
+from purly.user.models import CustomUser
 
 factory = APIRequestFactory()
 
 
 class AddressTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="test", password="test")  # noqa: S106
+        self.user = CustomUser.objects.create_user(username="test", password="test")  # noqa: S106
 
         self.client.defaults["HTTP_USER_AGENT"] = "test"
         self.client.force_login(user=self.user)
