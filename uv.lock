@@ -46,7 +46,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.2.3" },
-    { name = "django-allauth", specifier = ">=65.10.0" },
+    { name = "django-allauth", specifier = ">=65.11.2" },
     { name = "django-allauth-ui", specifier = ">=1.8.1" },
     { name = "django-cors-headers", specifier = ">=4.7.0" },
     { name = "django-filter", specifier = ">=25.1" },
@@ -80,13 +80,13 @@ wheels = [
 
 [[package]]
 name = "django-allauth"
-version = "65.10.0"
+version = "65.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/9e/271e3b8ea27c089ddf3431140cf4aa86df86556ec102e360da5af62c3a99/django_allauth-65.10.0.tar.gz", hash = "sha256:47daa3b0e11a1d75724ea32995de37bd2b8963e9e4cce2b3a7fd64eb6d3b3c48", size = 1897777 }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/19/3671e67b5fcc744c0d9380b0bb6120b7226bc9944bd9affb029b2d510d53/django_allauth-65.11.2.tar.gz", hash = "sha256:7b7e771d3384d0e247d0d6aef31b0cb589f92305b7e975e70056a513525906e7", size = 1916225 }
 
 [[package]]
 name = "django-allauth-ui"

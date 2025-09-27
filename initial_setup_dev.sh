@@ -2,7 +2,7 @@
 
 fd --type f --extension py "000[0-9]_initial.py" -I -x rm {}
 
-source .venv/bin/activate.fish
+source .venv/bin/activate
 
 export DJANGO_SUPERUSER_USERNAME="dev"
 export DJANGO_SUPERUSER_PASSWORD="dev"

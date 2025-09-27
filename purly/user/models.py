@@ -1,4 +1,3 @@
-from allauth.account.models import EmailAddress
 from allauth.account.signals import (
     email_added,
     email_changed,
@@ -149,11 +148,3 @@ def record_user_activity(  # noqa: PLR0913
     )
 
     new_activity.save()
-
-
-class UserEmailAddress(EmailAddress):
-    class Meta:  # type: ignore
-        proxy = True
-        app_label = "user"
-        verbose_name = "email address"
-        verbose_name_plural = "emails addresses"

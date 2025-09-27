@@ -2,10 +2,7 @@ from allauth.account.models import EmailAddress
 from django.contrib import admin
 from django.contrib.auth.models import Group
 
-from .models import User, UserActivity, UserEmailAddress, UserProfile
-
-admin.site.unregister(EmailAddress)
-admin.site.unregister(Group)
+from .models import User, UserActivity, UserProfile
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -161,7 +158,10 @@ class EmailAddressAdmin(admin.ModelAdmin):
     search_fields = ["user__username", "email"]
 
 
+admin.site.unregister(EmailAddress)
+admin.site.unregister(Group)
+
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(UserActivity, UserActivityAdmin)
-admin.site.register(UserEmailAddress, EmailAddressAdmin)
+# admin.site.register(EmailAddress, EmailAddressAdmin)
