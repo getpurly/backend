@@ -14,6 +14,7 @@ dependencies = [
     "djangorestframework>=3.16.0",
     "drf-spectacular>=0.28.0",
     "psycopg2>=2.9.10",
+    "sentry-sdk[django]>=2.39.0",
     "slippers>=0.6.2",
 ]
 

@@ -1,6 +1,6 @@
 from .base import *  # noqa: F403
 
-SECRET_KEY = "django-insecure-x+8-x*%28!9@x_@hcp)6y=dz+5_kcru4^m693_&%1fn2b9b@5-"  # noqa: S105
+SECRET_KEY = "hyBhCDX0pa9fi9XE3zLODw850fcjEaqA8tXaXzKYxdiJ9YcwyV5o33BJqGRDFqDi"  # noqa: S105
 
 DEBUG = True
 
