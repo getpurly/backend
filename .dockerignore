@@ -1,24 +1,16 @@
-# Ignore everything
-**
-
-# Allow Django project code
+# Include project folders
 !config/**
-!purly/**
-!manage.py
-
-# Allow configuration
-!pyproject.toml
-!uv.lock
-
-# Allow Docker setup
 !docker/**
-!Dockerfile
-!entrypoint.sh
-
-# Allow templates & static source (not collected files)
+!purly/**
+!static/**
 !templates/**
 !templatetags/**
-!static/**
 
 # Keep migration init files
 !purly/*/migrations/__init__.py
+
+# Include specific config files
+!.python-version
+!manage.py
+!pyproject.toml
+!uv.lock
