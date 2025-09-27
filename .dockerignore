@@ -2,8 +2,9 @@
 **
 
 # Allow Django project code
-!manage.py
+!config/**
 !purly/**
+!manage.py
 
 # Allow configuration
 !pyproject.toml
@@ -16,6 +17,7 @@
 
 # Allow templates & static source (not collected files)
 !templates/**
+!templatetags/**
 !static/**
 
 # Keep migration init files
