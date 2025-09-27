@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 curl ca-certificates build-essential libpq5 libpq-dev \
 && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- -y \
-&& ln -s /root/.local/bin/uv /usr/local/bin/uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL=/usr/local/bin sh
 
 WORKDIR /app
 
