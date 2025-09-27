@@ -1,6 +1,7 @@
 from allauth.account.decorators import secure_admin_login
 from django.conf import settings
 from django.contrib import admin
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
@@ -20,6 +21,10 @@ def home(request):
     return redirect("account_login")
 
 
+def health(request):
+    return JsonResponse({"status": "ok"}, status=200)
+
+
 handler404 = page_not_found
 handler500 = server_error
 
@@ -33,6 +38,7 @@ urlpatterns = [
     path("api/v1/users/", include("purly.user.urls")),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/v1/health/", health, name="health"),
     path("", home, name="home"),
 ]
 
