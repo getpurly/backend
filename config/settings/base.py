@@ -8,9 +8,6 @@ ADMIN_SITE_HEADER = "Purly Admin"
 ADMIN_SITE_INDEX_TITLE = "Site administration"
 ADMIN_SITE_TITLE = "admin"
 
-ADMINS = [("admin", "admin@localhost")]
-MANAGERS = ADMINS
-
 CORS_ALLOW_CREDENTIALS = True
 
 INSTALLED_APPS = [

@@ -207,3 +207,4 @@ test.py
 /purly/*/migrations/*.py
 !/purly/*/migrations/__init__.py
 /staticfiles
+.envs/.prod

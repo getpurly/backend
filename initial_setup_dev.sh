@@ -19,4 +19,8 @@ export DJANGO_SUPERUSER_EMAIL="dev2@localhost"
 
 python manage.py createsuperuser --noinput
 
+unset DJANGO_SUPERUSER_USERNAME
+unset DJANGO_SUPERUSER_PASSWORD
+unset DJANGO_SUPERUSER_EMAIL
+
 uv run manage.py runserver

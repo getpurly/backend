@@ -31,6 +31,8 @@ UOM = ["each", "box"]
 
 
 class Command(BaseCommand):
+    help = "Create fake data in database."
+
     created_users = []
     created_user_profiles = []
     created_addresses = []

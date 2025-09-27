@@ -8,6 +8,8 @@ from purly.user.models import CustomUser, UserProfile
 
 
 class Command(BaseCommand):
+    help = "Delete fake data from database."
+
     def handle(self, *args, **kwargs):
         Requisition.objects.all().delete()
         Address.objects.all().delete()

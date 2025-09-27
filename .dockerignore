@@ -1,0 +1,22 @@
+# Ignore everything
+**
+
+# Allow Django project code
+!manage.py
+!purly/**
+
+# Allow configuration
+!pyproject.toml
+!uv.lock
+
+# Allow Docker setup
+!docker/**
+!Dockerfile
+!entrypoint.sh
+
+# Allow templates & static source (not collected files)
+!templates/**
+!static/**
+
+# Keep migration init files
+!purly/*/migrations/__init__.py

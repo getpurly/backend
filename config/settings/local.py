@@ -4,18 +4,18 @@ SECRET_KEY = "hyBhCDX0pa9fi9XE3zLODw850fcjEaqA8tXaXzKYxdiJ9YcwyV5o33BJqGRDFqDi" 
 
 DEBUG = True
 
+ADMINS = [("admin", "admin@localhost")]
+MANAGERS = ADMINS
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 FRONTEND = "http://localhost:5173"
 
-CORS_ALLOWED_ORIGINS = [
-    FRONTEND,
-]
-CSRF_TRUSTED_ORIGINS = [
-    FRONTEND,
-]
+CORS_ALLOWED_ORIGINS = [FRONTEND] if FRONTEND else []
 
-LOGIN_REDIRECT_URL = FRONTEND
+CSRF_TRUSTED_ORIGINS = [FRONTEND] if FRONTEND else []
+
+LOGIN_REDIRECT_URL = FRONTEND or "/"
 
 INSTALLED_APPS += [  # noqa: F405
     "silk",
@@ -43,7 +43,7 @@ CACHES = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_FROM = "noreply@localhost"
+DEFAULT_FROM_EMAIL = "noreply@localhost"
 
 SITE_NAME = "localhost"
 SITE_URL = "http://localhost:8000"
