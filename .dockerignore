@@ -1,19 +1,22 @@
-# Include project folders
+# Ignore everything
+**
+
+# Include project dirs (dir + contents)
+!config
 !config/**
+!docker
 !docker/**
+!purly
 !purly/**
+!static
 !static/**
+!templates
 !templates/**
+!templatetags
 !templatetags/**
 
-# Keep migration init files
-!purly/*/migrations/__init__.py
-
-# Include specific config files
+# Include specific files at repo root
 !.python-version
 !manage.py
 !pyproject.toml
 !uv.lock
-
-# Ignore everything else
-**
