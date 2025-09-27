@@ -16,6 +16,7 @@ dependencies = [
     "psycopg2>=2.9.10",
     "sentry-sdk[django]>=2.39.0",
     "slippers>=0.6.2",
+    "whitenoise>=6.11.0",
 ]
 
 [dependency-groups]
