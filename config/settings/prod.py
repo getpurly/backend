@@ -24,8 +24,6 @@ CSRF_USE_SESSIONS = True
 
 LOGIN_REDIRECT_URL = FRONTEND or "/"
 
-MIDDLEWARE = [*MIDDLEWARE[:1], "whitenoise.middleware.WhiteNoiseMiddleware", *MIDDLEWARE[1:]]  # noqa: F405
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

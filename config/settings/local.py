@@ -17,9 +17,7 @@ CSRF_TRUSTED_ORIGINS = [FRONTEND] if FRONTEND else []
 
 LOGIN_REDIRECT_URL = FRONTEND or "/"
 
-INSTALLED_APPS += [  # noqa: F405
-    "silk",
-]
+INSTALLED_APPS = [*INSTALLED_APPS[:5], "whitenoise.runserver_nostatic", *INSTALLED_APPS[5:], "silk"]  # noqa: F405
 
 MIDDLEWARE += [  # noqa: F405
     "silk.middleware.SilkyMiddleware",
