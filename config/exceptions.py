@@ -106,7 +106,10 @@ def custom_exception_handler(exc, context):
 def page_not_found(request, *args, **kwargs):
     data = {"request_id": request.META.get("X_REQUEST_ID", "")}
 
-    sentry_sdk.capture_message("The endpoint requested does not exist.", level="error")
+    with sentry_sdk.new_scope() as scope:
+        scope.set_tag("request_id", data["request_id"])
+
+        sentry_sdk.capture_message("The endpoint requested does not exist.", level="error")
 
     if request.path.startswith("/api/"):
         response = {
