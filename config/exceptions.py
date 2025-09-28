@@ -1,3 +1,4 @@
+import sentry_sdk
 from django.http import Http404, JsonResponse
 from django.template.response import TemplateResponse
 from rest_framework import exceptions, status, views
@@ -104,6 +105,8 @@ def custom_exception_handler(exc, context):
 
 def page_not_found(request, *args, **kwargs):
     data = {"request_id": request.META.get("X_REQUEST_ID", "")}
+
+    sentry_sdk.capture_message("The endpoint requested does not exist.", level="error")
 
     if request.path.startswith("/api/"):
         response = {
