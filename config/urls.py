@@ -21,7 +21,7 @@ def home(request):
     return redirect("account_login")
 
 
-def health(request):
+def health_check(request):
     return JsonResponse({"status": "ok"}, status=200)
 
 
@@ -38,7 +38,7 @@ urlpatterns = [
     path("api/v1/users/", include("purly.user.urls")),
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    path("api/v1/health/", health, name="health"),
+    path("api/v1/health/", health_check, name="health_check"),
     path("", home, name="home"),
 ]
 
