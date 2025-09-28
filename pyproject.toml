@@ -5,7 +5,7 @@ description = "backend"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "django>=5.2.3",
+    "django[argon2]>=5.2.3",
     "django-allauth>=65.11.2",
     "django-allauth-ui>=1.8.1",
     "django-cors-headers>=4.9.0",
