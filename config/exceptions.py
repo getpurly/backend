@@ -21,8 +21,6 @@ def add_sentry_request_tag(request_id, page_not_found=False):
 def handle_error(exc, context, response):
     request_id = context.get("request").META.get("X_REQUEST_ID", "")
 
-    add_sentry_request_tag(request_id)
-
     if isinstance(exc, exceptions.MethodNotAllowed):
         method = context.get("request").method
         detail = f"This method is not allowed: {method}"
@@ -47,9 +45,6 @@ def handle_validation_error(exc, context, response):
     errors = []
 
     request_id = context.get("request").META.get("X_REQUEST_ID", "")
-
-    add_sentry_request_tag(request_id)
-
     full_details = exc.get_full_details()
 
     for field, detail in full_details.items():
