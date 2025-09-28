@@ -10,7 +10,19 @@ class BadRequest(exceptions.APIException):
     default_code = "bad_request"
 
 
+def add_sentry_request_tag(request_id, page_not_found=False):
+    with sentry_sdk.new_scope() as scope:
+        scope.set_tag("request_id", request_id)
+
+        if page_not_found:
+            sentry_sdk.capture_message("The endpoint requested does not exist.", level="error")
+
+
 def handle_error(exc, context, response):
+    request_id = context.get("request").META.get("X_REQUEST_ID", "")
+
+    add_sentry_request_tag(request_id)
+
     if isinstance(exc, exceptions.MethodNotAllowed):
         method = context.get("request").method
         detail = f"This method is not allowed: {method}"
@@ -24,7 +36,7 @@ def handle_error(exc, context, response):
 
     response.data = {
         "type": "client_error",
-        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
+        "request_id": request_id,
         "errors": [{"attr": None, "code": exc.get_codes(), "detail": detail}],
     }
 
@@ -33,6 +45,10 @@ def handle_error(exc, context, response):
 
 def handle_validation_error(exc, context, response):
     errors = []
+
+    request_id = context.get("request").META.get("X_REQUEST_ID", "")
+
+    add_sentry_request_tag(request_id)
 
     full_details = exc.get_full_details()
 
@@ -67,7 +83,7 @@ def handle_validation_error(exc, context, response):
 
     response.data = {
         "type": "validation_error",
-        "request_id": context.get("request").META.get("X_REQUEST_ID", ""),
+        "request_id": request_id,
         "errors": errors,
     }
 
@@ -106,10 +122,8 @@ def custom_exception_handler(exc, context):
 def page_not_found(request, *args, **kwargs):
     data = {"request_id": request.META.get("X_REQUEST_ID", "")}
 
-    with sentry_sdk.new_scope() as scope:
-        scope.set_tag("request_id", data["request_id"])
-
-        sentry_sdk.capture_message("The endpoint requested does not exist.", level="error")
+    if not request.path.startswith("/favicon.ico"):
+        add_sentry_request_tag(data["request_id"], page_not_found=True)
 
     if request.path.startswith("/api/"):
         response = {
@@ -131,6 +145,8 @@ def page_not_found(request, *args, **kwargs):
 
 def server_error(request, *args, **kwargs):
     data = {"request_id": request.META.get("X_REQUEST_ID", "")}
+
+    add_sentry_request_tag(data["request_id"])
 
     if request.path.startswith("/api/"):
         response = {
