@@ -118,12 +118,7 @@ CSRF_COOKIE_NAME = "__Secure-csrftoken"
 # Storage / Static
 # ---------------------------------------------------------------------
 
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ---------------------------------------------------------------------
 # Sentry
