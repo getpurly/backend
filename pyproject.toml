@@ -5,12 +5,13 @@ description = "backend"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "django[argon2]>=5.2.3",
-    "django-allauth>=65.11.2",
     "django-allauth-ui>=1.8.1",
+    "django-allauth>=65.11.2",
+    "django-anymail[amazon-ses]>=13.1",
     "django-cors-headers>=4.9.0",
     "django-filter>=25.1",
     "django-widget-tweaks>=1.5.0",
+    "django[argon2]>=5.2.3",
     "djangorestframework>=3.16.0",
     "drf-spectacular>=0.28.0",
     "gunicorn>=23.0.0",
@@ -21,11 +22,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
- "django-silk>=5.4.3",
- "faker>=37.8.0",
- "ruff>=0.13.2",
-]
+dev = ["django-silk>=5.4.3", "faker>=37.8.0", "ruff>=0.13.2"]
 
 [tool.ruff]
 line-length = 100

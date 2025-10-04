@@ -3,6 +3,7 @@
 # =====================================================================
 
 from .base import *  # noqa: F403
+from .base import INSTALLED_APPS, MIDDLEWARE
 
 # ---------------------------------------------------------------------
 # Core / Debug
@@ -39,13 +40,13 @@ LOGIN_REDIRECT_URL = FRONTEND or "/"
 # ---------------------------------------------------------------------
 
 INSTALLED_APPS = [
-    *INSTALLED_APPS[:5],  # noqa: F405
+    *INSTALLED_APPS[:5],
     "whitenoise.runserver_nostatic",
-    *INSTALLED_APPS[5:],  # noqa: F405
+    *INSTALLED_APPS[5:],
     "silk",
 ]
 
-MIDDLEWARE += [  # noqa: F405
+MIDDLEWARE += [
     "silk.middleware.SilkyMiddleware",
 ]
 
@@ -77,5 +78,6 @@ CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 # ---------------------------------------------------------------------
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 DEFAULT_FROM_EMAIL = "noreply@localhost"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL

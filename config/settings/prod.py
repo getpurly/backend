@@ -6,11 +6,11 @@ import logging
 import os
 
 import sentry_sdk
-from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .base import *  # noqa: F403
+from .base import INSTALLED_APPS
 
 # ---------------------------------------------------------------------
 # Core / Debug
@@ -65,15 +65,30 @@ DATABASES = {
 # Cache
 # ---------------------------------------------------------------------
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 # ---------------------------------------------------------------------
 # Email
 # ---------------------------------------------------------------------
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "anymail.backends.amazon_ses.EmailBackend"
+
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+ANYMAIL = {
+    "AMAZON_SES_CLIENT_PARAMS": {
+        "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_SES"),
+        "aws_secret_access_key": os.getenv("AWS_SECRET_KEY_SES"),
+        "region_name": os.getenv("AWS_REGION"),
+    },
+}
+
+# ---------------------------------------------------------------------
+# Installed Apps
+# ---------------------------------------------------------------------
+
+INSTALLED_APPS += ["anymail"]
 
 # ---------------------------------------------------------------------
 # Security Headers / HTTPS
@@ -123,7 +138,6 @@ sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     environment="production",
     integrations=[
-        CeleryIntegration(),
         DjangoIntegration(),
         sentry_logging,
     ],
