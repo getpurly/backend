@@ -1,0 +1,9 @@
+{% autoescape off %}
+Hello,
+
+{% block content %}{% endblock content %}
+
+{% endautoescape %}
+
+Thanks,
+The Purly Team
