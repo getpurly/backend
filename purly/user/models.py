@@ -130,7 +130,7 @@ def record_user_activity(  # noqa: PLR0913
         if from_email_address:
             context = f"Primary email changed from {from_email_address} to {to_email_address}"
         else:
-            context = f"Primary email set to: {to_email_address}"
+            context = f"Primary email set to {to_email_address}"
     elif signal == email_added:
         context = f"Email added: {email_address}"
     elif signal == email_removed:
