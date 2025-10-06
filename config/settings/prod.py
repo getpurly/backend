@@ -8,6 +8,7 @@ import os
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 from .base import *  # noqa: F403
 from .base import INSTALLED_APPS
@@ -146,6 +147,7 @@ sentry_sdk.init(
     environment="production",
     integrations=[
         DjangoIntegration(),
+        RedisIntegration(),
         sentry_logging,
     ],
     send_default_pii=True,
