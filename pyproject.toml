@@ -10,6 +10,7 @@ dependencies = [
     "django-anymail[amazon-ses]>=13.1",
     "django-cors-headers>=4.9.0",
     "django-filter>=25.1",
+    "django-redis>=6.0.0",
     "django-widget-tweaks>=1.5.0",
     "django[argon2]>=5.2.3",
     "djangorestframework>=3.16.0",

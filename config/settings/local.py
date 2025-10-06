@@ -71,7 +71,15 @@ DATABASES = {
 # Cache
 # ---------------------------------------------------------------------
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://:dev@192.168.1.130:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 # ---------------------------------------------------------------------
 # Email

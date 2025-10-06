@@ -65,7 +65,19 @@ DATABASES = {
 # Cache
 # ---------------------------------------------------------------------
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://:{password}@{host}:{port}/0".format(
+            password=os.getenv("REDIS_PASS"),
+            host=os.getenv("REDIS_HOST"),
+            port=os.getenv("REDIS_PORT"),
+        ),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 # ---------------------------------------------------------------------
 # Email

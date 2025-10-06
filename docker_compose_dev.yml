@@ -12,8 +12,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - TZ=UTC
     image: postgres:16-alpine
-    labels:
-      - docker-volume-backup.stop-during-backup=true
     networks:
       - postgres_network
     ports:
@@ -29,10 +27,39 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data:rw
 
+  redis:
+    container_name: redis
+    command: redis-server --appendonly yes --appendfsync everysec --requirepass ${REDIS_PASSWORD} --pidfile /data/redis.pid
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+    environment:
+      - TZ=UTC
+    image: redis:7-alpine
+    networks:
+      - redis_network
+    ports:
+      - 6379:6379
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+      - apparmor:docker-default
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    volumes:
+      - redis_data:/data:rw
+
 networks:
   postgres_network:
     name: postgres_network
+  redis_network:
+    name: redis_network
 
 volumes:
   postgres_data:
     name: postgres_data
+  redis_data:
+    name: redis_data
