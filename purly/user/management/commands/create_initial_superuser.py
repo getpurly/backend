@@ -10,9 +10,9 @@ class Command(BaseCommand):
     help = "Create initial superuser if one does not exist."
 
     def handle(self, *args, **options):
-        username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "").strip()
-        email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "").strip()
-        password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "").strip()
+        username = os.getenv("DJANGO_SUPERUSER_USERNAME")
+        email = os.getenv("DJANGO_SUPERUSER_EMAIL")
+        password = os.getenv("DJANGO_SUPERUSER_PASSWORD")
 
         if username and email and password:
             if not User.objects.filter(username=username).exists():
@@ -22,4 +22,4 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"Superuser {username} already exists."))
         else:
-            self.stdout.write(self.style.WARNING("Superuser env vars not set; skipping."))
+            self.stdout.write(self.style.WARNING("Superuser env vars missing; skipping."))

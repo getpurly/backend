@@ -1,21 +1,15 @@
-# Ignore everything
+# Ignore everything by default
 **
 
-# Include project dirs (dir + contents)
-!config
+# Re-include specific directories
 !config/**
-!docker
 !docker/**
-!purly
 !purly/**
-!static
 !static/**
-!templates
 !templates/**
-!templatetags
 !templatetags/**
 
-# Include specific files at repo root
+# Re-include specific files at repo root
 !.python-version
 !manage.py
 !pyproject.toml

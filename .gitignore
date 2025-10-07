@@ -200,10 +200,12 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Misc
+# Testing
 test_data.json
 test_data.http
 test.py
+
+# Misc
 /purly/*/migrations/*.py
 !/purly/*/migrations/__init__.py
 /staticfiles
