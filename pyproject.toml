@@ -33,9 +33,10 @@ target-version = "py313"
 select = ["ALL"]
 ignore = [
     "ANN",    # flake8-annotations
-    "COM",    # flake8-commas
     "ARG001", # Unused function argument
     "ARG002", # Unused method argument
+    "C901",   # Function is too complex (> 10)
+    "COM",    # flake8-commas
     "D100",   # Missing docstring in public module
     "D101",   # Missing docstring in public class
     "D102",   # Missing docstring in public method
@@ -44,16 +45,15 @@ ignore = [
     "D105",   # Missing docstring in magic method
     "D106",   # Missing docstring in public nested class
     "D107",   # Missing docstring in `__init__`
-    "C901",   # Function is too complex (> 10)
-    "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
-    "TRY003", # Avoid specifying long messages outside the exception class
+    "DJ007",  # Do not use `__all__` with `ModelForm`, use `fields` instead
     "EM101",  # Exception must not use a string literal, assign to variable first
     "EM102",  # Exception must not use an f-string literal, assign to variable first
-    "PT009",  # Use a regular `assert` instead of unittest-style `assertEqual
-    "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
-    "PGH003", # Use specific rule codes when ignoring type issues
-    "DJ007",  # Do not use `__all__` with `ModelForm`, use `fields` instead
-    "SLF001", # Private member accessed: `_meta`
     "FBT002", # Boolean default positional argument in function definition
+    "PGH003", # Use specific rule codes when ignoring type issues
+    "PT009",  # Use a regular `assert` instead of unittest-style `assertEqual
+    "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
+    "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "SLF001", # Private member accessed: `_meta`
+    "TRY003", # Avoid specifying long messages outside the exception class
 ]
 exclude = ["migrations"]
