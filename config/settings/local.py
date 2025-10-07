@@ -9,8 +9,12 @@ from .base import INSTALLED_APPS, MIDDLEWARE
 # Core / Debug
 # ---------------------------------------------------------------------
 
-SECRET_KEY = "hyBhCDX0pa9fi9XE3zLODw850fcjEaqA8tXaXzKYxdiJ9YcwyV5o33BJqGRDFqDi"  # noqa: S105
 DEBUG = True
+
+SECRET_KEY = "hyBhCDX0pa9fi9XE3zLODw850fcjEaqA8tXaXzKYxdiJ9YcwyV5o33BJqGRDFqDi"  # noqa: S105
+
+SITE_NAME = "localhost"
+SITE_URL = "http://localhost:8000"
 
 # ---------------------------------------------------------------------
 # Admins / Managers
@@ -26,6 +30,7 @@ MANAGERS = ADMINS
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 FRONTEND = "http://localhost:5173"
+
 CORS_ALLOWED_ORIGINS = [FRONTEND] if FRONTEND else []
 CSRF_TRUSTED_ORIGINS = [FRONTEND] if FRONTEND else []
 

@@ -17,8 +17,12 @@ from .base import INSTALLED_APPS
 # Core / Debug
 # ---------------------------------------------------------------------
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = False
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
+SITE_NAME = os.getenv("DJANGO_SITE_NAME")
+SITE_URL = os.getenv("DJANGO_SITE_URL")
 
 # ---------------------------------------------------------------------
 # Admins / Managers
@@ -36,6 +40,7 @@ ALLOWED_HOSTS = (
 )
 
 FRONTEND = os.getenv("FRONTEND")
+
 CORS_ALLOWED_ORIGINS = [FRONTEND] if FRONTEND else []
 CSRF_TRUSTED_ORIGINS = [FRONTEND] if FRONTEND else []
 
