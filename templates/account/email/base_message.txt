@@ -5,5 +5,5 @@ Hello,
 
 {% endautoescape %}
 
-Thanks,
-The Purly Team
+Thank you,
+The {{ site_name }} Team

@@ -17,4 +17,4 @@ To review details, click the link below:
 {{ site_url }}/api/v1/requisitions/{{ requisition_id }}/
 
 Thank you,
-The Procurement Team
+The {{ site_name }} Team

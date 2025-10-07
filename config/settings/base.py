@@ -227,6 +227,8 @@ SPECTACULAR_SETTINGS = {
 # Allauth
 # ---------------------------------------------------------------------
 
+ACCOUNT_ADAPTER = "config.adapters.CustomAccountAdapter"
+
 ALLAUTH_UI_THEME = "forest"
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Purly] "

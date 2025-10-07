@@ -24,4 +24,4 @@ To reject,
 {{ site_url }}/api/v1/approvals/{{ approval_id }}/reject/
 
 Thank you,
-The Procurement Team
+The {{ site_name }} Team

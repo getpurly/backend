@@ -15,6 +15,7 @@ def send_approval_email(requisition, approval):
         "currency": requisition.currency,
         "submitted_at": requisition.submitted_at,
         "site_url": settings.SITE_URL,
+        "site_name": settings.SITE_NAME,
     }
 
     if requisition.project is not None:
@@ -23,7 +24,7 @@ def send_approval_email(requisition, approval):
     subject = loader.render_to_string("approval/email/approval_subject.txt", context)
     body = loader.render_to_string("approval/email/approval.txt", context)
 
-    email = EmailMessage(subject, body, settings.EMAIL_FROM, [approval.approver.email])
+    email = EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL, [approval.approver.email])
 
     email.send()
 
@@ -40,6 +41,7 @@ def send_reject_email(approval, requisition):
         "rejected_by": approval.approver.username,
         "rejected_comment": approval.comment,
         "site_url": settings.SITE_URL,
+        "site_name": settings.SITE_NAME,
     }
 
     if requisition.project is not None:
@@ -48,7 +50,7 @@ def send_reject_email(approval, requisition):
     subject = loader.render_to_string("approval/email/rejected_subject.txt", context)
     body = loader.render_to_string("approval/email/rejected.txt", context)
 
-    email = EmailMessage(subject, body, settings.EMAIL_FROM, [requisition.owner.email])
+    email = EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL, [requisition.owner.email])
 
     email.send()
 
@@ -63,6 +65,7 @@ def send_fully_approved_email(requisition):
         "submitted_at": requisition.submitted_at,
         "approved_at": requisition.approved_at,
         "site_url": settings.SITE_URL,
+        "site_name": settings.SITE_NAME,
     }
 
     if requisition.project is not None:
@@ -71,6 +74,6 @@ def send_fully_approved_email(requisition):
     subject = loader.render_to_string("approval/email/fully_approved_subject.txt", context)
     body = loader.render_to_string("approval/email/fully_approved.txt", context)
 
-    email = EmailMessage(subject, body, settings.EMAIL_FROM, [requisition.owner.email])
+    email = EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL, [requisition.owner.email])
 
     email.send()
