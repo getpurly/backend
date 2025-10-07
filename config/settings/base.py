@@ -191,6 +191,27 @@ LOGGING = {
 }
 
 # ---------------------------------------------------------------------
+# Celery
+# ---------------------------------------------------------------------
+
+CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_RESULT_EXTENDED = True  # Store extra metadata (e.g., task args, runtime)
+CELERY_RESULT_BACKEND_ALWAYS_RETRY = True  # Retry if result backend temporarily unavailable
+CELERY_RESULT_BACKEND_MAX_RETRIES = 10  # Max retry attempts for result backend
+
+CELERY_ACCEPT_CONTENT = ["json"]  # Only accept JSON messages
+CELERY_TASK_SERIALIZER = "json"  # Serialize task data as JSON
+CELERY_RESULT_SERIALIZER = "json"  # Serialize results as JSON
+
+CELERY_TASK_SOFT_TIME_LIMIT = 60  # Graceful timeout (in seconds) before task is warned/killed
+CELERY_TASK_TIME_LIMIT = 5 * 60  # Hard timeout (in seconds) after which task is forcibly killed
+
+CELERY_WORKER_SEND_TASK_EVENTS = True  # Emit task lifecycle events, such as started, sent, etc.
+CELERY_TASK_SEND_SENT_EVENT = True  # Send event when task is dispatched to broker
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Prevent Celery from overriding Django logging
+
+# ---------------------------------------------------------------------
 # DRF / API
 # ---------------------------------------------------------------------
 

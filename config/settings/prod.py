@@ -66,14 +66,16 @@ DATABASES = {
 # Cache
 # ---------------------------------------------------------------------
 
+REDIS_URL = "redis://:{password}@{host}:{port}/0".format(
+    password=os.getenv("REDIS_PASS"),
+    host=os.getenv("REDIS_HOST"),
+    port=os.getenv("REDIS_PORT"),
+)
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://:{password}@{host}:{port}/0".format(
-            password=os.getenv("REDIS_PASS"),
-            host=os.getenv("REDIS_HOST"),
-            port=os.getenv("REDIS_PORT"),
-        ),
+        "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -132,6 +134,13 @@ CSRF_COOKIE_NAME = "__Secure-csrftoken"
 # ---------------------------------------------------------------------
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# ---------------------------------------------------------------------
+# Celery
+# ---------------------------------------------------------------------
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 
 # ---------------------------------------------------------------------
 # Sentry
