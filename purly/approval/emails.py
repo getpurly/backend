@@ -1,8 +1,10 @@
+from celery import shared_task
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import loader
 
 
+@shared_task
 def send_approval_email(requisition, approval):
     context = {
         "approver": approval.approver.username,
@@ -29,6 +31,7 @@ def send_approval_email(requisition, approval):
     email.send()
 
 
+@shared_task
 def send_reject_email(approval, requisition):
     context = {
         "requisition_id": requisition.id,
@@ -55,6 +58,7 @@ def send_reject_email(approval, requisition):
     email.send()
 
 
+@shared_task
 def send_fully_approved_email(requisition):
     context = {
         "requisition_id": requisition.id,

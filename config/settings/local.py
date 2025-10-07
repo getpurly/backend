@@ -76,10 +76,12 @@ DATABASES = {
 # Cache
 # ---------------------------------------------------------------------
 
+REDIS_URL = "redis://:dev@192.168.1.130:6379/0"
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://:dev@192.168.1.130:6379/0",
+        "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -94,3 +96,10 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 DEFAULT_FROM_EMAIL = "noreply@localhost"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# ---------------------------------------------------------------------
+# Celery
+# ---------------------------------------------------------------------
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
