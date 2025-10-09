@@ -6,6 +6,7 @@ import logging
 import os
 
 import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -160,6 +161,7 @@ sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     environment="production",
     integrations=[
+        CeleryIntegration(),
         DjangoIntegration(),
         RedisIntegration(),
         sentry_logging,
