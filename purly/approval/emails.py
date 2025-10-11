@@ -3,13 +3,20 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template import loader
 
+from purly.requisition.models import Requisition
+
+from .models import Approval
+
 
 @shared_task
-def send_approval_email(requisition, approval):
+def send_approval_email(requisition_id, approval_id):
+    requisition = Requisition.objects.get(pk=requisition_id)
+    approval = Approval.objects.get(pk=approval_id)
+
     context = {
         "approver": approval.approver.username,
-        "approval_id": approval.id,
-        "requisition_id": requisition.id,
+        "approval_id": approval.pk,
+        "requisition_id": requisition.pk,
         "owner": requisition.owner,
         "supplier": requisition.supplier,
         "justification": requisition.justification,
@@ -32,9 +39,12 @@ def send_approval_email(requisition, approval):
 
 
 @shared_task
-def send_reject_email(approval, requisition):
+def send_reject_email(requisition_id, approval_id):
+    requisition = Requisition.objects.get(pk=requisition_id)
+    approval = Approval.objects.get(pk=approval_id)
+
     context = {
-        "requisition_id": requisition.id,
+        "requisition_id": requisition.pk,
         "owner": requisition.owner,
         "supplier": requisition.supplier,
         "total_amount": requisition.total_amount,
@@ -59,9 +69,11 @@ def send_reject_email(approval, requisition):
 
 
 @shared_task
-def send_fully_approved_email(requisition):
+def send_fully_approved_email(requisition_id):
+    requisition = Requisition.objects.get(pk=requisition_id)
+
     context = {
-        "requisition_id": requisition.id,
+        "requisition_id": requisition.pk,
         "owner": requisition.owner,
         "supplier": requisition.supplier,
         "total_amount": requisition.total_amount,

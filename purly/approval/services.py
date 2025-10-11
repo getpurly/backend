@@ -493,7 +493,7 @@ def check_fully_approved(requisition):
 
         requisition.save()
 
-        send_fully_approved_email(requisition)
+        send_fully_approved_email.delay(requisition.id)  # type: ignore
 
 
 def approval_request_validation(request_user, action, approval):
@@ -534,4 +534,4 @@ def notify_current_sequence(requisition):
 
             approval.save()
 
-            send_approval_email(requisition, approval)
+            send_approval_email.delay(requisition.id, approval.id)  # type: ignore

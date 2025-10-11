@@ -1,24 +1,23 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from purly.base import CustomToRepresentation
 
-User = get_user_model()
+from .models import CustomUser
 
 
 class UserDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ["id", "username", "first_name", "last_name", "email", "is_active", "date_joined"]
 
 
 class UserSimpleDetailSerializer(CustomToRepresentation, serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ["id", "username"]
 
 
 class UserListSerializer(CustomToRepresentation, serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ["id", "username", "first_name", "last_name", "email", "is_active", "date_joined"]

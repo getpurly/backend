@@ -3,7 +3,6 @@ Hello,
 
 {% block content %}{% endblock content %}
 
-{% endautoescape %}
-
 Thank you,
 The {{ site_name }} Team
+{% endautoescape %}

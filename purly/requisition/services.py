@@ -85,6 +85,6 @@ def on_reject_requisition(approval, requisition):
 
     requisition.save()
 
-    transaction.on_commit(lambda: send_reject_email(approval, requisition))
+    transaction.on_commit(lambda: send_reject_email.delay(requisition.id, approval.id))  # type: ignore
 
     return requisition
