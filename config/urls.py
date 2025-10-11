@@ -3,7 +3,9 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.templatetags.static import static
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 
 from .exceptions import page_not_found, server_error
@@ -40,6 +42,7 @@ urlpatterns = [
     path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("api/v1/health/", health_check, name="health_check"),
     path("", home, name="home"),
+    path("favicon.ico", RedirectView.as_view(url=static("favicon.ico"), permanent=True)),
 ]
 
 if settings.DEBUG:
