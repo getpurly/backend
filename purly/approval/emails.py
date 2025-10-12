@@ -23,6 +23,7 @@ def send_approval_email(requisition_id, approval_id):
         "total_amount": requisition.total_amount,
         "currency": requisition.currency,
         "submitted_at": requisition.submitted_at,
+        "email_subject_prefix": settings.APP_EMAIL_SUBJECT_PREFIX,
         "site_url": settings.SITE_URL,
         "site_name": settings.SITE_NAME,
     }
@@ -53,6 +54,7 @@ def send_reject_email(requisition_id, approval_id):
         "rejected_at": requisition.rejected_at,
         "rejected_by": approval.approver.username,
         "rejected_comment": approval.comment,
+        "email_subject_prefix": settings.APP_EMAIL_SUBJECT_PREFIX,
         "site_url": settings.SITE_URL,
         "site_name": settings.SITE_NAME,
     }
@@ -80,6 +82,7 @@ def send_fully_approved_email(requisition_id):
         "currency": requisition.currency,
         "submitted_at": requisition.submitted_at,
         "approved_at": requisition.approved_at,
+        "email_subject_prefix": settings.APP_EMAIL_SUBJECT_PREFIX,
         "site_url": settings.SITE_URL,
         "site_name": settings.SITE_NAME,
     }

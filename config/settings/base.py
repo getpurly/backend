@@ -165,6 +165,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # App Constants
 # ---------------------------------------------------------------------
 
+APP_EMAIL_SUBJECT_PREFIX = "[Purly] "
+
 MAX_REQUISITION_LINES = 250
 MAX_SEQUENCE_NUMBER = 1000
 
@@ -251,12 +253,11 @@ SPECTACULAR_SETTINGS = {
 ALLAUTH_UI_THEME = "forest"
 
 ACCOUNT_ADAPTER = "config.adapters.CustomAccountAdapter"
-
-ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Purly] "
-ACCOUNT_EMAIL_NOTIFICATIONS = True
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "account_email"
-
-ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_NOTIFICATIONS = True
+ACCOUNT_EMAIL_SUBJECT_PREFIX = APP_EMAIL_SUBJECT_PREFIX
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_PRESERVE_USERNAME_CASING = False
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 ACCOUNT_USERNAME_BLACKLIST = BLACKLIST
 ACCOUNT_USERNAME_MIN_LENGTH = 3

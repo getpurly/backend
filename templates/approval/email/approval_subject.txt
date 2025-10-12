@@ -1,1 +1,1 @@
-Your approval is needed: Requisition #{{ requisition_id }}
+{{ email_subject_prefix }}Your approval is needed: Requisition #{{ requisition_id }}

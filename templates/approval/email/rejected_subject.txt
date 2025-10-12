@@ -1,1 +1,1 @@
-Requisition #{{ requisition_id }} was rejected
+{{ email_subject_prefix }}Requisition #{{ requisition_id }} was rejected
