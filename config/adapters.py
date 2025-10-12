@@ -7,3 +7,6 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         context = {**context, "site_name": settings.SITE_NAME}
 
         return super().send_mail(template_prefix, email, context)
+
+    def is_open_for_signup(self, request):
+        return settings.ACCOUNT_ALLOW_REGISTRATION
