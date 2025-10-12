@@ -1,4 +1,4 @@
-APP_ROLE=
+APP_ROLE= # Use web for django and worker for celery
 
 AWS_ACCESS_KEY_SES=
 AWS_REGION=
