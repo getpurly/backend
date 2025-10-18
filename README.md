@@ -20,7 +20,7 @@ A rule engine for creating approval chains/requisition approvals:
 - String lookups include exact, contains, starts with, ends with, custom regex, and is null (and their case insentive counterparts)
 - Number lookups include equal, not equal, greater than, greater than or equal, less than, and less than or equal
 - All fields supported on requisitions, as well as related records (e.g., user and project fields)
-- Safe guards in-place to prevent requisition submission if no approval chains defined or existing ones do not contain matching rules
+- Safeguards in-place to prevent requisition submission if no approval chains defined or existing ones do not contain matching rules
 
 ## Installation
 
