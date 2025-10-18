@@ -347,7 +347,6 @@ class RequisitionLineAdmin(AdminBase):
         (
             "Requisition Line Information",
             {
-                "classes": ["collapse"],
                 "fields": (
                     "line_number",
                     "line_type",
@@ -369,6 +368,7 @@ class RequisitionLineAdmin(AdminBase):
         (
             "Misc",
             {
+                "classes": ["collapse"],
                 "fields": (
                     "created_at",
                     "created_by",
