@@ -33,7 +33,7 @@
                     <a href="{% dashboard_url %}">Back to Dashboard</a>
                     {% url 'account_email' as email_url %}
                     {% if email_url %}
-                        <a href="{{ email_url }}">{% trans "Change Email" %}</a>
+                        <a href="{{ email_url }}">{% trans "Manage Email" %}</a>
                     {% endif %}
                     {% url 'account_change_password' as change_password_url %}
                     {% if change_password_url %}
