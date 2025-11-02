@@ -1,7 +1,7 @@
-from rest_framework import pagination
+from config.pagination import CustomPagination
 
 
-class ProjectPagination(pagination.PageNumberPagination):
+class ProjectPagination(CustomPagination):
     page_size_query_param = "page_size"
-    page_size = 100
+    page_size = 5
     max_page_size = 100
