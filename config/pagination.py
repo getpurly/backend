@@ -18,12 +18,31 @@ class CustomPagination(pagination.PageNumberPagination):
             }
         )
 
-    def get_paginated_response_schema(self, *args, **kwargs):
-        schema = super().get_paginated_response_schema(*args, **kwargs)
-
-        schema["properties"]["total_pages"] = {
-            "type": "integer",
-            "example": 123,
+    def get_paginated_response_schema(self, schema):
+        return {
+            "type": "object",
+            "required": ["count", "results"],
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "example": 123,
+                },
+                "next": {
+                    "type": "string",
+                    "nullable": True,
+                    "format": "uri",
+                    "example": f"http://api.example.org/accounts/?{self.page_query_param}=4",
+                },
+                "previous": {
+                    "type": "string",
+                    "nullable": True,
+                    "format": "uri",
+                    "example": f"http://api.example.org/accounts/?{self.page_query_param}=2",
+                },
+                "pages": {
+                    "type": "integer",
+                    "example": 123,
+                },
+                "results": schema,
+            },
         }
-
-        return schema
