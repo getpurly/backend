@@ -129,11 +129,9 @@ SECURE_HSTS_PRELOAD = True
 # ---------------------------------------------------------------------
 
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_NAME = "__Secure-sessionid"
 
 CSRF_COOKIE_SECURE = True
 CSRF_USE_SESSIONS = True
-CSRF_COOKIE_NAME = "__Secure-csrftoken"
 
 # ---------------------------------------------------------------------
 # Storage / Static

@@ -25,7 +25,7 @@ ADMIN_SITE_TITLE = "admin"
 # ---------------------------------------------------------------------
 
 CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 
