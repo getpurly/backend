@@ -58,7 +58,7 @@ class Requisition(ModelBase):
         null=True,
     )
     supplier = models.CharField(max_length=255)
-    justification = models.TextField()
+    justification = models.TextField(max_length=2000)
     total_amount = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal("0.00"))
     currency = models.CharField(choices=CurrencyChoices.choices, default=CurrencyChoices.USD)
     submitted_at = models.DateTimeField(blank=True, null=True, editable=False)
