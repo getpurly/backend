@@ -12,7 +12,7 @@ class Project(ModelBase):
         error_messages={"unique": "This project name already exists."},
     )
     project_code = models.CharField(max_length=64, blank=True)
-    description = models.TextField()
+    description = models.TextField(max_length=2000)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
 

@@ -115,7 +115,7 @@ class Approval(ModelBase):
     status = models.CharField(
         choices=ApprovalStatusChoices.choices, default=ApprovalStatusChoices.PENDING
     )
-    comment = models.TextField(blank=True)
+    comment = models.TextField(max_length=2000, blank=True)
     rule_metadata = models.JSONField(blank=True, null=True)
     system_generated = models.BooleanField(default=False)
     notified_at = models.DateTimeField(blank=True, null=True, editable=False)
@@ -141,7 +141,7 @@ class ApprovalGroup(ModelBase):
         unique=True,
         error_messages={"unique": "This approval group name already exists."},
     )
-    description = models.TextField(blank=True)
+    description = models.TextField(max_length=2000, blank=True)
     approver = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="approval_groups",

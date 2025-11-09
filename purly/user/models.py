@@ -55,7 +55,7 @@ class UserProfile(ModelBase):
     job_title = models.CharField(max_length=255, blank=True)
     department = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=32, blank=True)
-    bio = models.TextField(blank=True)
+    bio = models.TextField(max_length=2000, blank=True)
 
     class Meta(ModelBase.Meta):
         db_table = "user_profile"

@@ -12,7 +12,7 @@ class Address(ModelBase):
     )
     name = models.CharField(max_length=255)
     address_code = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(max_length=2000, blank=True)
     attention = models.CharField(max_length=255)
     phone = models.CharField(max_length=32, blank=True)
     street1 = models.CharField(max_length=255, verbose_name="Street 1")
@@ -21,7 +21,7 @@ class Address(ModelBase):
     state = models.CharField(max_length=64)
     zip_code = models.CharField(max_length=64)
     country = models.CharField(max_length=64)
-    delivery_instructions = models.TextField(blank=True)
+    delivery_instructions = models.TextField(max_length=2000, blank=True)
 
     objects = AddressManager()
 
